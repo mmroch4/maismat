@@ -12,7 +12,8 @@ const edicoes = defineCollection({
       data: z.coerce.date(),
       direcao: z.array(z.string()),
       capa: image().optional(),
-      citacao: z.object({ texto: z.string(), autor: z.string() }).optional(),
+      // nullish: as edições gravadas antes de output.omit_empty_optional_fields têm `citacao: null`
+      citacao: z.object({ texto: z.string(), autor: z.string() }).nullish(),
       // PDF original, em /public/pdf
       pdf: z.string().optional(),
       // Edições ainda só disponíveis em PDF (arquivo por converter)
@@ -32,7 +33,7 @@ const artigos = defineCollection({
     autores: z.array(z.string()).optional(),
     resumo: z.string().optional(),
     nivel: z.string().optional(),
-    citacao: z.object({ texto: z.string(), autor: z.string() }).optional(),
+    citacao: z.object({ texto: z.string(), autor: z.string() }).nullish(),
   }),
 });
 

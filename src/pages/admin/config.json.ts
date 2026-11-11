@@ -32,6 +32,8 @@ const config = {
   },
   // Endereços e identificadores sem acentos, como os dos artigos já publicados (cicloide e não ciclóide).
   slug: { encoding: 'ascii', clean_accents: true },
+  // Sem isto, um campo opcional deixado vazio fica gravado como `citacao: null` ou `pdf: ''`.
+  output: { omit_empty_optional_fields: true },
   media_folder: 'public/img',
   public_folder: '/img',
   collections: [

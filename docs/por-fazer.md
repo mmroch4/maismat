@@ -15,6 +15,7 @@
   - o novo identificador sai sem acentos (por exemplo `cicloide-…`), por causa do `slug` em `config.json.ts`;
   - em **Inserir → Demonstração**, a lista mostra as demonstrações pelo título (campo `relation`). Se não mostrar, trocar por um `select` gerado no build em `config.json.ts` (as demonstrações novas só aparecem na lista depois do deploy seguinte);
   - **Inserir → Applet GeoGebra** recusa uma ligação que não é de um applet e grava `<GeoGebra ligacao="…" titulo="…" altura={500} />`.
+- [ ] Com o login real, criar uma edição sem citação nem PDF: o ficheiro gravado não deve ter as linhas `citacao` nem `pdf` (`output.omit_empty_optional_fields` em `config.json.ts`). Se as tiver, o build passa na mesma (o esquema aceita `null` e a verificação ignora `pdf: ''`).
 - [ ] Com o login real, numa edição, carregar no campo «PDF original» um PDF com mais de 25 MB: o painel deve recusá-lo antes de gravar (`max_file_size` em `config.json.ts`). Se o aceitar, o build falha na mesma com a verificação dos 25 MiB, mas a professora só o descobre depois de gravar.
 
 ## No dia do lançamento

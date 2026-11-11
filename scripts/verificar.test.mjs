@@ -277,6 +277,8 @@ test('todas as imagens têm descrição, e nos artigos não pode ficar vazia', (
 test('os PDFs indicados nas edições existem', () => {
   for (const e of edicoes.filter((e) => e.pdf)) {
     const pdf = e.pdf.replace(/^["']|["']$/g, '');
+    // `pdf: ''` (campo vazio gravado pelo painel) quer dizer que a edição não tem PDF
+    if (!pdf) continue;
     assert.ok(pdf.startsWith('/') && existe(`public${pdf}`),
       `A edição src/content/edicoes/${e.id}.md tem no campo «PDF original» o ficheiro ${pdf}, que não existe em public/. Carrega o PDF no painel ou corrige o campo.`);
   }
