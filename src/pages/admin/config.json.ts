@@ -84,6 +84,9 @@ const config = {
           media_folder: '/public/pdf',
           public_folder: '/pdf',
           accept: 'application/pdf',
+          // O Cloudflare Pages não publica ficheiros com mais de 25 MiB (o build também o verifica).
+          media_library: { config: { max_file_size: 25 * 1024 * 1024 } },
+          hint: 'Até 25 MB. Se o PDF for maior, reduz o tamanho do ficheiro antes de o carregar.',
         },
         citacao,
         {
