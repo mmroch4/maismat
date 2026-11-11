@@ -80,6 +80,7 @@ A fórmula aparece já desenhada no editor. Se aparecer a vermelho, há um erro 
    - **Casas decimais** (opcional): para respostas com vírgula. Com resposta `56.54` e 1 casa decimal, o site aceita 56,5.
    - **Fonte** (opcional): de onde veio o problema.
    - **Resolução** (opcional): aparece num botão “Ver resolução”. Se ficar vazia, o site diz que a resolução sai na próxima edição.
+   - **Identificador**: deixe como está. É preenchido sozinho ao guardar e serve para o site se lembrar dos desafios que cada aluno já resolveu. Só há uma exceção: se copiar um desafio antigo para fazer um problema **diferente**, apague o identificador da cópia e o painel gera um novo.
 
 Na edição seguinte, para publicar a resolução de um desafio antigo, abra esse artigo e preencha a **Resolução** desse desafio.
 

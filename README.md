@@ -32,7 +32,7 @@ Os componentes de `src/lib/componentes-mdx.ts` estão disponíveis em todos os a
 - Desafio:
 
   ```mdx
-  <Desafio numero={1} titulo="..." resposta="31|trinta e um">
+  <Desafio id="desafio-1a2b3c4d" numero={1} titulo="..." resposta="31|trinta e um">
   Enunciado...
   <div slot="resolucao">Explicação...</div>
   </Desafio>

@@ -1,11 +1,7 @@
-import { createHash } from 'node:crypto';
 import katex from 'katex';
 // O mesmo leitor de <Desafio> que o painel de edição usa, testado contra todos os artigos.
 import { desafio as blocoDesafio } from '../../public/admin/componentes.js';
 import { artigosDe, edicoesOrdenadas, slugArtigo, type Artigo, type Edicao } from './edicoes';
-
-// Tem de ser igual ao id usado em Desafio.astro: é a âncora no artigo e a chave no localStorage.
-export const idDesafio = (titulo: string) => `desafio-${createHash('sha1').update(titulo).digest('hex').slice(0, 8)}`;
 
 export type Segmento = { texto: string } | { html: string };
 
@@ -69,11 +65,17 @@ function aparar(segmentos: Segmento[]) {
 export async function desafiosPublicados(): Promise<DesafioArquivo[]> {
   const padrao = new RegExp(blocoDesafio.pattern.source, 'gm');
   const lista: DesafioArquivo[] = [];
+  const titulos = new Map<string, string>();
   for (const edicao of await edicoesOrdenadas()) {
     for (const artigo of await artigosDe(edicao.id)) {
       for (const m of (artigo.body ?? '').matchAll(padrao)) {
         const d = blocoDesafio.fromBlock(m);
-        const id = idDesafio(d.chave || d.titulo);
+        const id = d.id;
+        if (!id) throw new Error(`O desafio “${d.titulo}” (${artigo.id}) não tem id. Abre-o no painel e guarda, ou escreve id="desafio-…" no artigo.`);
+        // O mesmo id só pode repetir-se quando é o mesmo problema republicado (por exemplo, nas resoluções).
+        if (titulos.has(id) && titulos.get(id) !== d.titulo)
+          throw new Error(`Os desafios “${titulos.get(id)}” e “${d.titulo}” (${artigo.id}) têm o mesmo id ${id}. Se são problemas diferentes, apaga o identificador de um deles no painel para gerar outro.`);
+        titulos.set(id, d.titulo);
         lista.push({
           id,
           titulo: d.titulo,

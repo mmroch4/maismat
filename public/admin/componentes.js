@@ -25,6 +25,9 @@ const atributo = (nome, valor) => {
   return texto.includes('"') ? ` ${nome}={${JSON.stringify(texto)}}` : ` ${nome}="${texto}"`;
 };
 
+// Gerado uma vez, quando o desafio é guardado pela primeira vez; depois fica escrito no artigo.
+const novoId = () => `desafio-${crypto.randomUUID().slice(0, 8)}`;
+
 const comConteudo = (abrir, conteudo, fechar) => `${abrir}\n\n${conteudo.trim()}\n\n${fechar}`;
 
 // ---- Pré-visualização das fórmulas com o KaTeX carregado em index.html
@@ -113,21 +116,22 @@ export const desafio = {
     { name: 'casas', label: 'Casas decimais', widget: 'number', value_type: 'int', required: false, hint: 'Opcional. Para respostas numéricas: 1 aceita 56,5 quando a resposta é 56.54.' },
     { name: 'fonte', label: 'Fonte', required: false, hint: 'Opcional, por exemplo “ONEM 2010 — adaptado”.' },
     {
-      name: 'chave',
+      name: 'id',
       label: 'Identificador',
       required: false,
-      hint: 'Normalmente fica vazio. Só é preciso se outro desafio já publicado tiver o mesmo título mas for um problema diferente: escreve aqui um texto único (ex.: No quadrado (15°)).',
+      hint: 'Preenchido automaticamente ao guardar; não alteres. Guarda o progresso dos alunos. Se copiaste este desafio de outro para fazer um problema diferente, apaga-o para ser gerado um novo.',
     },
     { name: 'resolucao', label: 'Resolução', widget: 'richtext', required: false, hint: 'Se ficar vazia, o site diz que a resolução sai na próxima edição.' },
   ],
   pattern: /^<Desafio\b(?<attrs>(?:[^>"{}]|"[^"]*"|\{[^}]*\})*?)\s*(?:\/>|>(?<corpo>[\s\S]*?)<\/Desafio>)/m,
   fromBlock: (m) => {
-    const { numero, titulo = '', resposta, opcoes, unidade, fonte, casas, chave } = lerAtributos(m.groups.attrs);
+    const { id, numero, titulo = '', resposta, opcoes, unidade, fonte, casas } = lerAtributos(m.groups.attrs);
     const corpo = m.groups.corpo ?? '';
     const i = corpo.indexOf('<div slot="resolucao">');
     const enunciado = i < 0 ? corpo : corpo.slice(0, i);
     const resolucao = i < 0 ? '' : corpo.slice(i + '<div slot="resolucao">'.length).replace(/<\/div>\s*$/, '');
     return {
+      id: id ?? '',
       numero: numero === undefined ? '' : String(numero),
       titulo,
       enunciado: enunciado.trim(),
@@ -136,20 +140,19 @@ export const desafio = {
       unidade: unidade ?? '',
       casas,
       fonte: fonte ?? '',
-      chave: chave ?? '',
       resolucao: resolucao.trim(),
     };
   },
-  toBlock: ({ numero = '', titulo = '', enunciado = '', resposta = '', opcoes = [], unidade = '', casas, fonte = '', chave = '', resolucao = '' }) => {
+  toBlock: ({ id = '', numero = '', titulo = '', enunciado = '', resposta = '', opcoes = [], unidade = '', casas, fonte = '', resolucao = '' }) => {
     const n = String(numero).trim();
     const partesAttrs = [
+      atributo('id', id.trim() || novoId()),
       atributo('numero', /^\d+$/.test(n) ? Number(n) : n),
       atributo('titulo', titulo),
       atributo('resposta', resposta),
       atributo('casas', typeof casas === 'number' && !Number.isNaN(casas) ? casas : undefined),
       atributo('unidade', unidade),
       atributo('fonte', fonte),
-      atributo('chave', chave),
       atributo('opcoes', opcoes.filter(Boolean)),
     ].filter(Boolean);
     const linha = partesAttrs.join('');
