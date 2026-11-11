@@ -29,23 +29,23 @@ const ids = [...new Set(Astro.props.ids)];
         }
       }).length;
       this.querySelector('.n')!.textContent = String(n);
-      // Um frame depois, para o anel se encher a partir de zero.
-      requestAnimationFrame(() => this.style.setProperty('--p', String((100 * n) / ids.length)));
+      this.style.setProperty('--p', String((100 * n) / ids.length));
     }
   }
   customElements.define('maismat-anel', Anel);
 </script>
 
 <style>
-  maismat-anel { --p: 0; display: inline-flex; align-items: center; gap: 0.75rem; }
+  /* Registado como número para o anel se encher a partir de zero; sem @property aparece já cheio */
+  @property --p { syntax: '<number>'; inherits: true; initial-value: 0; }
+  maismat-anel { --p: 0; display: inline-flex; align-items: center; gap: 0.75rem; transition: --p 400ms ease-out; }
   svg { width: 5rem; height: 5rem; transform: rotate(-90deg); flex-shrink: 0; }
   circle { fill: none; stroke-width: 4.5; }
   .trilho { stroke: var(--pastilha); }
   .cheio {
     stroke: var(--ok);
-    stroke-dasharray: 100;
-    stroke-dashoffset: calc(100 - var(--p));
-    transition: stroke-dashoffset 400ms ease-out;
+    /* O traço tem o comprimento da percentagem: com 0 não se desenha nada (o dashoffset deixava um risco) */
+    stroke-dasharray: var(--p) 100;
   }
   .texto { display: grid; font-size: 0.875rem; color: var(--texto-suave); }
   strong { font-size: 1.5rem; font-weight: 800; color: var(--texto); }
