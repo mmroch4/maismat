@@ -229,7 +229,10 @@ test('as ligações internas levam a páginas e âncoras que existem', () => {
     for (const u of new Set(ligacoes)) {
       const [caminho, ancora] = u.replace(/\?[^#]*/, '').split('#');
       const alvo = destino(decodificar(caminho));
-      if (!alvo) erros.push(`${fonte(f)}: a ligação ${u} leva a uma página ou ficheiro que não existe. Corrige o endereço ou carrega o ficheiro no painel.`);
+      const rascunho = caminho.match(/^\/edicoes\/([^/]+)\//)?.[1];
+      if (!alvo && rascunhos.has(rascunho))
+        erros.push(`${fonte(f)}: a ligação ${u} leva à edição ${rascunho}, que está em rascunho e por isso não está no site. Publica essa edição primeiro (desmarca «Rascunho» no painel) ou tira a ligação.`);
+      else if (!alvo) erros.push(`${fonte(f)}: a ligação ${u} leva a uma página ou ficheiro que não existe. Corrige o endereço ou carrega o ficheiro no painel.`);
       else if (ancora && alvo.endsWith('.html') && !idsDe(alvo).has(decodificar(ancora)))
         erros.push(`${fonte(f)}: a ligação ${u} aponta para #${decodificar(ancora)}, que não existe em ${caminho}. Corrige a parte depois do # na ligação.`);
     }
