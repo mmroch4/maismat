@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import CartaoEdicao from '../../components/CartaoEdicao.astro';
+import { edicoesOrdenadas } from '../../lib/edicoes';
+
+const edicoes = await edicoesOrdenadas();
+const porAno = Map.groupBy(edicoes, (e) => e.data.ano);
+---
+
+<Base titulo="Edições" descricao="Todas as edições do +MAT, Jornal de Matemática.">
+  <div class="contentor">
+    <h1>Edições</h1>
+    <p class="ui intro">O +MAT publica três edições por ano letivo. As edições marcadas com <em>PDF</em> ainda estão a ser convertidas para a versão digital.</p>
+    {[...porAno].map(([ano, lista]) => (
+      <section>
+        <h2>Ano {ano}</h2>
+        <div class="grelha">{lista.map((e) => <CartaoEdicao edicao={e} />)}</div>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  h1 { font-size: 2.5rem; margin-top: 2.5rem; }
+  .intro { color: var(--texto-suave); font-size: 0.95rem; max-width: 40rem; }
+  h2 { font-size: 1.4rem; border-bottom: 3px solid var(--dourado); padding-bottom: 0.3rem; margin-top: 2.5rem; }
+  .grelha { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1.5rem; }
+</style>

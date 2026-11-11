@@ -1,0 +1,46 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { mesAno, rotuloEdicao, slugArtigo } from '../../lib/edicoes';
+import { SECCOES, SECCAO_IDS, type Seccao } from '../../lib/seccoes';
+
+export function getStaticPaths() {
+  return SECCAO_IDS.map((seccao) => ({ params: { seccao } }));
+}
+
+const seccao = Astro.params.seccao as Seccao;
+const artigos = await Promise.all(
+  (await getCollection('artigos', (a) => a.data.seccao === seccao)).map(async (a) => ({
+    a,
+    e: (await getEntry(a.data.edicao))!,
+  })),
+);
+artigos.sort((x, y) => y.e.data.data.getTime() - x.e.data.data.getTime() || x.a.data.ordem - y.a.data.ordem);
+---
+
+<Base titulo={SECCOES[seccao]}>
+  <div class="contentor">
+    <p class="ui"><a href="/seccoes/">← Todas as secções</a></p>
+    <h1>+ {SECCOES[seccao]}</h1>
+    {artigos.length === 0 && <p>Ainda não há artigos nesta secção na versão digital.</p>}
+    <ul>
+      {artigos.map(({ a, e }) => (
+        <li>
+          <a href={`/edicoes/${e.id}/${slugArtigo(a)}/`}>{a.data.titulo}</a>
+          <span class="ui">{rotuloEdicao(e)} · {mesAno(e.data.data)}</span>
+          {a.data.resumo && <p>{a.data.resumo}</p>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  h1 { font-size: 2.5rem; margin-top: 1rem; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 1rem 0; border-bottom: 1px solid var(--linha); }
+  li a { font-family: var(--f-titulo); font-size: 1.3rem; color: var(--texto); text-decoration: none; display: block; }
+  li a:hover { color: var(--destaque); }
+  li span { font-size: 0.8rem; color: var(--texto-suave); }
+  li p { margin: 0.3rem 0 0; color: var(--texto-suave); }
+</style>

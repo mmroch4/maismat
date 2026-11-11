@@ -1,0 +1,102 @@
+---
+titulo: Desafios
+edicao: ano3-edicao1
+seccao: desafios
+ordem: 9
+resumo: Uma festa à noite, o centro de um círculo, o problema dos pães e mais dois puzzles da Selva de Smullyan.
+---
+import Desafio from '../../../components/Desafio.astro';
+
+<Desafio numero={1} titulo="Festa à noite" resposta="13|treze" unidade="rapazes" fonte="Álgebra Recreativa, Yakov Perelman">
+
+Estavam 20 pessoas numa festa à noite. Maria dançou com 7 rapazes, Olga, com oito, Vera, com nove, e assim sucessivamente, até chegar à última rapariga, a Nina, que dançou com todos eles.
+
+Quantos rapazes havia na festa?
+
+<div slot="resolucao">
+
+A 1.ª rapariga dançou com $1 + 6$ rapazes, a 2.ª com $2 + 6$, …, a $n$-ésima com $n + 6$. A última (a Nina) dançou com todos: se houver $r$ raparigas, há $r + 6$ rapazes. Como $r + (r + 6) = 20$, vem $r = 7$. **Havia 13 rapazes.**
+
+</div>
+</Desafio>
+
+<Desafio numero={2} titulo="No círculo" fonte="É capaz de resolver?, David Wells">
+
+Temos aqui um círculo sem quaisquer marcações. É possível encontrar o seu centro utilizando apenas um esquadro?
+
+<div slot="resolucao">
+
+Sim, de forma muito simples: marcando um ângulo reto inscrito na circunferência (o vértice do esquadro sobre a circunferência), os pontos onde os lados do esquadro cortam a circunferência são extremos de um diâmetro. Repetindo o processo obtemos outro diâmetro, e a interseção dos dois é o centro da circunferência!
+
+</div>
+</Desafio>
+
+<Desafio
+  numero={3}
+  titulo="O problema dos pães"
+  fonte="O homem que sabia contar, Malba Tahan"
+  resposta="Sim, deve receber 7 moedas"
+  opcoes={['Não, a divisão 5 e 3 é a justa', 'Sim, deve receber 7 moedas', 'Deviam receber 4 moedas cada um']}
+>
+
+Certo dia, dois viajantes encontraram, caído na estrada, um rico mercador que havia sido assaltado. Como estava esfomeado, pediu-lhes algo para comer. Um dos viajantes trazia três pães e o outro cinco. O mercador sugeriu então que juntassem os pães, os partilhassem durante a viagem e quando chegasse a sua casa pagaria com oito moedas de ouro todo o pão que comesse. Assim fizeram.
+
+No dia seguinte, ao chegarem ao palácio do mercador, este ordenou a um dos seus criados que pagasse oito moedas de ouro aos seus salvadores: três moedas ao viajante que tinha partilhado os seus três pães e cinco moedas ao que tinha partilhado os cinco pães.
+
+O viajante que tinha contribuído com o maior número de pães, não concordando com esta divisão, afirmou que ele deveria receber sete moedas e o seu companheiro apenas uma. Terá ele razão?
+
+<div slot="resolucao">
+
+Sim, ele tem razão, pois os 8 pães foram comidos em partes iguais pelos 3 viajantes. Então os 8 pães foram partidos em 24 pedaços, uma vez que cada pão foi dividido em 3 pedaços, um para cada viajante, sendo que cada um comeu 8 pedaços.
+
+O viajante que contribuiu com 5 pães ($5 \times 3 = 15$ pedaços) comeu 8 pedaços e deu 7 pedaços ao rico mercador, tendo direito, por isso, a receber **7 moedas** de ouro. Já o viajante que apenas contribuiu com 3 pães ($3 \times 3 = 9$ pedaços) comeu também 8 pedaços, tendo apenas dado 1 pedaço ao rico mercador e, por esse motivo, deve apenas receber 1 moeda de ouro.
+
+</div>
+</Desafio>
+
+## Desafios lógicos — na Selva de R. Smullyan
+
+Na edição anterior, demos a conhecer o matemático norte-americano Raymond Smullyan e os seus “puzzles lógicos” que vivenciam realidades alternativas àquela em que vivemos. Uma delas é A SELVA, em que o Leão e o Unicórnio têm características próprias e o papel principal:
+
+- O Leão (L) mente às segundas, terças e quartas, dizendo sempre a verdade nos outros dias.
+- O Unicórnio (U) mente às quintas, sextas e sábados, dizendo sempre a verdade nos outros dias.
+
+<Desafio
+  numero="4a"
+  titulo="Problema A"
+  resposta="Quinta-feira"
+  opcoes={['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo']}
+>
+
+- L: “Ontem foi dia de eu mentir.”
+- U: “Ontem foi dia de eu mentir, também.”
+
+Em que dia da semana estamos?
+
+<div slot="resolucao">
+
+A frase “ontem foi dia de eu mentir” podia ter sido proferida pelo Leão à segunda ou à quinta-feira, e pelo Unicórnio ao domingo ou à quinta-feira. Logo, é **quinta-feira**.
+
+</div>
+</Desafio>
+
+<Desafio numero="4b" titulo="Problema B">
+
+- L: “Ontem foi dia de eu mentir.”
+- U: “Vou mentir dois dias depois de amanhã.”
+
+Em que dia da semana estamos?
+
+<div slot="resolucao">
+
+O Leão só pode dizer a sua frase à **segunda** ou à **quinta-feira**.
+
+O Unicórnio fala de daqui a 3 dias:
+
+- à segunda, diz a verdade e quinta é dia de mentir: frase verdadeira ✓;
+- à quinta, mente e domingo é dia de verdade: frase falsa ✓.
+
+Ambos os dias são possíveis! Com estas duas frases, a Alice não consegue decidir entre segunda e quinta-feira. *Na edição seguinte, o +MAT reconheceu um erro no enunciado deste problema e voltou a propô-lo, corrigido: ver os [desafios de abril de 2025](/edicoes/ano3-edicao2/08-desafios/).*
+
+</div>
+</Desafio>

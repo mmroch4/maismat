@@ -1,0 +1,127 @@
+@import '@fontsource/playfair-display/600.css';
+@import '@fontsource/playfair-display/400-italic.css';
+@import '@fontsource/source-serif-4/400.css';
+@import '@fontsource/source-serif-4/400-italic.css';
+@import '@fontsource/source-serif-4/600.css';
+@import '@fontsource-variable/inter';
+@import 'katex/dist/katex.min.css';
+
+/* Paleta inspirada nas edições em PDF: azul-ardósia do índice e dourado das faixas */
+:root {
+  --azul: #4f6f8f;
+  --azul-escuro: #344b63;
+  --dourado: #d4bf8e;
+  --dourado-claro: #f3ecdc;
+  --verde: #5b8a35;
+  --laranja: #e5481b;
+
+  --fundo: #fbfaf7;
+  --superficie: #ffffff;
+  --texto: #1f2328;
+  --texto-suave: #5b6168;
+  --linha: #e4ded1;
+  --destaque: var(--azul);
+  --ok: #2f7a3a;
+  --erro: #b3261e;
+
+  --f-titulo: 'Playfair Display', Georgia, serif;
+  --f-texto: 'Source Serif 4', Georgia, serif;
+  --f-ui: 'Inter Variable', system-ui, sans-serif;
+
+  --largura: 72rem;
+  --leitura: 42rem;
+  --raio: 10px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #15181c;
+    --superficie: #1d2126;
+    --texto: #e8e6e1;
+    --texto-suave: #a5abb2;
+    --linha: #333840;
+    --dourado-claro: #2a2620;
+    --destaque: #8fb0d1;
+    --ok: #6cc47a;
+    --erro: #f2867e;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--f-texto);
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+img { max-width: 100%; height: auto; }
+
+a { color: var(--destaque); text-underline-offset: 0.15em; }
+
+h1, h2, h3 { font-family: var(--f-titulo); font-weight: 600; line-height: 1.2; text-wrap: balance; }
+
+.contentor { max-width: var(--largura); margin: 0 auto; padding: 0 1rem; }
+
+.etiqueta {
+  display: inline-block;
+  font-family: var(--f-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--azul-escuro);
+  background: var(--dourado);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.ui { font-family: var(--f-ui); }
+
+/* ---------- Corpo dos artigos ---------- */
+.prosa { max-width: var(--leitura); }
+.prosa > * + * { margin-top: 1em; }
+.prosa h2 { font-size: 1.5rem; margin-top: 2em; }
+.prosa h3 { font-size: 1.2rem; margin-top: 1.6em; }
+.prosa p, .prosa ul, .prosa ol { margin-bottom: 0; }
+.prosa li + li { margin-top: 0.3em; }
+.prosa figure { margin: 1.75em 0; }
+.prosa figure img, .prosa > p > img { border-radius: 6px; display: block; }
+.prosa figcaption { font-size: 0.95rem; color: var(--texto-suave); margin-top: 0.5em; }
+.prosa blockquote {
+  margin: 1.5em 0;
+  padding: 0.25em 0 0.25em 1.25em;
+  border-left: 3px solid var(--dourado);
+  font-style: italic;
+}
+.prosa table { border-collapse: collapse; font-family: var(--f-ui); font-size: 0.9rem; margin: 1.5em 0; }
+.prosa th, .prosa td { border: 1px solid var(--linha); padding: 0.3em 0.7em; text-align: left; }
+.prosa th { background: var(--dourado-claro); }
+.prosa .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.25em 0; }
+.prosa hr { border: 0; border-top: 1px solid var(--linha); margin: 2.5em 0; }
+
+/* Grelha de imagens com legenda (ex.: Geometria na Arquitetura) */
+.galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.25rem; margin: 1.75em 0; }
+.galeria figure { margin: 0; }
+.galeria img { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+
+.nota {
+  background: var(--dourado-claro);
+  border-radius: var(--raio);
+  padding: 1rem 1.25rem;
+}
+
+@media print {
+  :root { --fundo: #fff; --texto: #000; }
+  .nao-imprimir { display: none !important; }
+  body { font-size: 11pt; }
+  a { color: inherit; text-decoration: none; }
+}

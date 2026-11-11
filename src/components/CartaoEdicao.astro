@@ -1,0 +1,36 @@
+---
+import { Image } from 'astro:assets';
+import { mesAno, rotuloEdicao, type Edicao } from '../lib/edicoes';
+
+interface Props { edicao: Edicao }
+const { edicao } = Astro.props;
+const { capa, data, convertida } = edicao.data;
+---
+
+<a class="cartao" href={`/edicoes/${edicao.id}/`}>
+  {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={360} />}
+  <span class="ui rotulo">{rotuloEdicao(edicao)}</span>
+  <span class="mes">{mesAno(data)}</span>
+  {!convertida && <span class="ui so-pdf">PDF</span>}
+</a>
+
+<style>
+  .cartao { display: grid; gap: 0.2rem; text-decoration: none; color: var(--texto); position: relative; }
+  img {
+    width: 100%;
+    aspect-ratio: 210 / 297;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 6px 18px rgb(0 0 0 / 0.08);
+    transition: transform 0.15s;
+    margin-bottom: 0.5rem;
+  }
+  .cartao:hover img { transform: translateY(-3px); }
+  .rotulo { font-size: 0.75rem; color: var(--texto-suave); letter-spacing: 0.04em; }
+  .mes { font-family: var(--f-titulo); font-size: 1.15rem; text-transform: capitalize; }
+  .so-pdf {
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    font-size: 0.65rem; font-weight: 700; background: var(--azul-escuro); color: #fff;
+    padding: 0.15rem 0.4rem; border-radius: 4px;
+  }
+</style>

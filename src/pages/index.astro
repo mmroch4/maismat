@@ -1,0 +1,93 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import CartaoEdicao from '../components/CartaoEdicao.astro';
+import { artigosDe, edicoesOrdenadas, mesAno, rotuloEdicao, slugArtigo } from '../lib/edicoes';
+import { SECCOES } from '../lib/seccoes';
+
+const edicoes = await edicoesOrdenadas();
+const atual = edicoes.find((e) => e.data.convertida) ?? edicoes[0];
+const artigos = await artigosDe(atual.id);
+---
+
+<Base>
+  <section class="contentor capa">
+    <div class="capa-texto">
+      <p class="ui escola">Agrupamento de Escolas Domingos Sequeira</p>
+      <h1>+MAT <span>Jornal de Matemática</span></h1>
+      <p class="ui edicao">{rotuloEdicao(atual)} · <span class="cap">{mesAno(atual.data.data)}</span></p>
+      {atual.data.citacao && (
+        <blockquote>
+          <p>“{atual.data.citacao.texto}”</p>
+          <footer>— {atual.data.citacao.autor}</footer>
+        </blockquote>
+      )}
+      <a class="ui botao" href={`/edicoes/${atual.id}/`}>Ler a edição</a>
+    </div>
+    {atual.data.capa && (
+      <a href={`/edicoes/${atual.id}/`} class="capa-img">
+        <Image src={atual.data.capa} alt="Capa da edição atual" width={480} loading="eager" />
+      </a>
+    )}
+  </section>
+
+  <section class="contentor">
+    <h2 class="secao-titulo">Nesta edição</h2>
+    <ol class="sumario">
+      {artigos.map((a) => (
+        <li>
+          <a href={`/edicoes/${atual.id}/${slugArtigo(a)}/`}>
+            <span class="etiqueta">{SECCOES[a.data.seccao]}</span>
+            <strong>{a.data.titulo}</strong>
+            {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="contentor">
+    <h2 class="secao-titulo">Edições anteriores</h2>
+    <div class="grelha-edicoes">
+      {edicoes.filter((e) => e.id !== atual.id).map((e) => <CartaoEdicao edicao={e} />)}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .capa {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    padding-block: 3rem;
+  }
+  @media (max-width: 48rem) { .capa { grid-template-columns: 1fr; gap: 2rem; padding-block: 2rem; } }
+  .escola { color: var(--texto-suave); font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
+  h1 { font-size: clamp(3.5rem, 10vw, 6rem); margin: 0.2rem 0; letter-spacing: -0.03em; line-height: 1; }
+  h1 span { display: block; font-size: 0.3em; letter-spacing: 0; color: var(--texto-suave); margin-top: 0.5rem; }
+  .edicao { font-size: 0.9rem; border-block: 1px solid var(--linha); padding-block: 0.4rem; display: inline-block; }
+  .cap { text-transform: capitalize; }
+  blockquote { font-family: var(--f-titulo); font-style: italic; font-size: 1.25rem; margin: 1.5rem 0; max-width: 34rem; }
+  blockquote p { margin: 0; }
+  blockquote footer { font-family: var(--f-ui); font-style: normal; font-size: 0.85rem; color: var(--texto-suave); margin-top: 0.5rem; }
+  .botao {
+    display: inline-block; background: var(--azul); color: #fff; text-decoration: none;
+    padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: 600;
+  }
+  .botao:hover { background: var(--azul-escuro); }
+  .capa-img img { border-radius: 8px; box-shadow: 0 12px 40px rgb(0 0 0 / 0.15); transform: rotate(1.5deg); width: 100%; }
+  @media (max-width: 48rem) { .capa-img { max-width: 20rem; margin: 0 auto; } }
+
+  .secao-titulo { font-size: 1.6rem; border-bottom: 3px solid var(--dourado); padding-bottom: 0.4rem; margin-top: 3rem; }
+  .sumario { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 1rem; }
+  .sumario a {
+    display: grid; gap: 0.4rem; justify-items: start; height: 100%;
+    padding: 1rem 1.1rem; border: 1px solid var(--linha); border-radius: var(--raio);
+    background: var(--superficie); color: var(--texto); text-decoration: none;
+  }
+  .sumario a:hover { border-color: var(--dourado); }
+  .sumario strong { font-family: var(--f-titulo); font-size: 1.15rem; font-weight: 600; }
+  .resumo { font-size: 0.95rem; color: var(--texto-suave); line-height: 1.45; }
+  .grelha-edicoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1.5rem; }
+</style>

@@ -1,0 +1,95 @@
+---
+titulo: Curiosidades numéricas
+edicao: ano1-edicao1
+seccao: curiosidades
+ordem: 3
+autores: [Inês Rodrigues (10.º F), Rita Sousa (10.º F), Professora Teresa Guarino]
+resumo: Um truque com 7, 11 e 13, os quadrados de números feitos só de uns, e as capicuas.
+---
+import Desafio from '../../../components/Desafio.astro';
+
+## 1. Um número que volta sempre
+
+Se escolhermos um número qualquer com 3 algarismos (por exemplo $657$), o repetirmos à sua frente ($657\,657$), o dividirmos por $13$ ($50\,589$), de seguida por $11$ ($4599$) e, por fim, por $7$ ($657$), o número vai ser igual ao número inicial.
+
+Confirma o resultado anterior (escolhe um número com 3 algarismos e segue o procedimento indicado).
+
+**Consegues justificar** / provar porque é que isto acontece? Fica aqui o desafio.
+
+*Inês Rodrigues, 10.º F*
+
+## 2. Números feitos só de uns
+
+Os números compostos apenas pelo algarismo 1 têm uma particularidade curiosa. Repara:
+
+$$
+\begin{aligned}
+1 \times 1 &= 1 \\
+11 \times 11 &= 121 \\
+111 \times 111 &= 12\,321 \\
+1111 \times 1111 &= 1\,234\,321 \\
+11\,111 \times 11\,111 &= 123\,454\,321 \\
+111\,111 \times 111\,111 &= 12\,345\,654\,321 \\
+1\,111\,111 \times 1\,111\,111 &= 1\,234\,567\,654\,321 \\
+11\,111\,111 \times 11\,111\,111 &= 123\,456\,787\,654\,321 \\
+111\,111\,111 \times 111\,111\,111 &= 12\,345\,678\,987\,654\,321
+\end{aligned}
+$$
+
+*Inês Rodrigues e Rita Sousa, 10.º F*
+
+## 3. Capicuas
+
+$11\,211$ é uma **capicua** ou **número palíndromo**. Estes números, quando lidos da esquerda para a direita ou da direita para a esquerda, representam o mesmo valor.
+
+Sem contar com os números de um só algarismo:
+
+<Desafio titulo="Qual é o menor número capicua?" resposta="11" />
+
+<Desafio titulo="Qual é o menor número capicua que é um quadrado perfeito?" resposta="121" />
+
+<Desafio titulo="Quantos outros quadrados há menores que 1000 que sejam capicuas?" resposta="2|dois">
+
+<div slot="resolucao">
+
+Para além de $121 = 11^2$, há mais **2**: $484 = 22^2$ e $676 = 26^2$.
+
+</div>
+</Desafio>
+
+<Desafio titulo="Há cinco números primos capicuas entre 100 e 200. Quais são?">
+
+<div slot="resolucao">
+
+São $101$, $131$, $151$, $181$ e $191$.
+
+</div>
+</Desafio>
+
+Uma técnica curiosa de obtenção de números palíndromos consiste em escolher qualquer número, com qualquer número de dígitos, inverter a ordem dos algarismos e somar esse número ao número escolhido. Este processo deve repetir-se até se obter o número palíndromo. O processo pode ser demorado ou muito rápido…
+
+**Exemplo:** número escolhido $2456$. Invertendo a ordem: $6542$. Somando os dois: $8998$. Feito!
+
+<Desafio titulo="Experimenta com 1961" resposta="4|quatro">
+
+Experimenta, por exemplo, com o número $1961$. O processo terá de ir além da primeira etapa. Quantas vezes terás de repetir o processo até obter uma capicua?
+
+<div slot="resolucao">
+
+$1961 + 1691 = 3652$, $3652 + 2563 = 6215$, $6215 + 5126 = 11\,341$ e $11\,341 + 14\,311 = 25\,652$. São precisas **4** etapas.
+
+</div>
+</Desafio>
+
+<Desafio titulo="E se escolheres o número 1999?" resposta="7|sete">
+
+Quantas etapas são precisas agora?
+
+<div slot="resolucao">
+
+São precisas **7** etapas, e chega-se à capicua $712\,217$.
+
+</div>
+</Desafio>
+
+*Professora Teresa Guarino*

@@ -1,0 +1,140 @@
+---
+/** Jogo e simulação do problema de Monty Hall: três portas, um carro e duas cabras. */
+---
+
+<maismat-monty class="monty">
+  <p class="ui instrucao" aria-live="polite">Escolhe uma porta.</p>
+  <div class="portas">
+    {[1, 2, 3].map((n) => (
+      <button type="button" class="porta" data-n={n - 1} aria-label={`Porta ${n}`}>
+        <span class="num">{n}</span>
+        <span class="premio" aria-hidden="true"></span>
+      </button>
+    ))}
+  </div>
+  <div class="ui acoes">
+    <button type="button" class="manter" hidden>Manter a escolha</button>
+    <button type="button" class="mudar" hidden>Mudar de porta</button>
+    <button type="button" class="novo" hidden>Jogar outra vez</button>
+  </div>
+  <table class="ui placar">
+    <thead><tr><th></th><th>Jogos</th><th>Ganhos</th><th>% de vitórias</th></tr></thead>
+    <tbody>
+      <tr data-e="manter"><th>A manter</th><td>0</td><td>0</td><td>—</td></tr>
+      <tr data-e="mudar"><th>A mudar</th><td>0</td><td>0</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <button type="button" class="ui simular">Simular 1000 jogos de cada estratégia</button>
+</maismat-monty>
+
+<script>
+  type Estrategia = 'manter' | 'mudar';
+
+  class MontyHall extends HTMLElement {
+    carro = 0;
+    escolha = -1;
+    aberta = -1;
+    placar = { manter: [0, 0], mudar: [0, 0] };
+
+    connectedCallback() {
+      const portas = [...this.querySelectorAll<HTMLButtonElement>('.porta')];
+      const instrucao = this.querySelector('.instrucao')!;
+      const [manter, mudar, novo] = ['.manter', '.mudar', '.novo'].map((s) => this.querySelector<HTMLButtonElement>(s)!);
+
+      const premio = (i: number) => (i === this.carro ? '🚗' : '🐐');
+      const reiniciar = () => {
+        this.carro = Math.floor(Math.random() * 3);
+        this.escolha = this.aberta = -1;
+        portas.forEach((p) => { p.dataset.estado = ''; p.disabled = false; p.querySelector('.premio')!.textContent = ''; });
+        manter.hidden = mudar.hidden = novo.hidden = true;
+        instrucao.textContent = 'Escolhe uma porta.';
+      };
+
+      const abrir = (i: number) => {
+        portas[i].dataset.estado = 'aberta';
+        portas[i].querySelector('.premio')!.textContent = premio(i);
+      };
+
+      portas.forEach((p, i) =>
+        p.addEventListener('click', () => {
+          if (this.escolha !== -1) return;
+          this.escolha = i;
+          p.dataset.estado = 'escolhida';
+          const cabras = [0, 1, 2].filter((k) => k !== i && k !== this.carro);
+          this.aberta = cabras[Math.floor(Math.random() * cabras.length)];
+          abrir(this.aberta);
+          portas.forEach((q) => (q.disabled = true));
+          instrucao.textContent = `O apresentador abriu a porta ${this.aberta + 1}: tem uma cabra! Queres mudar de porta?`;
+          manter.hidden = mudar.hidden = false;
+        }),
+      );
+
+      const decidir = (e: Estrategia) => {
+        if (e === 'mudar') this.escolha = [0, 1, 2].find((k) => k !== this.escolha && k !== this.aberta)!;
+        [0, 1, 2].forEach(abrir);
+        portas[this.escolha].dataset.estado = 'final';
+        const ganhou = this.escolha === this.carro;
+        this.registar(e, ganhou, 1);
+        instrucao.textContent = ganhou ? 'Ganhaste o carro! 🎉' : 'Calhou-te uma cabra…';
+        manter.hidden = mudar.hidden = true;
+        novo.hidden = false;
+      };
+      manter.addEventListener('click', () => decidir('manter'));
+      mudar.addEventListener('click', () => decidir('mudar'));
+      novo.addEventListener('click', reiniciar);
+
+      this.querySelector('.simular')!.addEventListener('click', () => {
+        for (const e of ['manter', 'mudar'] as Estrategia[]) {
+          let ganhos = 0;
+          for (let j = 0; j < 1000; j++) {
+            const carro = Math.floor(Math.random() * 3);
+            const escolha = Math.floor(Math.random() * 3);
+            // Mudar ganha exatamente quando a primeira escolha estava errada
+            if ((e === 'manter') === (escolha === carro)) ganhos++;
+          }
+          this.registar(e, ganhos, 1000, true);
+        }
+      });
+
+      reiniciar();
+    }
+
+    registar(e: Estrategia, ganhos: number | boolean, jogos: number, lote = false) {
+      const p = this.placar[e];
+      p[0] += jogos;
+      p[1] += lote ? (ganhos as number) : ganhos ? 1 : 0;
+      const celulas = this.querySelectorAll(`tr[data-e="${e}"] td`);
+      celulas[0].textContent = p[0].toLocaleString('pt-PT');
+      celulas[1].textContent = p[1].toLocaleString('pt-PT');
+      celulas[2].textContent = `${((100 * p[1]) / p[0]).toLocaleString('pt-PT', { maximumFractionDigits: 1 })} %`;
+    }
+  }
+
+  customElements.define('maismat-monty', MontyHall);
+</script>
+
+<style>
+  .monty { display: block; background: var(--dourado-claro); border-radius: var(--raio); padding: 1.25rem; margin: 2rem 0; text-align: center; }
+  .instrucao { font-weight: 600; min-height: 2.8em; margin: 0 0 0.75rem; }
+  .portas { display: flex; justify-content: center; gap: 0.75rem; }
+  .porta {
+    width: 5.5rem; height: 8rem; border-radius: 6px 6px 0 0; border: 3px solid var(--azul-escuro);
+    background: linear-gradient(#5aa9e6, #2f7cc0); color: #fff; cursor: pointer; display: grid; place-items: center; font: 700 1.6rem var(--f-ui);
+    position: relative;
+  }
+  .porta:disabled { cursor: default; }
+  .porta[data-estado='escolhida'] { outline: 4px solid var(--dourado); outline-offset: 2px; }
+  .porta[data-estado='aberta'], .porta[data-estado='final'] { background: var(--superficie); color: var(--texto); }
+  .porta[data-estado='final'] { outline: 4px solid var(--verde); outline-offset: 2px; }
+  .premio { font-size: 2.4rem; position: absolute; bottom: 0.6rem; }
+  .porta[data-estado='aberta'] .num, .porta[data-estado='final'] .num { position: absolute; top: 0.3rem; font-size: 1rem; }
+  .acoes { display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0; min-height: 2.4rem; flex-wrap: wrap; }
+  .acoes button, .simular {
+    font: inherit; font-weight: 600; font-size: 0.9rem; padding: 0.45rem 1rem; border-radius: 6px; border: 0; background: var(--azul); color: #fff; cursor: pointer;
+  }
+  .simular { background: none; border: 1px solid var(--linha); color: var(--texto); margin-top: 0.75rem; }
+  .placar { margin: 0 auto; border-collapse: collapse; font-size: 0.85rem; }
+  .placar th, .placar td { padding: 0.3rem 0.7rem; border-bottom: 1px solid var(--linha); }
+  .placar thead th { font-weight: 600; color: var(--texto-suave); }
+  @media print { .monty { display: none; } }
+</style>

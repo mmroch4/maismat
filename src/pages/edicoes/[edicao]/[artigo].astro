@@ -1,0 +1,69 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { artigosDe, mesAno, rotuloEdicao, slugArtigo, type Artigo } from '../../../lib/edicoes';
+import { SECCOES } from '../../../lib/seccoes';
+
+export async function getStaticPaths() {
+  const artigos = await getCollection('artigos');
+  return artigos.map((artigo) => ({
+    params: { edicao: artigo.data.edicao.id, artigo: slugArtigo(artigo) },
+    props: { artigo },
+  }));
+}
+
+const { artigo } = Astro.props as { artigo: Artigo };
+const edicao = (await getEntry(artigo.data.edicao))!;
+const { Content } = await render(artigo);
+const irmaos = await artigosDe(edicao.id);
+const i = irmaos.findIndex((a) => a.id === artigo.id);
+const [anterior, seguinte] = [irmaos[i - 1], irmaos[i + 1]];
+const { titulo, seccao, autores, nivel, citacao, resumo } = artigo.data;
+const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
+---
+
+<Base titulo={titulo} descricao={resumo}>
+  <article class="contentor">
+    <header>
+      <p class="ui migalhas">
+        <a href={`/edicoes/${edicao.id}/`}>{rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span></a>
+      </p>
+      <a class="etiqueta" href={`/seccoes/${seccao}/`}>+ {SECCOES[seccao]}</a>
+      <h1>{titulo}</h1>
+      {(autores || nivel) && (
+        <p class="ui meta">
+          {autores && <span>{autores.join(', ')}</span>}
+          {nivel && <span class="nivel">{nivel}</span>}
+        </p>
+      )}
+      {citacao && <blockquote class="citacao">“{citacao.texto}”<footer>— {citacao.autor}</footer></blockquote>}
+    </header>
+
+    <div class="prosa">
+      <Content />
+    </div>
+
+    <nav class="ui navegacao nao-imprimir" aria-label="Artigos desta edição">
+      {anterior ? <a href={url(anterior)}><small>← Anterior</small>{anterior.data.titulo}</a> : <span></span>}
+      {seguinte && <a class="seg" href={url(seguinte)}><small>Seguinte →</small>{seguinte.data.titulo}</a>}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  article { max-width: calc(var(--leitura) + 2rem); }
+  header { padding-top: 2.5rem; margin-bottom: 2rem; }
+  .migalhas { font-size: 0.85rem; margin: 0 0 1rem; }
+  .migalhas a { color: var(--texto-suave); text-decoration: none; }
+  .cap { text-transform: capitalize; }
+  h1 { font-size: clamp(2rem, 6vw, 2.9rem); margin: 0.6rem 0 0.5rem; }
+  .meta { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; color: var(--texto-suave); font-size: 0.9rem; margin: 0; }
+  .nivel { background: var(--laranja); color: #fff; font-weight: 600; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 4px; }
+  .citacao { font-family: var(--f-titulo); font-style: italic; font-size: 1.15rem; margin: 1.5rem 0 0; padding-left: 1rem; border-left: 3px solid var(--dourado); }
+  .citacao footer { font-family: var(--f-ui); font-style: normal; font-size: 0.85rem; color: var(--texto-suave); margin-top: 0.3rem; }
+  .navegacao { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 4rem; border-top: 1px solid var(--linha); padding-top: 1.25rem; }
+  .navegacao a { display: grid; gap: 0.15rem; color: var(--texto); text-decoration: none; font-weight: 600; }
+  .navegacao a:hover { color: var(--destaque); }
+  .navegacao small { font-weight: 400; color: var(--texto-suave); }
+  .seg { text-align: right; }
+</style>

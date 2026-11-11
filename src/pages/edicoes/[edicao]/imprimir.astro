@@ -1,0 +1,61 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { artigosDe, mesAno, rotuloEdicao, type Edicao } from '../../../lib/edicoes';
+import { SECCOES } from '../../../lib/seccoes';
+
+export async function getStaticPaths() {
+  const edicoes = await getCollection('edicoes', (e) => e.data.convertida);
+  return edicoes.map((edicao) => ({ params: { edicao: edicao.id }, props: { edicao } }));
+}
+
+const { edicao } = Astro.props as { edicao: Edicao };
+const artigos = await Promise.all(
+  (await artigosDe(edicao.id)).map(async (a) => ({ a, Content: (await render(a)).Content })),
+);
+---
+
+<Base titulo={`${rotuloEdicao(edicao)} — versão para imprimir`}>
+  <div class="contentor impressao">
+    <p class="ui nao-imprimir dica">
+      Usa <kbd>Ctrl</kbd>+<kbd>P</kbd> (ou <kbd>⌘</kbd>+<kbd>P</kbd>) e escolhe “Guardar como PDF”.
+      <button type="button" onclick="window.print()">Imprimir agora</button>
+    </p>
+    <header class="folha-rosto">
+      <p class="ui">Agrupamento de Escolas Domingos Sequeira</p>
+      <h1>+MAT</h1>
+      <p class="sub">Jornal de Matemática · {rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span></p>
+      <p class="ui">Direção e edição: {edicao.data.direcao.join(' e ')}</p>
+      <ol class="ui">{artigos.map(({ a }) => <li>{SECCOES[a.data.seccao]} — {a.data.titulo}</li>)}</ol>
+    </header>
+    {artigos.map(({ a, Content }) => (
+      <section class="artigo">
+        <span class="etiqueta">+ {SECCOES[a.data.seccao]}</span>
+        <h2>{a.data.titulo}</h2>
+        {a.data.autores && <p class="ui autores">{a.data.autores.join(', ')}</p>}
+        <div class="prosa"><Content /></div>
+      </section>
+    ))}
+    <p class="ui creditos">+MAT · maismat.miguelrocha.dev · Versão digital: Miguel Rocha</p>
+  </div>
+</Base>
+
+<style>
+  .impressao { max-width: calc(var(--leitura) + 2rem); }
+  .dica { background: var(--dourado-claro); padding: 0.75rem 1rem; border-radius: var(--raio); font-size: 0.9rem; margin-top: 2rem; }
+  .dica button { margin-left: 0.5rem; font: inherit; font-weight: 600; background: var(--azul); color: #fff; border: 0; border-radius: 6px; padding: 0.3rem 0.8rem; cursor: pointer; }
+  .folha-rosto { text-align: center; padding: 3rem 0; border-bottom: 3px solid var(--dourado); }
+  .folha-rosto h1 { font-size: 5rem; margin: 0.5rem 0; }
+  .folha-rosto ol { text-align: left; display: inline-block; font-size: 0.9rem; }
+  .sub { font-family: var(--f-titulo); font-size: 1.3rem; }
+  .cap { text-transform: capitalize; }
+  .artigo { padding-top: 2.5rem; }
+  .artigo h2 { font-size: 2rem; margin: 0.5rem 0; }
+  .autores { color: var(--texto-suave); font-size: 0.9rem; }
+  .creditos { text-align: center; color: var(--texto-suave); font-size: 0.8rem; margin-top: 4rem; }
+  @media print {
+    .folha-rosto { break-after: page; }
+    .artigo { break-before: page; padding-top: 0; }
+    .artigo :global(figure), .artigo :global(img), .artigo :global(.desafio) { break-inside: avoid; }
+  }
+</style>

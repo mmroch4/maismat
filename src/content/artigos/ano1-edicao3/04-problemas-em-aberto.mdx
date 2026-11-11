@@ -1,0 +1,45 @@
+---
+titulo: Problemas em aberto — a conjetura de Collatz
+edicao: ano1-edicao3
+seccao: curiosidades
+ordem: 4
+resumo: Os problemas do milénio e uma conjetura tão simples que qualquer pessoa a entende — mas que ninguém conseguiu demonstrar.
+---
+import Collatz from '../../../components/Collatz.astro';
+
+Para além dos resultados matemáticos notáveis que vão surgindo, existem alguns problemas que permanecem em aberto, sem solução.
+
+No ano 2000, o Instituto Clay de Matemáticas de Massachusetts (EUA) elegeu sete destes problemas e instituiu um prémio de 1 milhão de dólares para a resolução de cada um deles. Estes problemas ficaram conhecidos pelos **problemas do milénio**. Até à data, apenas um deles foi resolvido, em 2003: “A conjetura de Poincaré”. No entanto, o matemático russo que o solucionou, Grigori Perelman, prescindiu deste prémio milionário. Por este feito notável, foi-lhe, ainda, atribuída a medalha Fields, que também recusou.
+
+*Para saberes mais sobre este assunto, podes consultar [matematicasimplificada.com/problemas-do-milenio](https://matematicasimplificada.com/problemas-do-milenio/).*
+
+Apresentamos-te, em seguida, um problema aparentemente muito simples, mas que ainda ninguém conseguiu demonstrar, desde há quase 100 anos…
+
+## A conjetura (hipótese) de Collatz
+
+O problema que te apresentamos foi inventado em 1937 pelo matemático alemão Lothar Collatz (1910–1990) e tem na sua base apenas duas regras. Escolhe-se um número natural qualquer $N$ (1, 2, 3, …):
+
+- se o número $N$ for par, divida-se por 2: $N \to N/2$;
+- se o número $N$ for ímpar, multiplique-se por 3 e adicione-se 1: $N \to 3N + 1$.
+
+Repita-se o procedimento com o número obtido, e o mesmo com o seguinte, e assim sucessivamente.
+
+**A Conjetura de Collatz afirma que, fazendo estas operações, qualquer número termina no 1 e, a partir daí, entra no ciclo $1 \to 4 \to 2 \to 1$.**
+
+Por exemplo, se utilizarmos o número $N = 17$, ele evoluirá da seguinte maneira:
+
+$$
+17 \to 52 \to 26 \to 13 \to 40 \to 20 \to 10 \to 5 \to 16 \to 8 \to 4 \to 2 \to 1 \to 4 \to 2 \to 1 \ldots
+$$
+
+Chegamos ao número 1 e, daí em diante, os números que se obtêm são 1, 4, 2, 1 para sempre!
+
+**Desafio:** repete o procedimento com outros números à tua escolha e testa a hipótese de Collatz. Experimenta o 27!
+
+<Collatz />
+
+Este é o tipo de problema que se presta a ser estudado por computadores, que nos permitem verificar que a hipótese é verdadeira para números com uma ordem de grandeza já muito considerável. Contudo, esta conjetura poderá ser falsa para algum número superior! Por isso, o problema continua por demonstrar!
+
+Parece fácil, não é? De facto, muitos foram os cientistas que passaram anos, décadas, a tentar resolvê-lo. Inutilmente, até hoje!
+
+Durante a guerra fria, até se dizia que o problema tinha sido inventado pelos soviéticos para atrasar a ciência nos EUA… Há quem diga que a Matemática ainda não está pronta para solucionar problemas destes!

@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { SECCOES, type Seccao } from '../../lib/seccoes';
+
+const artigos = await getCollection('artigos');
+const contagem = (s: Seccao) => artigos.filter((a) => a.data.seccao === s).length;
+const lista = (Object.keys(SECCOES) as Seccao[]).filter((s) => contagem(s) > 0);
+---
+
+<Base titulo="Secções">
+  <div class="contentor">
+    <h1>Secções</h1>
+    <ul class="ui">
+      {lista.map((s) => (
+        <li><a href={`/seccoes/${s}/`}>+ {SECCOES[s]}</a> <span>{contagem(s)}</span></li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  h1 { font-size: 2.5rem; margin-top: 2.5rem; }
+  ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0.75rem; }
+  li { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1rem; background: var(--superficie); border: 1px solid var(--linha); border-left: 4px solid var(--dourado); border-radius: 6px; }
+  a { font-weight: 600; color: var(--texto); text-decoration: none; }
+  span { color: var(--texto-suave); font-size: 0.85rem; }
+</style>

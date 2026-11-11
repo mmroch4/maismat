@@ -1,0 +1,117 @@
+---
+titulo: Resoluções dos desafios da edição anterior
+edicao: ano1-edicao3
+seccao: resolucoes
+ordem: 12
+resumo: Os números sneaky, o caracol, os conjuntos da Genoveva, os triângulos, as moedas falsas e a Banca Francesa.
+---
+
+## Curiosidades numéricas
+
+### 1) “Sneaky”
+
+*Extraído de “Mathematics in School”*
+
+Seja um número qualquer de dois algarismos, $ab$, por exemplo 95. Calcula a diferença positiva entre os quadrados dos seus algarismos. Se neste cálculo o resultado for outro número de dois algarismos, repete-se o processo. Se for um número de um algarismo, para-se. Quando este último algarismo for zero, então obtenho um “*sneaky*”.
+
+- Determina os *sneakies* existentes entre os números 10 e 99. **Resposta: 22.**
+- Qual é o número que demora mais passos a chegar a zero — o mais *sneaky*? **Resposta: é o 70, que precisa de 4 etapas.**
+
+Passemos à explicação destes resultados. Nesta resolução, começámos por construir a tabela com os números de 10 a 99, organizada em 9 linhas e 10 colunas. À medida que íamos fazendo os cálculos, fomos assinalando os *sneakys* e os não *sneakys* na tabela.
+
+Comecemos por observar que:
+
+- se $a = b$, o número é *sneaky* (visto que os quadrados dos algarismos são iguais). Logo, são *sneaky*: 11, 22, …, 99. Isto dá-nos todos os números dessa diagonal;
+- se $ab$ for *sneaky*, então $ba$ também o é. Podemos assinalar esses dois números na tabela;
+- nos cálculos que efetuamos, passamos por resultados intermédios. Se o número em análise for *sneaky*, todos esses números intermédios o são, também. Conclusão semelhante se tira, caso o número não seja *sneaky*.
+
+Por exemplo, $15 \to 25 - 1 = 24 \to 16 - 4 = 12 \to 4 - 1 = 3$. Concluímos que 15 não é *sneaky* e também não o são o 24 e o 12. Podemos cortar esses dois números na tabela (bem como o 42 e o 21).
+
+Então basta averiguar a condição para a parte da tabela acima da diagonal (ou a de baixo) e os números da coluna da esquerda: 10, 20, 30, …, 90. A negrito, os 22 números *sneaky*:
+
+| | | | | | | | | | |
+|-|-|-|-|-|-|-|-|-|-|
+| 10 | **11** | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 |
+| 20 | 21 | **22** | 23 | 24 | 25 | 26 | 27 | 28 | **29** |
+| 30 | 31 | 32 | **33** | 34 | 35 | 36 | 37 | **38** | 39 |
+| 40 | 41 | 42 | 43 | **44** | 45 | 46 | **47** | 48 | **49** |
+| 50 | 51 | 52 | 53 | 54 | **55** | **56** | 57 | 58 | **59** |
+| 60 | 61 | 62 | 63 | 64 | **65** | **66** | 67 | 68 | 69 |
+| **70** | 71 | 72 | 73 | **74** | 75 | 76 | **77** | 78 | 79 |
+| 80 | 81 | 82 | **83** | 84 | 85 | 86 | 87 | **88** | 89 |
+| 90 | 91 | **92** | 93 | **94** | **95** | 96 | 97 | 98 | **99** |
+
+Por exemplo, o 70 é o mais *sneaky*: $70 \to 49 \to 81 - 16 = 65 \to 36 - 25 = 11 \to 0$.
+
+## Desafios
+
+### 1) O caracol
+
+*Professora Maria do Céu Faria*
+
+1.º dia: $+2 - 1 = +1$ metro; em cada dia avança 1 metro. Logo, no fim do 8.º dia já subiu 8 metros. No 9.º dia, ao subir os dois metros, atinge o topo (já não escorrega…).
+
+**Resposta:** ao fim de **9 dias** o caracol chega ao cimo do muro.
+
+### 2) Contando conjuntos (OPM 2023)
+
+A Genoveva quer escolher um conjunto de três números inteiros diferentes, de 1 a 9, cujo produto seja divisível por 4 mas não seja divisível por 8.
+
+- Os 3 números não podem ser todos ímpares (o produto seria ímpar).
+- Os três números não podem ser todos pares (o produto seria divisível por 8).
+
+Há duas situações possíveis:
+
+- **2 números ímpares e um par** (o algarismo par terá de ser o 4): $\{4,1,3\}$, $\{4,1,5\}$, $\{4,1,7\}$, $\{4,1,9\}$, $\{4,3,5\}$, $\{4,3,7\}$, $\{4,3,9\}$, $\{4,5,7\}$, $\{4,5,9\}$, $\{4,7,9\}$;
+- **2 números pares e um ímpar** (nenhum dos pares pode ser divisível por 4, logo terão de ser 2 e 6): $\{2,6,1\}$, $\{2,6,3\}$, $\{2,6,5\}$, $\{2,6,7\}$, $\{2,6,9\}$.
+
+**Resposta:** a Genoveva pode escolher **15 conjuntos**.
+
+### 3) Número de triângulos
+
+*Adaptado de Atividades matemáticas*
+
+Com os 9 pontos do tabuleiro, podemos fazer **76** triângulos. E se o tabuleiro tiver 4 × 4 = 16 pontos serão **516**:
+
+$$
+516 = {}^{16}C_3 - 44, \qquad 44 = 10 \times 4 + 4,
+$$
+
+onde 10 é o número de linhas, colunas e diagonais com 4 pontos (cada uma dá ${}^{4}C_3 = 4$ conjuntos de 3 pontos alinhados) e 4 é o número de diagonais com 3 pontos.
+
+**Nota:** ${}^{16}C_3 = 560$ é o número de conjuntos de 3 pontos que se podem formar de entre os 16.
+
+### 4) Moedas falsas (I)
+
+*José Paulo Viana, Desafios*
+
+Temos oito moedas rigorosamente iguais na sua aparência exterior. No entanto, uma delas é falsa e **pesa menos** do que as outras sete. Fazendo **apenas duas pesagens** numa balança de pratos, conseguimos descobrir a moeda falsa do seguinte modo. Pesam-se dois grupos de 3 moedas, deixando duas à parte:
+
+- se os pratos equilibrarem, a moeda falsa está no grupo das duas que não foram pesadas. Pesam-se, então, essas moedas (2.ª pesagem), uma em cada prato: a mais leve é a que fica em cima;
+- se os pratos não equilibrarem, a moeda mais leve é uma das três que estão no prato que fica em cima. Pesam-se duas delas, uma em cada prato (2.ª pesagem) e deixa-se uma de parte; se os pratos equilibrarem, a moeda falsa é a que ficou por pesar; se os pratos não equilibrarem, é a que está no prato que fica em cima.
+
+### 5) Moedas falsas (II)
+
+*José Paulo Viana, Desafios*
+
+Temos **10 sacos** com 10 moedas cada um. Num dos sacos só há moedas falsas, com 9 gramas cada, e nos outros nove só moedas verdadeiras, que pesam 10 gramas cada. **Apenas com uma pesagem**, podemos descobrir qual é o saco das moedas falsas, pesando o seguinte grupo de moedas: uma moeda do saco 1, duas moedas do saco 2, três do saco 3, e assim sucessivamente, acabando com 10 moedas do saco 10, num total de **55 moedas**.
+
+Se o saco falso for o 3, por exemplo, o conjunto tem 3 moedas mais leves, pelo que pesará $550 - 3 = 547$ g. Assim, o número do saco será dado pela diferença entre 550 g e o peso do conjunto das moedas.
+
+### 6) A Banca Francesa
+
+No jogo de Casino “Banca Francesa”, o *croupier* lança 3 dados cúbicos e equilibrados. Cada jogador tem três apostas à escolha: a Série Grande (soma 14, 15 ou 16), a Série Pequena (soma 5, 6 ou 7) e a Série dos Ases (soma 3). Não saindo estes números, a jogada é considerada nula, sendo repetida.
+
+**Resolução.** Lançando dois dados, as somas que podemos obter são todos os números inteiros entre 2 e 12. Uma vez que, neste jogo, são lançados 3 dados, temos de pensar na soma destes. Se à soma dos dois primeiros acrescentarmos o valor do 3.º dado, constatamos que, <u>no caso da Série Grande</u>:
+
+- para a soma dos três dados ser 14, a soma dos dois primeiros valores poderá ser 12 (12 + 2), 11 (11 + 3), 10 (10 + 4), 9 (9 + 5) e 8 (8 + 6) — são 1 + 2 + 3 + 4 + 5 = **15** situações;
+- para a soma dos três dados ser 15, a soma dos dois primeiros valores poderá ser 12 (12 + 3), 11 (11 + 4), 10 (10 + 5) e 9 (9 + 6) — **10** situações;
+- para a soma dos três dados ser 16, a soma dos dois primeiros valores poderá ser 12 (12 + 4), 11 (11 + 5) e 10 (10 + 6) — **6** situações.
+
+Temos **31 situações possíveis** que satisfazem a “Série Grande”. Raciocínio análogo podemos fazer com as somas 5, 6 e 7, o que nos dá, igualmente, 31 situações. Ora, a Série dos Ases equivale a obter soma 3, o que acontece apenas **num caso**, $(1, 1, 1)$.
+
+Uma vez que se repete a jogada se não sair nenhuma destas situações, concluímos que existem apenas 63 ($31 + 31 + 1$) resultados válidos neste jogo, o que se traduz em 63 resultados “possíveis” em cada jogada.
+
+Assim, a probabilidade de ganhar com a série Grande é igual à de ganhar com a Pequena, $31/63$, e a probabilidade de ganhar com a série Ases é $1/63$. Verificamos, ainda, que a probabilidade de ganhar com as Séries Grande ou Pequena é 31 vezes superior à de ganhar com a Série dos Ases; a probabilidade de ganhar com a Série dos Ases é 62 vezes inferior à de ganhar com as outras duas séries juntas (Grande ou Pequena).
+
+<p class="nota"><strong>Boas férias!</strong> No próximo ano letivo estaremos de volta!</p>

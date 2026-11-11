@@ -1,0 +1,48 @@
+---
+titulo: Triângulo de Pascal e restos
+edicao: ano1-edicao2
+seccao: combinatoria
+ordem: 3
+autores: [Pedro Lebre e Luís Silva (12.º E), Kaynan Antas (10.º J), Lara Graça (12.º F), Ricardo Carrondo (10.º J)]
+resumo: Os alunos aceitaram o desafio da edição anterior e pintaram o triângulo de Pascal com os restos da divisão por 3.
+---
+import TrianguloPascal from '../../../components/TrianguloPascal.astro';
+import Desafio from '../../../components/Desafio.astro';
+
+**Na edição anterior** vimos algumas das propriedades do triângulo de Pascal, nomeadamente que há uma simetria, o que facilita a construção do triângulo: em cada linha, os números que são equidistantes dos extremos são iguais.
+
+Também foi lançado o desafio de construir um triângulo, escolher 3 cores para pintar os elementos do triângulo de acordo com o resto da sua divisão por 3 e, por fim, descobrir um padrão nessa construção.
+
+## Como definir esse padrão?
+
+Repara que, por exemplo, se somarmos dois números divisíveis por 3 (resto 0) obtemos também um número divisível por 3; se somarmos um número com resto 1 com outro com resto 2, também obtemos um número divisível por 3; se somarmos um número divisível por 3 com outro que dê resto 1 ou 2 na divisão por 3, a soma dos dois mantém o resto deste segundo elemento (1 ou 2); etc.
+
+Analisando as situações possíveis, **podemos estabelecer uma regra para pintar o triângulo usando apenas as cores!**
+
+Lançámos o desafio a alguns alunos para que experimentassem este algoritmo. Os alunos aceitaram-no de imediato, revelando muito interesse no projeto. Foi-lhes dado o algoritmo das cores e papel com grelha hexagonal para executarem o desenho. Alguns alunos escolheram utilizar outras cores, adequando-as ao algoritmo. Apresentam-se aqui três dos trabalhos por eles realizados.
+
+A título de exemplo da aplicação desta regra/padrão, apresenta-se a explicação do trabalho dos alunos **Pedro Lebre e Luís Silva, do 12.º E**. Estes alunos optaram por utilizar amarelo, verde e vermelho. No algoritmo, o verde a corresponder ao resto 1, o amarelo ao resto 2 e o vermelho ao resto 0.
+
+<div class="galeria">
+
+![Triângulo de Pascal pintado com os restos da divisão por 3](./img/pascal-mod3-pedro-luis.jpg "Pedro Lebre e Luís Silva (12.º E)")
+
+![Triângulo de Pascal pintado em tons de verde e vermelho](./img/pascal-mod3-kaynan-lara.jpg "Kaynan Antas (10.º J) e Lara Graça (12.º F)")
+
+![Triângulo de Pascal pintado em vermelho, amarelo e preto](./img/pascal-mod3-ricardo.jpg "Ricardo Carrondo (10.º J)")
+
+</div>
+
+Experimenta aqui com o divisor 3 e depois com 4 e 5:
+
+<TrianguloPascal divisores={[3, 4, 5, 2, 7]} />
+
+<Desafio titulo="E com 4 e 5 cores?">
+
+Constrói um triângulo, escolhe 4 cores, e vai pintando os elementos de acordo com o resto da sua divisão por 4. Vês algum padrão? Tenta definir a regra para colorir o triângulo.
+
+Repete o procedimento para 5 cores.
+
+Repara que, no caso das 3 cores, foi necessário definir 6 combinações possíveis. Nos casos que te propomos há um número maior de possibilidades! Quais são? É o desafio que aqui deixamos!
+
+</Desafio>

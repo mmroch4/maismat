@@ -1,0 +1,201 @@
+---
+/**
+ * Desafio com verificação de resposta no browser.
+ *
+ * Quem escreve o artigo coloca a resposta em texto simples (`resposta="31"`);
+ * no build só é publicado o hash SHA-256, por isso a resposta não aparece no HTML.
+ * Várias respostas aceites separam-se com "|" (ex.: "31|trinta e um").
+ * Com `opcoes`, o desafio passa a escolha múltipla.
+ * Com `casas`, a resposta é tratada como número e arredondada a esse número de casas decimais
+ * (ex.: `resposta="56.54" casas={1}` aceita 56,5 e 56,54).
+ */
+import { createHash } from 'node:crypto';
+
+interface Props {
+  titulo: string;
+  numero?: number | string;
+  resposta?: string;
+  opcoes?: string[];
+  unidade?: string;
+  fonte?: string;
+  casas?: number;
+}
+
+const { titulo, numero, resposta, opcoes, unidade, fonte, casas } = Astro.props;
+
+// Tem de ser igual à função `normalizar` no script abaixo.
+const normalizar = (s: string, casas?: number) => {
+  const t = s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/,/g, '.').replace(/\s+/g, '');
+  if (casas === undefined) return t;
+  const n = parseFloat(t);
+  return Number.isNaN(n) ? t : n.toFixed(casas);
+};
+
+const id = `desafio-${createHash('sha1').update(titulo).digest('hex').slice(0, 8)}`;
+const hashes = resposta
+  ? resposta.split('|').map((r) => createHash('sha256').update(id + normalizar(r, casas)).digest('hex'))
+  : [];
+const temResolucao = Astro.slots.has('resolucao');
+---
+
+<maismat-desafio class="desafio" id={id} data-hashes={hashes.join(',')} data-casas={casas}>
+  <header>
+    <span class="ui rotulo">Desafio{numero !== undefined && ` ${numero}`}</span>
+    <h3>{titulo}</h3>
+  </header>
+
+  <div class="enunciado"><slot /></div>
+  {fonte && <p class="fonte ui">{fonte}</p>}
+
+  {hashes.length > 0 && (
+    <form class="ui resposta nao-imprimir">
+      {opcoes ? (
+        <fieldset>
+          <legend>Escolhe a tua resposta</legend>
+          {opcoes.map((o) => (
+            <label class="opcao">
+              <input type="radio" name={`${id}-r`} value={o} required />
+              <span>{o}</span>
+            </label>
+          ))}
+        </fieldset>
+      ) : (
+        <label>
+          <span>A tua resposta</span>
+          <span class="campo">
+            <input type="text" name="r" inputmode="text" autocomplete="off" required />
+            {unidade && <span class="unidade">{unidade}</span>}
+          </span>
+        </label>
+      )}
+      <button type="submit">Verificar</button>
+      <p class="feedback" role="status" aria-live="polite"></p>
+    </form>
+  )}
+
+  {temResolucao ? (
+    <details class="resolucao">
+      <summary class="ui">{hashes.length ? 'Ver resolução' : 'Resolução'}</summary>
+      <div><slot name="resolucao" /></div>
+    </details>
+  ) : (
+    <p class="ui pendente">A resolução será publicada na próxima edição. Envia a tua resposta à equipa do +MAT!</p>
+  )}
+</maismat-desafio>
+
+<script>
+  const normalizar = (s: string, casas?: number) => {
+    const t = s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/,/g, '.').replace(/\s+/g, '');
+    if (casas === undefined) return t;
+    const n = parseFloat(t);
+    return Number.isNaN(n) ? t : n.toFixed(casas);
+  };
+
+  async function sha256(texto: string) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const chave = (id: string) => `maismat:${id}`;
+
+  class Desafio extends HTMLElement {
+    tentativas = 0;
+
+    connectedCallback() {
+      const form = this.querySelector('form');
+      if (!form) return;
+      const hashes = (this.dataset.hashes ?? '').split(',');
+      const casas = this.dataset.casas ? Number(this.dataset.casas) : undefined;
+      const feedback = form.querySelector<HTMLElement>('.feedback')!;
+
+      try {
+        if (localStorage.getItem(chave(this.id)) === 'ok') this.marcarResolvido(feedback, true);
+      } catch {}
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const valor = new FormData(form).values().next().value as string | undefined;
+        if (!valor?.trim()) return;
+        const certo = hashes.includes(await sha256(this.id + normalizar(valor, casas)));
+        this.tentativas++;
+        if (certo) {
+          this.marcarResolvido(feedback, false);
+          try { localStorage.setItem(chave(this.id), 'ok'); } catch {}
+        } else {
+          this.dataset.estado = 'errado';
+          feedback.textContent =
+            this.tentativas < 3 ? 'Ainda não. Tenta outra vez!' : 'Ainda não. Se quiseres, espreita a resolução.';
+        }
+      });
+    }
+
+    marcarResolvido(feedback: HTMLElement, anterior: boolean) {
+      this.dataset.estado = 'certo';
+      feedback.textContent = anterior ? 'Já resolveste este desafio. ✓' : 'Certo! Muito bem. ✓';
+      const det = this.querySelector('details');
+      if (det && !anterior) det.open = true;
+    }
+  }
+
+  customElements.define('maismat-desafio', Desafio);
+</script>
+
+<style>
+  .desafio {
+    display: block;
+    background: var(--superficie);
+    border: 1px solid var(--linha);
+    border-top: 4px solid var(--verde);
+    border-radius: var(--raio);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  header { margin-bottom: 0.75rem; }
+  .rotulo { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--verde); }
+  h3 { margin: 0.15rem 0 0; font-size: 1.3rem; }
+  .enunciado > :global(* + *) { margin-top: 0.8em; }
+  .enunciado :global(p) { margin-bottom: 0; }
+  .fonte { font-size: 0.8rem; color: var(--texto-suave); text-align: right; font-style: italic; }
+
+  .resposta { margin-top: 1.25rem; display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; font-size: 0.95rem; }
+  .resposta > label { display: grid; gap: 0.3rem; }
+  .campo { display: flex; align-items: center; gap: 0.4rem; }
+  input[type='text'] {
+    font: inherit;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--linha);
+    border-radius: 6px;
+    background: var(--fundo);
+    color: var(--texto);
+    width: 12rem;
+  }
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 0.4rem; width: 100%; }
+  legend { margin-bottom: 0.4rem; }
+  .opcao { display: flex; gap: 0.5rem; align-items: baseline; cursor: pointer; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 0.5rem 1.1rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--azul);
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: var(--azul-escuro); }
+  .feedback { margin: 0; width: 100%; min-height: 1.4em; font-weight: 600; }
+  [data-estado='certo'] .feedback { color: var(--ok); }
+  [data-estado='errado'] .feedback { color: var(--erro); }
+  [data-estado='certo'] { border-top-color: var(--ok); }
+
+  .resolucao { margin-top: 1rem; border-top: 1px dashed var(--linha); padding-top: 0.75rem; }
+  .resolucao summary { cursor: pointer; font-weight: 600; color: var(--destaque); font-size: 0.95rem; }
+  .resolucao > div { margin-top: 0.75rem; }
+  .resolucao :global(p) { margin-bottom: 0; }
+  .resolucao > div > :global(* + *) { margin-top: 0.8em; }
+  .pendente { font-size: 0.85rem; color: var(--texto-suave); margin: 1rem 0 0; }
+
+  @media print {
+    .resolucao:not([open]) { display: none; }
+  }
+</style>

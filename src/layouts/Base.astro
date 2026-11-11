@@ -1,0 +1,98 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  titulo?: string;
+  descricao?: string;
+}
+
+const { titulo, descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.' } = Astro.props;
+const tituloCompleto = titulo ? `${titulo} · +MAT` : '+MAT · Jornal de Matemática';
+const caminho = Astro.url.pathname;
+const nav = [
+  { href: '/edicoes/', texto: 'Edições' },
+  { href: '/seccoes/', texto: 'Secções' },
+  { href: '/seccoes/desafios/', texto: 'Desafios' },
+  { href: '/sobre/', texto: 'Sobre' },
+];
+---
+
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descricao} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descricao} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+  <body>
+    <header class="topo nao-imprimir">
+      <div class="contentor topo-linha">
+        <a href="/" class="marca" aria-label="+MAT, página inicial">+MAT</a>
+        <nav class="ui" aria-label="Principal">
+          {nav.map((l) => (
+            <a href={l.href} aria-current={caminho.startsWith(l.href) ? 'page' : undefined}>{l.texto}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="rodape nao-imprimir">
+      <div class="contentor ui">
+        <p>
+          <strong>+MAT — Jornal de Matemática</strong> do Agrupamento de Escolas Domingos Sequeira.
+          Direção e edição de Rosa Bértolo e Carla Nunes.
+        </p>
+        <p>
+          Versão digital desenvolvida por <a href="https://miguelrocha.dev">Miguel Rocha</a> e disponibilizada
+          gratuitamente à escola. <a href="/sobre/">Créditos</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .topo {
+    background: var(--superficie);
+    border-bottom: 3px solid var(--dourado);
+  }
+  .topo-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-block: 0.6rem;
+  }
+  .marca {
+    font-family: var(--f-titulo);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--texto);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  nav { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 0.95rem; }
+  nav a { color: var(--texto-suave); text-decoration: none; padding-block: 0.25rem; }
+  nav a:hover, nav a[aria-current] { color: var(--texto); box-shadow: inset 0 -2px var(--dourado); }
+
+  main { padding-bottom: 4rem; }
+
+  .rodape {
+    border-top: 1px solid var(--linha);
+    background: var(--superficie);
+    font-size: 0.875rem;
+    color: var(--texto-suave);
+    padding-block: 1.5rem;
+  }
+  .rodape p { margin: 0.35rem 0; }
+</style>

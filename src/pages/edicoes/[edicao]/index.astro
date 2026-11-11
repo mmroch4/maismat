@@ -1,0 +1,86 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../../layouts/Base.astro';
+import { artigosDe, mesAno, rotuloEdicao, slugArtigo, type Edicao } from '../../../lib/edicoes';
+import { SECCOES } from '../../../lib/seccoes';
+
+export async function getStaticPaths() {
+  const edicoes = await getCollection('edicoes');
+  return edicoes.map((edicao) => ({ params: { edicao: edicao.id }, props: { edicao } }));
+}
+
+const { edicao } = Astro.props as { edicao: Edicao };
+const { data, capa, pdf, direcao, citacao, convertida } = edicao.data;
+const artigos = await artigosDe(edicao.id);
+---
+
+<Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`}>
+  <div class="contentor cabecalho">
+    {capa && <Image src={capa} alt="Capa" width={400} class="capa" />}
+    <div>
+      <p class="ui rotulo">{rotuloEdicao(edicao)}</p>
+      <h1 class="cap">{mesAno(data)}</h1>
+      <p class="ui direcao">Direção e edição: {direcao.join(' e ')}</p>
+      {citacao && <blockquote>“{citacao.texto}” <footer>— {citacao.autor}</footer></blockquote>}
+      <p class="ui acoes">
+        {convertida && artigos.length > 0 && <a class="botao" href={`/edicoes/${edicao.id}/${slugArtigo(artigos[0])}/`}>Começar a ler</a>}
+        {convertida && <a class="botao sec" href={`/edicoes/${edicao.id}/imprimir/`}>Versão para imprimir</a>}
+        {pdf && <a class="botao sec" href={pdf} download>PDF original</a>}
+      </p>
+    </div>
+  </div>
+
+  <div class="contentor">
+    {convertida ? (
+      <>
+        <h2 class="titulo-sec">Nesta edição</h2>
+        <ol class="indice">
+          {artigos.map((a, i) => (
+            <li>
+              <span class="num ui">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <span class="etiqueta">{SECCOES[a.data.seccao]}</span>
+                <a href={`/edicoes/${edicao.id}/${slugArtigo(a)}/`}>{a.data.titulo}</a>
+                {a.data.resumo && <p>{a.data.resumo}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </>
+    ) : (
+      pdf && (
+        <>
+          <p class="ui aviso">Esta edição ainda só está disponível no formato original.</p>
+          <object data={pdf} type="application/pdf" class="leitor">
+            <p><a href={pdf}>Abrir o PDF</a></p>
+          </object>
+        </>
+      )
+    )}
+  </div>
+</Base>
+
+<style>
+  .cabecalho { display: grid; grid-template-columns: 14rem 1fr; gap: 2.5rem; align-items: start; padding-top: 2.5rem; }
+  @media (max-width: 40rem) { .cabecalho { grid-template-columns: 1fr; } .capa { max-width: 12rem; } }
+  .capa { width: 100%; height: auto; border-radius: 6px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.12); }
+  .rotulo { font-size: 0.85rem; color: var(--texto-suave); margin: 0; letter-spacing: 0.04em; }
+  h1 { font-size: 2.75rem; margin: 0.2rem 0; }
+  .cap { text-transform: capitalize; }
+  .direcao { font-size: 0.9rem; color: var(--texto-suave); }
+  blockquote { font-style: italic; border-left: 3px solid var(--dourado); padding-left: 1rem; margin: 1.25rem 0; max-width: 36rem; }
+  blockquote footer { font-family: var(--f-ui); font-style: normal; font-size: 0.85rem; color: var(--texto-suave); }
+  .acoes { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .botao { background: var(--azul); color: #fff; text-decoration: none; padding: 0.55rem 1.1rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+  .botao.sec { background: none; color: var(--texto); border: 1px solid var(--linha); }
+  .titulo-sec { border-bottom: 3px solid var(--dourado); padding-bottom: 0.4rem; margin-top: 3rem; }
+  .indice { list-style: none; padding: 0; }
+  .indice li { display: grid; grid-template-columns: 3rem 1fr; gap: 0.75rem; padding: 1.1rem 0; border-bottom: 1px solid var(--linha); }
+  .num { font-size: 1.4rem; font-weight: 300; color: var(--texto-suave); }
+  .indice a { display: block; font-family: var(--f-titulo); font-size: 1.35rem; color: var(--texto); text-decoration: none; margin-top: 0.35rem; }
+  .indice a:hover { color: var(--destaque); }
+  .indice p { margin: 0.25rem 0 0; color: var(--texto-suave); font-size: 1rem; }
+  .aviso { margin-top: 2.5rem; color: var(--texto-suave); }
+  .leitor { width: 100%; height: 85vh; border: 1px solid var(--linha); border-radius: 6px; }
+</style>

@@ -1,0 +1,73 @@
+---
+titulo: Curiosidades
+edicao: ano2-edicao1
+seccao: curiosidades
+ordem: 4
+autores: [Bernardo Lopes (10.º B)]
+resumo: Quadrados ao espelho, o truque dos números de três algarismos e o algarismo das unidades de um produto gigante.
+---
+import Desafio from '../../../components/Desafio.astro';
+
+## 1. Quadrados perfeitos ao espelho
+
+Os pares de quadrados perfeitos $144$ e $441$, $169$ e $961$, $14\,884$ e $48\,841$, e as suas respetivas raízes $12$ e $21$, $13$ e $31$, $122$ e $221$, são formados pelos mesmos algarismos, porém escritos em ordem inversa.
+
+O matemático Thébault investigou os pares que têm esta curiosa propriedade. Encontrou, por exemplo, a seguinte dupla: $1\,238\,769$ e $9\,678\,321$.
+
+A raiz quadrada de $1\,238\,769$ é $\underline{1113}$ e a raiz quadrada de $9\,678\,321$ é $\underline{3111}$. Repara que os números dados são formados pelos mesmos algarismos, mas lidos da direita para a esquerda ou da esquerda para a direita, e o mesmo acontece com as suas raízes. Curioso, de facto! Será que existem mais pares destes números? Investiga!
+
+*Bernardo Lopes, 10.º B*
+
+## 2. Números de três algarismos
+
+- Escolhe um número de 3 algarismos.
+- Repete esse número ao lado do mesmo (obtendo um número com 6 algarismos).
+- Divide o número obtido por 13.
+- Divide o resultado por 11.
+- Divide novamente o resultado por 7.
+- O resultado que obténs é igual ao número que escolheste.
+
+Experimenta repetir o processo com outro número. **Consegues explicar este facto?** *(Já falámos deste truque na [primeira edição](/edicoes/ano1-edicao1/03-curiosidades-numericas/) do +MAT!)*
+
+## 3. Quadrados perfeitos
+
+Adicionando o número 1 ao produto de quatro números consecutivos, obtém-se um quadrado perfeito:
+
+$$
+\begin{aligned}
+1 \times 2 \times 3 \times 4 + 1 &= 25 = 5^2 \\
+2 \times 3 \times 4 \times 5 + 1 &= 121 = 11^2 \\
+3 \times 4 \times 5 \times 6 + 1 &= 361 = 19^2 \\
+&\;\;\vdots
+\end{aligned}
+$$
+
+Experimenta continuar o processo.
+
+<details>
+<summary>Porque é que isto acontece?</summary>
+
+Sendo $n$ o primeiro dos quatro números,
+
+$$
+n(n+1)(n+2)(n+3) + 1 = (n^2 + 3n)(n^2 + 3n + 2) + 1 = (n^2 + 3n + 1)^2.
+$$
+
+Por exemplo, para $n = 3$: $3^2 + 3 \times 3 + 1 = 19$.
+
+</details>
+
+## 4. Algarismo das unidades
+
+<Desafio titulo="Algarismo das unidades" resposta="5|cinco">
+
+Multiplicando todos os números ímpares de 1 a 2023, qual é o algarismo das unidades do resultado? Consegues justificar esta propriedade?
+
+<div slot="resolucao">
+
+O produto é ímpar (só tem fatores ímpares) e é múltiplo de 5 (o 5 é um dos fatores). Um número ímpar múltiplo de 5 termina sempre em **5**.
+
+</div>
+</Desafio>
+
+*Fontes: [im.ufrj.br](http://www.im.ufrj.br/walcy/Bienal/textos/BELOS%20PROBLEMAS.pdf), [somatematica.com.br](http://www.somatematica.com.br/curiosidades.php)*
