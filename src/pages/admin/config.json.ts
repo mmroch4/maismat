@@ -1,5 +1,6 @@
 // Configuração do painel de edição (Sveltia CMS), gerada no build para que as secções venham de seccoes.ts.
 // Os campos espelham os schemas de src/content.config.ts: se mudares um, muda o outro.
+import type { APIRoute } from 'astro';
 import { SECCOES } from '../../lib/seccoes';
 
 const citacao = {
@@ -30,7 +31,6 @@ const config = {
       deleteMedia: 'Apagar “{{path}}”',
     },
   },
-  site_url: 'https://maismat.miguelrocha.dev',
   media_folder: 'public/img',
   public_folder: '/img',
   collections: [
@@ -154,4 +154,5 @@ const config = {
   ],
 };
 
-export const GET = () => Response.json(config);
+// O endereço do site vem do `site` em astro.config.mjs.
+export const GET: APIRoute = ({ site }) => Response.json({ ...config, site_url: site!.origin });

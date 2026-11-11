@@ -37,7 +37,7 @@ const artigos = await Promise.all(
         <div class="prosa"><Content components={componentesMdx} /></div>
       </section>
     ))}
-    <p class="ui creditos">+MAT · maismat.miguelrocha.dev · Versão digital: Miguel Rocha</p>
+    <p class="ui creditos">+MAT · {Astro.site!.host} · Versão digital: Miguel Rocha</p>
   </div>
 </Base>
 

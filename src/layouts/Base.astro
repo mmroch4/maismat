@@ -9,11 +9,14 @@ interface Props {
   // Edição cuja capa aparece ao partilhar a página; por omissão, a mais recente com capa.
   edicao?: Edicao;
   artigo?: boolean;
+  // A 404 é servida em qualquer endereço: não tem endereço próprio e não deve ser indexada.
+  naoEncontrada?: boolean;
 }
 
-const { titulo, descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.', artigo = false } = Astro.props;
+const { titulo, descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.', artigo = false, naoEncontrada = false } = Astro.props;
 const tituloCompleto = titulo ? `${titulo} · +MAT` : '+MAT · Jornal de Matemática';
 const caminho = Astro.url.pathname;
+const endereco = new URL(caminho, Astro.site);
 
 // Partilha (WhatsApp, Teams…): a capa inteira em JPEG, que todos leem.
 const edicao = Astro.props.edicao?.data.capa ? Astro.props.edicao : (await edicoesOrdenadas()).find((e) => e.data.capa);
@@ -34,10 +37,11 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{tituloCompleto}</title>
     <meta name="description" content={descricao} />
+    {naoEncontrada ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={endereco} />}
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descricao} />
     <meta property="og:type" content={artigo ? 'article' : 'website'} />
-    <meta property="og:url" content={new URL(caminho, Astro.site)} />
+    {!naoEncontrada && <meta property="og:url" content={endereco} />}
     <meta property="og:site_name" content="+MAT" />
     <meta property="og:locale" content="pt_PT" />
     {partilha && (

@@ -6,11 +6,14 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
+import config from '../astro.config.mjs';
 import { desafio as bloco } from '../public/admin/componentes.js';
 import { codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../src/lib/progresso.mjs';
 import { normalizar } from '../src/lib/respostas.mjs';
 
 const raiz = fileURLToPath(new URL('..', import.meta.url));
+// O domínio vem só do astro.config.mjs.
+const site = new URL(config.site);
 const ler = (caminho) => readFileSync(raiz + caminho, 'utf8');
 const existe = (caminho) => existsSync(raiz + caminho);
 
@@ -174,8 +177,9 @@ test('o índice da pesquisa tem os artigos e as edições, e não tem o painel, 
 
 test('a ligação do QR leva e traz o progresso, e recusa fragmentos estragados', () => {
   const ids = [...new Set(publicados.map((d) => d.id))].sort();
-  const ligacao = ligacaoProgresso('https://maismat.miguelrocha.dev', ids);
-  assert.match(ligacao, /^https:\/\/maismat\.miguelrocha\.dev\/desafios\/#progresso=MAT1-[0-9A-Z]+$/);
+  const ligacao = ligacaoProgresso(site.origin, ids);
+  assert.ok(ligacao.startsWith(`${site.origin}/desafios/#progresso=MAT1-`), `A ligação ${ligacao} não leva aos desafios em ${site.origin}.`);
+  assert.match(ligacao, /#progresso=MAT1-[0-9A-Z]+$/);
   const hash = new URL(ligacao).hash;
   assert.deepEqual(descodificar(codigoDaLigacao(hash)), ids);
   assert.deepEqual(descodificar(codigoDaLigacao(hash.replace('MAT1-', 'MAT1%2D'))), ids, 'O código com %-codificação devia ser aceite.');
@@ -287,8 +291,31 @@ test('cada página tem imagem de partilha, que existe em dist com o tamanho decl
     const imagem = meta('image');
     assert.ok(imagem, `A página dist/${f} não tem imagem de partilha (og:image).`);
     const { origin, pathname } = new URL(imagem);
-    assert.equal(origin, 'https://maismat.miguelrocha.dev', `A imagem de partilha de dist/${f} não aponta para o site.`);
+    assert.equal(origin, site.origin, `A imagem de partilha de dist/${f} não aponta para o site.`);
     assert.ok(existe(`dist${pathname}`), `A imagem de partilha de dist/${f} (${pathname}) não existe em dist.`);
     assert.deepEqual(tamanhoJpeg(readFileSync(`${raiz}dist${pathname}`)), [Number(meta('image:width')), Number(meta('image:height'))], `A imagem de partilha de dist/${f} não tem o tamanho declarado.`);
   }
+});
+
+test('cada página tem o endereço canónico igual ao og:url, e só a 404 e o painel ficam fora dos motores de busca', () => {
+  const erros = [];
+  for (const f of paginas) {
+    const html = ler(`dist/${f}`);
+    const canonico = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
+    const ogUrl = html.match(/<meta property="og:url" content="([^"]*)"/)?.[1];
+    const noindex = /<meta name="robots" content="[^"]*noindex/.test(html);
+    if (f === '404.html' || f.startsWith('admin/')) {
+      if (!noindex) erros.push(`A página dist/${f} não tem <meta name="robots" content="noindex"> e seria indexada pelos motores de busca.`);
+      if (canonico) erros.push(`A página dist/${f} não devia ter endereço canónico: é servida noutros endereços.`);
+      continue;
+    }
+    if (noindex) erros.push(`${fonte(f)}: a página tem noindex e ficaria fora dos motores de busca. Só a 404 e o painel o podem ter.`);
+    if (!canonico) { erros.push(`${fonte(f)}: a página não tem endereço canónico (<link rel="canonical">). Usa o layout Base.`); continue; }
+    const url = new URL(atributo(canonico));
+    if (url.origin !== site.origin) erros.push(`${fonte(f)}: o endereço canónico ${canonico} não é do site ${site.origin} (o domínio muda-se em astro.config.mjs).`);
+    if (url.search || url.hash) erros.push(`${fonte(f)}: o endereço canónico ${canonico} tem ? ou #, e não devia.`);
+    if (!url.pathname.endsWith('/') || !existe(`dist${decodificar(url.pathname)}index.html`)) erros.push(`${fonte(f)}: o endereço canónico ${canonico} leva a uma página que não existe.`);
+    if (ogUrl !== canonico) erros.push(`${fonte(f)}: o endereço canónico (${canonico}) e o og:url (${ogUrl}) são diferentes.`);
+  }
+  assert.ok(!erros.length, erros.join('\n'));
 });
