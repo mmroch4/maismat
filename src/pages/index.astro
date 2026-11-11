@@ -2,19 +2,14 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CartaoEdicao from '../components/CartaoEdicao.astro';
-import AnelProgresso from '../components/AnelProgresso.astro';
 import { artigosDe, edicaoAtual, edicoesOrdenadas, mesAno, rotuloEdicao, slugArtigo } from '../lib/edicoes';
-import { desafiosPublicados } from '../lib/desafios';
 import { SECCOES } from '../lib/seccoes';
 
 const edicoes = await edicoesOrdenadas();
 const atual = await edicaoAtual();
 const artigos = await artigosDe(atual.id);
-const desafios = await desafiosPublicados();
-const novos = new Set(desafios.filter((d) => d.edicao.id === atual.id).map((d) => d.id)).size;
 // A primeira frase da citação da capa serve de título; sem citação, o nome do jornal.
 const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal de Matemática';
-const mes = mesAno(atual.data.data).split(' ')[0];
 ---
 
 <Base>
@@ -33,11 +28,6 @@ const mes = mesAno(atual.data.data).split(' ')[0];
           <Image src={atual.data.capa} alt="Capa da edição atual" width={480} loading="eager" fetchpriority="high" />
         </a>
       )}
-    </div>
-    <div class="cartao progresso ui">
-      <h2>Os teus desafios</h2>
-      <AnelProgresso ids={desafios.map((d) => d.id)} />
-      <a class="botao secundario" href="/desafios/">{novos === 1 ? '1 desafio novo' : `${novos} desafios novos`} em {mes}</a>
     </div>
   </section>
 
@@ -65,8 +55,8 @@ const mes = mesAno(atual.data.data).split(' ')[0];
 </Base>
 
 <style>
-  .topo-inicio { display: grid; gap: 1rem; padding-top: 1rem; }
-  @media (min-width: 769px) { .topo-inicio { grid-template-columns: 2fr 1fr; gap: 1.5rem; padding-top: 1.5rem; } }
+  .topo-inicio { padding-top: 1rem; }
+  @media (min-width: 769px) { .topo-inicio { padding-top: 1.5rem; } }
 
   .destaque {
     display: grid;
@@ -102,8 +92,6 @@ const mes = mesAno(atual.data.data).split(' ')[0];
   .ler:focus-visible { outline-color: var(--destaque-texto); }
   .capa-img img { display: block; width: 100%; height: auto; border-radius: var(--raio-p); transform: rotate(3deg); box-shadow: 0 12px 30px rgb(0 0 0 / 0.3); }
 
-  .progresso { display: grid; gap: 1rem; align-content: start; padding: 1.5rem; }
-  .progresso h2 { margin: 0; font-size: 1.125rem; letter-spacing: 0; }
 
   .secao-titulo { margin: 2.5rem 0 1rem; }
   .sumario { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: 1rem 1.25rem; }
