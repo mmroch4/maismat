@@ -212,6 +212,16 @@ const decodificar = (s) => { try { return decodeURIComponent(s); } catch { retur
 test('a página 404 existe e fica fora do sitemap e da pesquisa', () => {
   assert.ok(existe('dist/404.html'), 'Falta o dist/404.html: o Cloudflare Pages mostraria a página de erro dele.');
   assert.ok(!ler('dist/sitemap-0.xml').includes('/404'), 'A página 404 está no sitemap.');
+});
+
+test('o sitemap tem as páginas do site, sem as versões para imprimir', () => {
+  const urls = [...ler('dist/sitemap-0.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, u]) => new URL(u));
+  assert.ok(urls.some((u) => /^\/edicoes\/[^/]+\/[^/]+\/$/.test(u.pathname)), 'O sitemap não tem nenhum artigo.');
+  for (const u of urls) {
+    assert.equal(u.origin, site.origin, `O sitemap tem ${u.href}, que não é do site ${site.origin}.`);
+    assert.ok(!u.pathname.endsWith('/imprimir/'), `O sitemap tem a versão para imprimir ${u.pathname}. Repete os artigos da edição e deve ficar de fora (filtro do sitemap em astro.config.mjs).`);
+    assert.ok(existe(`dist${u.pathname}index.html`), `O sitemap tem ${u.pathname}, que não existe em dist.`);
+  }
   assert.ok(!ler('dist/404.html').includes('data-pagefind-body'), 'A página 404 seria indexada pela pesquisa.');
 });
 

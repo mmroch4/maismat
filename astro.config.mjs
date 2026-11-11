@@ -9,7 +9,11 @@ import remarkFiguras from './src/lib/remark-figuras.mjs';
 export default defineConfig({
   // Domínio provisório; alterar aqui quando a escola tiver o seu.
   site: 'https://maismat.miguelrocha.dev',
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    // A versão para imprimir repete os artigos da edição: fica fora do sitemap.
+    sitemap({ filter: (pagina) => !pagina.endsWith('/imprimir/') }),
+  ],
   markdown: {
     remarkPlugins: [remarkMath, remarkFiguras],
     rehypePlugins: [[rehypeKatex, { strict: false }]],
