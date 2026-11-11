@@ -12,6 +12,7 @@
  * é criado e não deve mudar depois, nem quando se corrige o título.
  */
 import { createHash } from 'node:crypto';
+import { normalizar } from '../lib/respostas.mjs';
 
 interface Props {
   id: string;
@@ -26,14 +27,6 @@ interface Props {
 
 const { id, titulo, numero, resposta, opcoes, unidade, fonte, casas } = Astro.props;
 if (!id) throw new Error(`O desafio “${titulo}” não tem id. Abre-o no painel e guarda, ou escreve id="desafio-…" no artigo.`);
-
-// Tem de ser igual à função `normalizar` no script abaixo.
-const normalizar = (s: string, casas?: number) => {
-  const t = s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/,/g, '.').replace(/\s+/g, '');
-  if (casas === undefined) return t;
-  const n = parseFloat(t);
-  return Number.isNaN(n) ? t : n.toFixed(casas);
-};
 
 const hashes = resposta
   ? resposta.split('|').map((r) => createHash('sha256').update(id + normalizar(r, casas)).digest('hex'))
@@ -87,12 +80,7 @@ const temResolucao = Astro.slots.has('resolucao');
 </maismat-desafio>
 
 <script>
-  const normalizar = (s: string, casas?: number) => {
-    const t = s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/,/g, '.').replace(/\s+/g, '');
-    if (casas === undefined) return t;
-    const n = parseFloat(t);
-    return Number.isNaN(n) ? t : n.toFixed(casas);
-  };
+  import { normalizar } from '../lib/respostas.mjs';
 
   async function sha256(texto: string) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));

@@ -13,6 +13,10 @@ npm install
 npm run dev
 ```
 
+`npm run build` gera o site em `dist/` e corre no fim `scripts/verificar.test.mjs` (também à parte, com `npm run verificar`):
+ids dos desafios, respostas aceites pelo site e entre as opções, nenhuma resposta no arquivo de desafios e nenhuma edição em rascunho publicada.
+Se uma verificação falhar, a build falha e o Cloudflare mantém a versão anterior do site.
+
 ## Estrutura
 
 - `src/content/edicoes/` — uma ficha por edição (data, capa, PDF original, `convertida: false` se ainda só há PDF).
