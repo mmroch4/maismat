@@ -4,6 +4,7 @@ import Base from '../../../layouts/Base.astro';
 import { artigosDe, artigosPublicados, mesAno, rotuloEdicao, slugArtigo, type Artigo } from '../../../lib/edicoes';
 import { componentesMdx } from '../../../lib/componentes-mdx';
 import { SECCOES } from '../../../lib/seccoes';
+import { dia, editora, numeroEdicao, pessoas } from '../../../lib/dados-estruturados';
 
 export async function getStaticPaths() {
   const artigos = await artigosPublicados();
@@ -21,9 +22,20 @@ const i = irmaos.findIndex((a) => a.id === artigo.id);
 const [anterior, seguinte] = [irmaos[i - 1], irmaos[i + 1]];
 const { titulo, seccao, autores, nivel, citacao, resumo } = artigo.data;
 const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
+const autoria = pessoas(autores);
+const dados = {
+  '@type': 'Article',
+  headline: titulo,
+  description: resumo,
+  author: autoria.length ? autoria : undefined,
+  datePublished: dia(edicao.data.data),
+  inLanguage: 'pt-PT',
+  isPartOf: numeroEdicao(edicao, Astro.site!),
+  publisher: editora(Astro.site!),
+};
 ---
 
-<Base titulo={titulo} descricao={resumo} edicao={edicao} artigo>
+<Base titulo={titulo} descricao={resumo} edicao={edicao} artigo dados={dados}>
   <article class="contentor" data-pagefind-body data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`} data-pagefind-sort={`data:${edicao.data.data.toISOString().slice(0, 10)}`}>
     <header>
       <p class="ui migalhas" data-pagefind-ignore>

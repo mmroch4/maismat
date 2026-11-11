@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import Base from '../../../layouts/Base.astro';
 import { artigosDe, edicoesPublicadas, mesAno, rotuloEdicao, slugArtigo, type Edicao } from '../../../lib/edicoes';
 import { SECCOES } from '../../../lib/seccoes';
+import { editora, numeroEdicao } from '../../../lib/dados-estruturados';
 
 export async function getStaticPaths() {
   const edicoes = await edicoesPublicadas();
@@ -12,9 +13,17 @@ export async function getStaticPaths() {
 const { edicao } = Astro.props as { edicao: Edicao };
 const { data, capa, pdf, direcao, citacao, convertida } = edicao.data;
 const artigos = await artigosDe(edicao.id);
+const dados = {
+  ...numeroEdicao(edicao, Astro.site!),
+  inLanguage: 'pt-PT',
+  publisher: editora(Astro.site!),
+  hasPart: convertida && artigos.length
+    ? artigos.map((a) => ({ '@type': 'Article', headline: a.data.titulo, url: new URL(`/edicoes/${edicao.id}/${slugArtigo(a)}/`, Astro.site).href }))
+    : undefined,
+};
 ---
 
-<Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`} edicao={edicao}>
+<Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`} edicao={edicao} dados={dados}>
   <div data-pagefind-body data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`} data-pagefind-sort={`data:${data.toISOString().slice(0, 10)}`}>
   <div class="contentor cabecalho">
     {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={400} class="capa" />}

@@ -319,3 +319,37 @@ test('cada página tem o endereço canónico igual ao og:url, e só a 404 e o pa
   }
   assert.ok(!erros.length, erros.join('\n'));
 });
+
+test('cada artigo e cada edição têm dados estruturados válidos, com a capa da edição', () => {
+  const erros = [];
+  for (const f of paginas) {
+    const html = ler(`dist/${f}`);
+    const blocos = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(([, j]) => j);
+    const artigo = artigoDe(f) && !f.includes('/imprimir/');
+    const edicao = f.match(/^edicoes\/([^/]+)\/index\.html$/)?.[1];
+    if (!artigo && !edicao) continue;
+    if (blocos.length !== 1) { erros.push(`${fonte(f)}: a página tem ${blocos.length} blocos de dados estruturados (JSON-LD) em vez de um.`); continue; }
+    if (blocos[0].includes('<')) erros.push(`${fonte(f)}: os dados estruturados têm um < por escapar, que pode partir a página.`);
+    let d;
+    try { d = JSON.parse(blocos[0]); } catch (e) { erros.push(`${fonte(f)}: os dados estruturados não são JSON válido (${e.message}).`); continue; }
+    const falta = (campo) => erros.push(`${fonte(f)}: falta «${campo}» nos dados estruturados.`);
+    const dataEdicao = edicoes.find((e) => e.id === f.split('/')[1])?.data;
+    const tipo = artigo ? 'Article' : 'PublicationIssue';
+    if (d['@context'] !== 'https://schema.org' || d['@type'] !== tipo) erros.push(`${fonte(f)}: os dados estruturados deviam ser do tipo ${tipo} do schema.org.`);
+    if (d.datePublished !== dataEdicao) erros.push(`${fonte(f)}: a data nos dados estruturados (${d.datePublished}) não é a da edição (${dataEdicao}).`);
+    if (d.url !== html.match(/<link rel="canonical" href="([^"]*)"/)?.[1]) erros.push(`${fonte(f)}: o url nos dados estruturados (${d.url}) não é o endereço canónico.`);
+    if (d.inLanguage !== 'pt-PT') falta('inLanguage: pt-PT');
+    if (!d.publisher?.name) falta('publisher');
+    if (artigo) {
+      if (typeof d.headline !== 'string' || !d.headline.trim()) erros.push(`${fonte(f)}: o artigo não tem título nos dados estruturados. Preenche o «Título» no painel.`);
+      if (d.isPartOf?.['@type'] !== 'PublicationIssue' || !existe(`dist${new URL(d.isPartOf.url).pathname}index.html`)) falta('isPartOf, com uma edição que existe');
+      for (const p of d.author ?? [])
+        if (p['@type'] !== 'Person' || !/^\p{Lu}/u.test(p.name ?? '')) erros.push(`${fonte(f)}: o autor «${p.name}» não parece um nome de pessoa. Escreve no campo «Autores» um nome por pessoa.`);
+    }
+    if (!d.image) { falta('image'); continue; }
+    const imagem = new URL(d.image);
+    if (imagem.origin !== site.origin || !existe(`dist${imagem.pathname}`)) erros.push(`${fonte(f)}: a imagem dos dados estruturados (${d.image}) não existe em dist.`);
+    if (d.image !== html.match(/<meta property="og:image" content="([^"]*)"/)?.[1]) erros.push(`${fonte(f)}: a imagem dos dados estruturados não é a mesma do og:image.`);
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
