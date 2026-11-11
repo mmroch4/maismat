@@ -433,3 +433,25 @@ test('o _headers protege todas as páginas e só põe cache longa em ficheiros c
         assert.ok(comHash(f), `A regra ${padrao} do public/_headers guarda ${f} em cache por muito tempo, mas o nome não tem hash: quem visitou o site continuaria a ver a versão antiga.`);
   }
 });
+
+test('as fontes pré-carregadas são as que o CSS usa, e a capa principal da página inicial e das edições carrega primeiro', () => {
+  const erros = [];
+  for (const f of paginas.filter((f) => !f.startsWith('admin/'))) {
+    const html = ler(`dist/${f}`);
+    const css = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(([, h]) => ler(`dist${h}`)).join('');
+    const preloads = [...html.matchAll(/<link rel="preload"[^>]*>/g)].map(([l]) => l);
+    if (preloads.length !== 2) erros.push(`A página dist/${f} tem ${preloads.length} pré-carregamentos de fontes em vez de dois (src/layouts/Base.astro).`);
+    for (const l of preloads) {
+      const href = l.match(/\shref="([^"]+)"/)?.[1] ?? '';
+      if (!/\sas="font"/.test(l) || !/\scrossorigin/.test(l)) erros.push(`O pré-carregamento de ${href} em dist/${f} precisa de as="font" e crossorigin, senão a fonte é descarregada duas vezes.`);
+      if (!existe(`dist${href}`)) erros.push(`A fonte pré-carregada ${href} em dist/${f} não existe em dist.`);
+      else if (!css.includes(`url(${href})`)) erros.push(`A fonte pré-carregada ${href} em dist/${f} não é a que o CSS da página usa: seria descarregada sem servir para nada.`);
+    }
+    if (f === 'index.html' || /^edicoes\/[^/]+\/index\.html$/.test(f)) {
+      const capa = html.match(/<img\b[^>]*>/)?.[0];
+      if (capa && (/loading="lazy"/.test(capa) || !/fetchpriority="high"/.test(capa)))
+        erros.push(`A capa no topo de dist/${f} tem de ter loading="eager" e fetchpriority="high", para aparecer o mais cedo possível. Corrige em src/pages/index.astro ou src/pages/edicoes/[edicao]/index.astro.`);
+    }
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});

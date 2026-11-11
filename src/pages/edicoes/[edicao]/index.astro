@@ -26,7 +26,7 @@ const dados = {
 <Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`} edicao={edicao} dados={dados}>
   <div data-pagefind-body data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`} data-pagefind-sort={`data:${data.toISOString().slice(0, 10)}`}>
   <div class="contentor cabecalho">
-    {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={400} class="capa" />}
+    {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={400} class="capa" loading="eager" fetchpriority="high" />}
     <div>
       <p class="ui rotulo">{rotuloEdicao(edicao)}</p>
       <h1 class="cap">{mesAno(data)}</h1>

@@ -1,6 +1,9 @@
 ---
 import { getImage } from 'astro:assets';
 import '../styles/global.css';
+// As duas fontes que quase todas as páginas usam logo no início: títulos e texto.
+import fonteTitulos from '@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff2?url';
+import fonteTexto from '@fontsource/source-serif-4/files/source-serif-4-latin-400-normal.woff2?url';
 import { edicoesOrdenadas, mesAno, type Edicao } from '../lib/edicoes';
 import { jsonLd } from '../lib/dados-estruturados';
 
@@ -39,6 +42,8 @@ const nav = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={fonteTitulos} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonteTexto} as="font" type="font/woff2" crossorigin />
     <title>{tituloCompleto}</title>
     <meta name="description" content={descricao} />
     {naoEncontrada ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={endereco} />}

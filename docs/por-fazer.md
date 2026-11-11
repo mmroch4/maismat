@@ -35,6 +35,7 @@
   ```
 - [ ] Com os cabeçalhos novos, o painel (`/admin/`) abre, deixa entrar e mostra as fórmulas na pré-visualização; a pesquisa (`/pesquisa/`) dá resultados; nos desafios, o botão de copiar o código de progresso funciona.
 - [ ] Colar a ligação de um artigo no WhatsApp ou no Teams: aparece a capa da edição, o título e o resumo.
+- [ ] [PageSpeed Insights](https://pagespeed.web.dev/) com a página inicial, uma edição e um artigo com fórmulas, em telemóvel. Se o LCP passar de 2,5 s ou o CLS de 0,1, ver o que o relatório aponta. Na consola do Chrome não deve haver avisos de fontes «preloaded but not used» (com o separador visível).
 - [ ] [Teste de Resultados Avançados](https://search.google.com/test/rich-results) com um artigo e uma edição: o artigo aparece como *Article*, sem erros, e com o logótipo no *publisher*. Avisos sobre campos opcionais podem ficar.
 - [ ] [Consola de Pesquisa da Google](https://search.google.com/search-console):
   - adicionar o site (por prefixo de URL, `https://maismat.miguelrocha.dev/`);
