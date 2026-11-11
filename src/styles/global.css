@@ -16,11 +16,15 @@
   /* Marcador dourado: no máximo uma palavra por título; o texto por cima é sempre --marcador-texto */
   --marcador: #e2c98a;
   --marcador-texto: #2b3e52;
+  /* Pastilhas douradas (secções, edição atual): iguais no claro e no escuro */
+  --etiqueta: #e2c98a;
+  --etiqueta-texto: #2b3e52;
   --rotulo: #7a5c12;
   /* Contorno de caixas de texto e listas de escolha: 3:1 sobre todos os fundos (WCAG 1.4.11) */
   --campo: #808996;
   --linha: #e3e7ec;
   --pastilha: #e8ecf1;
+  --faixa: #eef1f5;
   --ok: #2f7a3a;
   --ok-fundo: #e8f1e9;
   --erro: #b3261e;
@@ -63,6 +67,7 @@
     --campo: #7d8794;
     --linha: #2a3440;
     --pastilha: #233040;
+    --faixa: #0c1218;
     --ok: #6cc47a;
     --ok-fundo: #1a2e21;
     --erro: #f2867e;
@@ -111,8 +116,8 @@ h3 { font-size: 1.0625rem; font-weight: 700; }
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.5;
-  color: var(--marcador-texto);
-  background: var(--marcador);
+  color: var(--etiqueta-texto);
+  background: var(--etiqueta);
   padding: 0.25rem 0.625rem;
   border-radius: var(--raio-g);
   text-decoration: none;

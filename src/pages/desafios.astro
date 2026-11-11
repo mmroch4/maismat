@@ -34,7 +34,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       <p class="contagem" role="status" aria-live="polite"></p>
     </form>
 
-    <details class="ui transferir nao-imprimir" hidden>
+    <details id="levar" class="ui transferir nao-imprimir" hidden>
       <summary>Levar o teu progresso para outro computador</summary>
       <p>
         Os computadores da escola apagam muitas vezes o que fica guardado. Cria um código, envia-o a ti próprio
@@ -269,6 +269,11 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   });
 
   function lerFragmento() {
+    // Da folha «Mais»: abre o painel para levar o progresso.
+    if (location.hash === '#levar') {
+      transferir.open = true;
+      return transferir.scrollIntoView({ block: 'start' });
+    }
     const codigo = codigoDaLigacao(location.hash);
     if (codigo === null) return;
     history.replaceState(null, '', location.pathname + location.search);
