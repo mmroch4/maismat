@@ -2,8 +2,8 @@
 
 ## Pôr o painel de edição a funcionar
 
-- [ ] Criar o repositório no GitHub e fazer push do ramo `main` (é o ramo de que o painel lê e onde grava).
-- [ ] Corrigir os dois valores provisórios em `src/pages/admin/config.json.ts`: `repo` (`miguelrocha/maismat`) e `base_url`. O `branch` já está certo (`main`).
+- [ ] Fazer push do ramo `main` (é o ramo de que o painel lê e onde grava).
+- [ ] Confirmar o `base_url` em `src/pages/admin/config.json.ts` (o endereço do worker). O `repo` (`mmroch4/maismat`) e o `branch` (`main`) já estão certos.
 - [ ] Fazer o deploy do worker [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) no Cloudflare Workers, seguindo o README do projeto.
 - [ ] Criar a OAuth App em GitHub → Settings → Developer settings → OAuth Apps. O “callback URL” é `https://<worker>/callback`. Depois, pôr `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no worker e `ALLOWED_DOMAINS=maismat.miguelrocha.dev`.
 - [ ] No Cloudflare Pages: ligar o repositório, com o comando `npm run build`, a pasta `dist` e `main` como ramo de produção. A versão do Node vem do `.nvmrc` (não é preciso `NODE_VERSION`).
