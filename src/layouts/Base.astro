@@ -30,6 +30,7 @@ const nav = [
     <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
   <body>
+    <a class="saltar ui nao-imprimir" href="#conteudo">Saltar para o conteúdo</a>
     <header class="topo nao-imprimir">
       <div class="contentor topo-linha">
         <a href="/" class="marca" aria-label="+MAT, página inicial">+MAT</a>
@@ -41,7 +42,7 @@ const nav = [
       </div>
     </header>
 
-    <main>
+    <main id="conteudo">
       <slot />
     </main>
 

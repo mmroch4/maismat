@@ -50,7 +50,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
                 <p class="excerto">{d.excerto.map((s) => ('html' in s ? <Fragment set:html={s.html} /> : s.texto))}</p>
               )}
               <p class="ui etiquetas">
-                <span class="resolvido" hidden>Resolvido por ti ✓</span>
+                <span class="resolvido" hidden>Resolvido por ti <span aria-hidden="true">✓</span></span>
                 {d.temResposta && <span>Com verificação</span>}
                 {d.temResolucao && <span>Com resolução</span>}
               </p>
@@ -105,8 +105,9 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 
   form.addEventListener('change', filtrar);
   form.addEventListener('submit', (e) => e.preventDefault());
-  form.hidden = false;
+  // A contagem é preenchida antes de o formulário aparecer, para não ser anunciada ao abrir a página.
   filtrar();
+  form.hidden = false;
 </script>
 
 <style>
@@ -119,7 +120,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   select {
     font: inherit;
     padding: 0.45rem 0.6rem;
-    border: 1px solid var(--linha);
+    border: 1px solid var(--campo);
     border-radius: 6px;
     background: var(--superficie);
     color: var(--texto);
