@@ -8,6 +8,8 @@
  * Com `opcoes`, o desafio passa a escolha múltipla.
  * Com `casas`, a resposta é tratada como número e arredondada a esse número de casas decimais
  * (ex.: `resposta="56.54" casas={1}` aceita 56,5 e 56,54).
+ * O id (âncora e progresso guardado no browser) vem do título. Quando outro desafio tem o mesmo título
+ * mas é um problema diferente, `chave` substitui o título nesse cálculo.
  */
 import { createHash } from 'node:crypto';
 import { idDesafio } from '../lib/desafios';
@@ -20,9 +22,10 @@ interface Props {
   unidade?: string;
   fonte?: string;
   casas?: number;
+  chave?: string;
 }
 
-const { titulo, numero, resposta, opcoes, unidade, fonte, casas } = Astro.props;
+const { titulo, numero, resposta, opcoes, unidade, fonte, casas, chave } = Astro.props;
 
 // Tem de ser igual à função `normalizar` no script abaixo.
 const normalizar = (s: string, casas?: number) => {
@@ -32,7 +35,7 @@ const normalizar = (s: string, casas?: number) => {
   return Number.isNaN(n) ? t : n.toFixed(casas);
 };
 
-const id = idDesafio(titulo);
+const id = idDesafio(chave || titulo);
 const hashes = resposta
   ? resposta.split('|').map((r) => createHash('sha256').update(id + normalizar(r, casas)).digest('hex'))
   : [];

@@ -77,12 +77,13 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     }
   };
 
-  let resolvidos = 0;
+  // Por id: um desafio republicado (por exemplo, nas resoluções) conta uma vez só.
+  const resolvidos = new Set<string>();
   for (const li of itens) {
     if (!resolvido(li.dataset.id!)) continue;
     li.dataset.resolvido = '';
     li.querySelector<HTMLElement>('.resolvido')!.hidden = false;
-    resolvidos++;
+    resolvidos.add(li.dataset.id!);
   }
 
   function filtrar() {
@@ -99,7 +100,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       }
       s.hidden = !algum || (edicao !== '' && s.dataset.edicao !== edicao);
     }
-    contagem.textContent = `A mostrar ${visiveis} de ${itens.length} desafios · resolveste ${resolvidos}.`;
+    contagem.textContent = `A mostrar ${visiveis} de ${itens.length} desafios · resolveste ${resolvidos.size}.`;
   }
 
   form.addEventListener('change', filtrar);

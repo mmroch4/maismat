@@ -73,7 +73,7 @@ export async function desafiosPublicados(): Promise<DesafioArquivo[]> {
     for (const artigo of await artigosDe(edicao.id)) {
       for (const m of (artigo.body ?? '').matchAll(padrao)) {
         const d = blocoDesafio.fromBlock(m);
-        const id = idDesafio(d.titulo);
+        const id = idDesafio(d.chave || d.titulo);
         lista.push({
           id,
           titulo: d.titulo,
