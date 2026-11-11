@@ -3,7 +3,8 @@
 
 // ---- Leitura e escrita de atributos JSX simples: texto="…", numero={1}, opcoes={['a', 'b']}
 
-const lerTextos = (expr) => [...expr.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g)].map((m) => (m[1] ?? m[2]).replace(/\\(.)/g, '$1'));
+const lerTextos = (expr) =>
+  [...expr.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g)].map((m) => (m[1] ?? m[2]).replace(/\\(.)/g, '$1'));
 
 export function lerAtributos(fonte = '') {
   const attrs = {};
@@ -20,7 +21,8 @@ export function lerAtributos(fonte = '') {
 const atributo = (nome, valor) => {
   if (valor === undefined || valor === null || valor === '' || (Array.isArray(valor) && !valor.length)) return '';
   if (typeof valor === 'number') return ` ${nome}={${valor}}`;
-  if (Array.isArray(valor)) return ` ${nome}={[${valor.map((v) => (v.includes("'") ? JSON.stringify(v) : `'${v}'`)).join(', ')}]}`;
+  if (Array.isArray(valor))
+    return ` ${nome}={[${valor.map((v) => (v.includes("'") ? JSON.stringify(v) : `'${v}'`)).join(', ')}]}`;
   const texto = String(valor);
   return texto.includes('"') ? ` ${nome}={${JSON.stringify(texto)}}` : ` ${nome}="${texto}"`;
 };
@@ -84,7 +86,14 @@ export const formulaDestaque = {
   id: 'formula-destaque',
   label: 'Fórmula em destaque',
   icon: 'functions',
-  fields: [{ name: 'tex', label: 'Fórmula (LaTeX)', widget: 'text', hint: 'Fica centrada numa linha só para ela. Consulta a cábula no guia.' }],
+  fields: [
+    {
+      name: 'tex',
+      label: 'Fórmula (LaTeX)',
+      widget: 'text',
+      hint: 'Fica centrada numa linha só para ela. Consulta a cábula no guia.',
+    },
+  ],
   pattern: /^\$\$\n(?<tex>[\s\S]*?)\n\$\$$/m,
   toBlock: ({ tex = '' }) => `$$\n${tex.trim()}\n$$`,
   toPreview: ({ tex = '' }) => katex(tex, true),
@@ -112,8 +121,20 @@ export const desafio = {
       hint: 'Opcional. Se preencheres, a resposta certa tem de ser igual a uma das opções.',
       field: { name: 'opcao', label: 'Opção', widget: 'string' },
     },
-    { name: 'unidade', label: 'Unidade', required: false, hint: 'Opcional, aparece ao lado da caixa de resposta (ex.: cm², bilhetes).' },
-    { name: 'casas', label: 'Casas decimais', widget: 'number', value_type: 'int', required: false, hint: 'Opcional. Para respostas numéricas: 1 aceita 56,5 quando a resposta é 56.54.' },
+    {
+      name: 'unidade',
+      label: 'Unidade',
+      required: false,
+      hint: 'Opcional, aparece ao lado da caixa de resposta (ex.: cm², bilhetes).',
+    },
+    {
+      name: 'casas',
+      label: 'Casas decimais',
+      widget: 'number',
+      value_type: 'int',
+      required: false,
+      hint: 'Opcional. Para respostas numéricas: 1 aceita 56,5 quando a resposta é 56.54.',
+    },
     { name: 'fonte', label: 'Fonte', required: false, hint: 'Opcional, por exemplo “ONEM 2010 — adaptado”.' },
     {
       name: 'id',
@@ -121,7 +142,13 @@ export const desafio = {
       required: false,
       hint: 'Preenchido automaticamente ao guardar; não alteres. Guarda o progresso dos alunos. Se copiaste este desafio de outro para fazer um problema diferente, apaga-o para ser gerado um novo.',
     },
-    { name: 'resolucao', label: 'Resolução', widget: 'richtext', required: false, hint: 'Se ficar vazia, o site diz que a resolução sai na próxima edição.' },
+    {
+      name: 'resolucao',
+      label: 'Resolução',
+      widget: 'richtext',
+      required: false,
+      hint: 'Se ficar vazia, o site diz que a resolução sai na próxima edição.',
+    },
   ],
   pattern: /^<Desafio\b(?<attrs>(?:[^>"{}]|"[^"]*"|\{[^}]*\})*?)\s*(?:\/>|>(?<corpo>[\s\S]*?)<\/Desafio>)/m,
   fromBlock: (m) => {
@@ -143,7 +170,18 @@ export const desafio = {
       resolucao: resolucao.trim(),
     };
   },
-  toBlock: ({ id = '', numero = '', titulo = '', enunciado = '', resposta = '', opcoes = [], unidade = '', casas, fonte = '', resolucao = '' }) => {
+  toBlock: ({
+    id = '',
+    numero = '',
+    titulo = '',
+    enunciado = '',
+    resposta = '',
+    opcoes = [],
+    unidade = '',
+    casas,
+    fonte = '',
+    resolucao = '',
+  }) => {
     const n = String(numero).trim();
     const partesAttrs = [
       atributo('id', id.trim() || novoId()),
@@ -159,7 +197,10 @@ export const desafio = {
     // Com muitos atributos, um por linha, como nos artigos já escritos.
     const attrs = linha.length > 120 ? `${partesAttrs.map((a) => `\n ${a}`).join('')}\n` : linha;
     if (!enunciado.trim() && !resolucao.trim()) return `<Desafio${attrs} />`;
-    const partes = [enunciado.trim(), resolucao.trim() && `${comConteudo('<div slot="resolucao">', resolucao, '</div>')}\n`];
+    const partes = [
+      enunciado.trim(),
+      resolucao.trim() && `${comConteudo('<div slot="resolucao">', resolucao, '</div>')}\n`,
+    ];
     return `<Desafio${attrs}>\n\n${partes.filter(Boolean).join('\n\n')}${resolucao.trim() ? '' : '\n\n'}</Desafio>`;
   },
   toPreview: ({ numero = '', titulo = '', enunciado = '', resposta = '', resolucao = '' }) => {
@@ -198,7 +239,12 @@ export const galeria = {
   toBlock: ({ imagens = [] }) =>
     comConteudo(
       '<div class="galeria">',
-      imagens.map(({ src = '', alt = '', legenda = '' }) => `![${alt}](${src}${legenda ? ` "${legenda.replaceAll('"', '”')}"` : ''})`).join('\n\n'),
+      imagens
+        .map(
+          ({ src = '', alt = '', legenda = '' }) =>
+            `![${alt}](${src}${legenda ? ` "${legenda.replaceAll('"', '”')}"` : ''})`,
+        )
+        .join('\n\n'),
       '</div>',
     ),
   toPreview: ({ imagens = [] }) =>
@@ -261,7 +307,8 @@ export const interativo = {
   ],
   pattern: new RegExp(`^<(?<componente>${Object.keys(INTERATIVOS).join('|')})\\b(?<props>[^>]*?)\\s*\\/>$`, 'm'),
   fromBlock: (m) => ({ componente: m.groups.componente, props: m.groups.props.trim() }),
-  toBlock: ({ componente = 'TrianguloPascal', props = '' }) => `<${componente}${props.trim() ? ` ${props.trim()}` : ''} />`,
+  toBlock: ({ componente = 'TrianguloPascal', props = '' }) =>
+    `<${componente}${props.trim() ? ` ${props.trim()}` : ''} />`,
   toPreview: ({ componente = 'TrianguloPascal' }) => caixa('interativo', `🎲 ${INTERATIVOS[componente] ?? componente}`),
 };
 
@@ -291,14 +338,17 @@ export const demonstracao = {
 
 // Applets do GeoGebra: aceita a ligação de «Partilhar» e dá o endereço que incorpora só o applet.
 // Também usados por src/components/GeoGebra.astro e pelas verificações.
-export const GEOGEBRA = /^https:\/\/(?:www\.)?geogebra\.org\/(?:m|calculator|classic|graphing|geometry|3d)\/([A-Za-z0-9]{8})\/?(?:[?#].*)?$/;
+export const GEOGEBRA =
+  /^https:\/\/(?:www\.)?geogebra\.org\/(?:m|calculator|classic|graphing|geometry|3d)\/([A-Za-z0-9]{8})\/?(?:[?#].*)?$/;
 
 export function geogebra(ligacao = '', altura = 500) {
   const id = ligacao.trim().match(GEOGEBRA)?.[1];
-  return id && {
-    pagina: `https://www.geogebra.org/m/${id}`,
-    iframe: `https://www.geogebra.org/material/iframe/id/${id}/width/800/height/${altura}/border/888888/sfsb/true/smb/false/stb/false/stbh/false/ai/false/asb/false/sri/true/rc/false/ld/false/sdz/false/ctl/false`,
-  };
+  return (
+    id && {
+      pagina: `https://www.geogebra.org/m/${id}`,
+      iframe: `https://www.geogebra.org/material/iframe/id/${id}/width/800/height/${altura}/border/888888/sfsb/true/smb/false/stb/false/stbh/false/ai/false/asb/false/sri/true/rc/false/ld/false/sdz/false/ctl/false`,
+    }
+  );
 }
 
 export const appletGeoGebra = {
@@ -312,7 +362,10 @@ export const appletGeoGebra = {
       name: 'ligacao',
       label: 'Ligação do applet',
       hint: 'No GeoGebra, abre o applet, carrega em «Partilhar» e copia a ligação, por exemplo https://www.geogebra.org/m/p68vtggs.',
-      pattern: [GEOGEBRA.source, 'Tem de ser a ligação de um applet: https://www.geogebra.org/m/ seguido de 8 letras e algarismos.'],
+      pattern: [
+        GEOGEBRA.source,
+        'Tem de ser a ligação de um applet: https://www.geogebra.org/m/ seguido de 8 letras e algarismos.',
+      ],
     },
     { name: 'titulo', label: 'Título', hint: 'O que o applet mostra. É o que os leitores de ecrã anunciam.' },
     {
@@ -331,8 +384,19 @@ export const appletGeoGebra = {
     const { ligacao = '', titulo = '', altura = 500 } = lerAtributos(m.groups.attrs);
     return { ligacao, titulo, altura };
   },
-  toBlock: ({ ligacao = '', titulo = '', altura = 500 }) => `<GeoGebra${atributo('ligacao', ligacao.trim())}${atributo('titulo', titulo)}${atributo('altura', altura)} />`,
+  toBlock: ({ ligacao = '', titulo = '', altura = 500 }) =>
+    `<GeoGebra${atributo('ligacao', ligacao.trim())}${atributo('titulo', titulo)}${atributo('altura', altura)} />`,
   toPreview: ({ titulo = '' }) => caixa('interativo', `△ GeoGebra: ${titulo}`),
 };
 
-export const componentes = [formula, formulaDestaque, desafio, galeria, nota, detalhes, interativo, demonstracao, appletGeoGebra];
+export const componentes = [
+  formula,
+  formulaDestaque,
+  desafio,
+  galeria,
+  nota,
+  detalhes,
+  interativo,
+  demonstracao,
+  appletGeoGebra,
+];

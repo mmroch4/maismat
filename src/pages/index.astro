@@ -17,11 +17,15 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
   <section class="contentor topo-inicio" aria-labelledby="edicao-atual">
     <div class="destaque">
       <div class="destaque-texto">
-        <p class="ui rotulo">{rotuloEdicao(atual)} · <span class="cap">{mesAno(atual.data.data)}</span></p>
+        <p class="ui rotulo">
+          {rotuloEdicao(atual)} · <span class="cap">{mesAno(atual.data.data)}</span>
+        </p>
         <h2 id="edicao-atual">{frase}</h2>
         {atual.data.citacao && <p class="autor">— {atual.data.citacao.autor}</p>}
         <p class="direcao">Direção e edição de {atual.data.direcao.join(' e ')}</p>
-        <a class="ui ler" href={`/edicoes/${atual.id}/`}>Ler a edição</a>
+        <a class="ui ler" href={`/edicoes/${atual.id}/`}>
+          Ler a edição
+        </a>
       </div>
       {atual.data.capa && (
         <a href={`/edicoes/${atual.id}/`} class="capa-img" tabindex="-1" aria-hidden="true">
@@ -32,7 +36,9 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
   </section>
 
   <section class="contentor" aria-labelledby="nesta-edicao">
-    <h2 id="nesta-edicao" class="secao-titulo">Nesta edição</h2>
+    <h2 id="nesta-edicao" class="secao-titulo">
+      Nesta edição
+    </h2>
     <ol class="sumario">
       {artigos.map((a) => (
         <li>
@@ -47,16 +53,28 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
   </section>
 
   <section class="contentor" aria-labelledby="anteriores">
-    <h2 id="anteriores" class="secao-titulo">Edições anteriores</h2>
+    <h2 id="anteriores" class="secao-titulo">
+      Edições anteriores
+    </h2>
     <div class="grelha-edicoes">
-      {edicoes.filter((e) => e.id !== atual.id).map((e) => <CartaoEdicao edicao={e} />)}
+      {edicoes
+        .filter((e) => e.id !== atual.id)
+        .map((e) => (
+          <CartaoEdicao edicao={e} />
+        ))}
     </div>
   </section>
 </Base>
 
 <style>
-  .topo-inicio { padding-top: 1rem; }
-  @media (min-width: 769px) { .topo-inicio { padding-top: 1.5rem; } }
+  .topo-inicio {
+    padding-top: 1rem;
+  }
+  @media (min-width: 769px) {
+    .topo-inicio {
+      padding-top: 1.5rem;
+    }
+  }
 
   .destaque {
     display: grid;
@@ -69,14 +87,44 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
     color: var(--destaque-texto);
     box-shadow: var(--destaque-sombra);
   }
-  @media (min-width: 769px) { .destaque { grid-template-columns: 1fr 13.75rem; gap: 2rem; padding: 2.5rem; } }
-  .destaque-texto { display: grid; gap: 0.75rem; justify-items: start; }
-  .destaque p { margin: 0; }
-  .rotulo { font-size: 0.875rem; font-weight: 600; }
-  .destaque h2 { margin: 0; font-size: 1.75rem; line-height: 1.05; letter-spacing: -0.03em; }
-  @media (min-width: 769px) { .destaque h2 { font-size: 2.75rem; } }
-  .autor { font-family: var(--f-ui); font-size: 0.875rem; }
-  .direcao { font-size: 1.0625rem; opacity: 0.92; }
+  @media (min-width: 769px) {
+    .destaque {
+      grid-template-columns: 1fr 13.75rem;
+      gap: 2rem;
+      padding: 2.5rem;
+    }
+  }
+  .destaque-texto {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+  }
+  .destaque p {
+    margin: 0;
+  }
+  .rotulo {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .destaque h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  @media (min-width: 769px) {
+    .destaque h2 {
+      font-size: 2.75rem;
+    }
+  }
+  .autor {
+    font-family: var(--f-ui);
+    font-size: 0.875rem;
+  }
+  .direcao {
+    font-size: 1.0625rem;
+    opacity: 0.92;
+  }
   .ler {
     display: inline-flex;
     align-items: center;
@@ -89,15 +137,56 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
     font-size: 0.9375rem;
     text-decoration: none;
   }
-  .ler:focus-visible { outline-color: var(--destaque-texto); }
-  .capa-img img { display: block; width: 100%; height: auto; border-radius: var(--raio-p); transform: rotate(3deg); box-shadow: 0 12px 30px rgb(0 0 0 / 0.3); }
+  .ler:focus-visible {
+    outline-color: var(--destaque-texto);
+  }
+  .capa-img img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--raio-p);
+    transform: rotate(3deg);
+    box-shadow: 0 12px 30px rgb(0 0 0 / 0.3);
+  }
 
-
-  .secao-titulo { margin: 2.5rem 0 1rem; }
-  .sumario { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: 1rem 1.25rem; }
-  .sumario .cartao { display: grid; gap: 0.5rem; justify-items: start; align-content: start; height: 100%; padding: 1.25rem; }
-  .sumario strong { font-family: var(--f-ui); font-size: 1.0625rem; font-weight: 700; line-height: 1.3; }
-  @media (min-width: 769px) { .sumario strong { font-size: 1.1875rem; } }
-  .resumo { font-size: 0.9375rem; color: var(--texto-suave); line-height: 1.45; }
-  .grelha-edicoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 1.5rem; }
+  .secao-titulo {
+    margin: 2.5rem 0 1rem;
+  }
+  .sumario {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem 1.25rem;
+  }
+  .sumario .cartao {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+    align-content: start;
+    height: 100%;
+    padding: 1.25rem;
+  }
+  .sumario strong {
+    font-family: var(--f-ui);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  @media (min-width: 769px) {
+    .sumario strong {
+      font-size: 1.1875rem;
+    }
+  }
+  .resumo {
+    font-size: 0.9375rem;
+    color: var(--texto-suave);
+    line-height: 1.45;
+  }
+  .grelha-edicoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 1.5rem;
+  }
 </style>

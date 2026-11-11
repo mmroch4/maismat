@@ -1,0 +1,9 @@
+dist/
+.astro/
+node_modules/
+package-lock.json
+src/content/
+public/pdf/
+src/lib/logotipo.ts
+src/lib/logo.ts
+*.md

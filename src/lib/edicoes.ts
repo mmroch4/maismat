@@ -3,7 +3,20 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 export type Edicao = CollectionEntry<'edicoes'>;
 export type Artigo = CollectionEntry<'artigos'>;
 
-const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const MESES = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+];
 
 export const mesAno = (d: Date) => `${MESES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 export const rotuloEdicao = (e: Edicao) => `Ano ${e.data.ano} · Edição ${String(e.data.numero).padStart(2, '0')}`;

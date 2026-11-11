@@ -17,82 +17,224 @@ const dados = {
   ...numeroEdicao(edicao, Astro.site!),
   inLanguage: 'pt-PT',
   publisher: editora(Astro.site!),
-  hasPart: convertida && artigos.length
-    ? artigos.map((a) => ({ '@type': 'Article', headline: a.data.titulo, url: new URL(`/edicoes/${edicao.id}/${slugArtigo(a)}/`, Astro.site).href }))
-    : undefined,
+  hasPart:
+    convertida && artigos.length
+      ? artigos.map((a) => ({
+          '@type': 'Article',
+          headline: a.data.titulo,
+          url: new URL(`/edicoes/${edicao.id}/${slugArtigo(a)}/`, Astro.site).href,
+        }))
+      : undefined,
 };
 ---
 
 <Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`} edicao={edicao} dados={dados}>
-  <div data-pagefind-body data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`} data-pagefind-sort={`data:${data.toISOString().slice(0, 10)}`}>
-  <div class="contentor cabecalho">
-    {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={400} class="capa" loading="eager" fetchpriority="high" />}
-    <div class="cabecalho-texto">
-      <p class="ui rotulo">{rotuloEdicao(edicao)}</p>
-      <h1 class="cap">{mesAno(data)}</h1>
-      <p class="ui direcao">Direção e edição de {direcao.join(' e ')}</p>
-      <p class="ui acoes" data-pagefind-ignore>
-        {convertida && artigos.length > 0 && <a class="botao" href={`/edicoes/${edicao.id}/${slugArtigo(artigos[0])}/`}>Começar a ler</a>}
-        {pdf && <a class="botao secundario" href={pdf} download>Ver em PDF</a>}
-        {convertida && <a class="botao secundario" href={`/edicoes/${edicao.id}/imprimir/`}>Imprimir tudo</a>}
-      </p>
-      {citacao && <blockquote>“{citacao.texto}” <footer>— {citacao.autor}</footer></blockquote>}
+  <div
+    data-pagefind-body
+    data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`}
+    data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`}
+    data-pagefind-sort={`data:${data.toISOString().slice(0, 10)}`}
+  >
+    <div class="contentor cabecalho">
+      {capa && (
+        <Image
+          src={capa}
+          alt={`Capa da edição de ${mesAno(data)}`}
+          width={400}
+          class="capa"
+          loading="eager"
+          fetchpriority="high"
+        />
+      )}
+      <div class="cabecalho-texto">
+        <p class="ui rotulo">{rotuloEdicao(edicao)}</p>
+        <h1 class="cap">{mesAno(data)}</h1>
+        <p class="ui direcao">Direção e edição de {direcao.join(' e ')}</p>
+        <p class="ui acoes" data-pagefind-ignore>
+          {convertida && artigos.length > 0 && (
+            <a class="botao" href={`/edicoes/${edicao.id}/${slugArtigo(artigos[0])}/`}>
+              Começar a ler
+            </a>
+          )}
+          {pdf && (
+            <a class="botao secundario" href={pdf} download>
+              Ver em PDF
+            </a>
+          )}
+          {convertida && (
+            <a class="botao secundario" href={`/edicoes/${edicao.id}/imprimir/`}>
+              Imprimir tudo
+            </a>
+          )}
+        </p>
+        {citacao && (
+          <blockquote>
+            “{citacao.texto}” <footer>— {citacao.autor}</footer>
+          </blockquote>
+        )}
+      </div>
     </div>
-  </div>
 
-  <div class="contentor">
-    {convertida ? (
-      <>
-        <h2 class="titulo-sec">Sumário <span class="ui">· {artigos.length} artigos</span></h2>
-        <ol class="indice">
-          {artigos.map((a, i) => (
-            <li>
-              <a class="cartao" href={`/edicoes/${edicao.id}/${slugArtigo(a)}/`}>
-                <span class="num ui" data-pagefind-ignore>{String(i + 1).padStart(2, '0')}</span>
-                <span class="texto">
-                  <span class="seccao ui" data-pagefind-ignore>{SECCOES[a.data.seccao]}</span>
-                  <strong>{a.data.titulo}</strong>
-                  {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </>
-    ) : (
-      pdf && (
+    <div class="contentor">
+      {convertida ? (
         <>
-          <p class="ui aviso">Esta edição ainda só está disponível no formato original.</p>
-          <object data={pdf} type="application/pdf" class="leitor">
-            <p><a href={pdf}>Abrir o PDF</a></p>
-          </object>
+          <h2 class="titulo-sec">
+            Sumário <span class="ui">· {artigos.length} artigos</span>
+          </h2>
+          <ol class="indice">
+            {artigos.map((a, i) => (
+              <li>
+                <a class="cartao" href={`/edicoes/${edicao.id}/${slugArtigo(a)}/`}>
+                  <span class="num ui" data-pagefind-ignore>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="texto">
+                    <span class="seccao ui" data-pagefind-ignore>
+                      {SECCOES[a.data.seccao]}
+                    </span>
+                    <strong>{a.data.titulo}</strong>
+                    {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
         </>
-      )
-    )}
-  </div>
+      ) : (
+        pdf && (
+          <>
+            <p class="ui aviso">Esta edição ainda só está disponível no formato original.</p>
+            <object data={pdf} type="application/pdf" class="leitor">
+              <p>
+                <a href={pdf}>Abrir o PDF</a>
+              </p>
+            </object>
+          </>
+        )
+      )}
+    </div>
   </div>
 </Base>
 
 <style>
-  .cabecalho { display: grid; grid-template-columns: 7rem 1fr; gap: 1.25rem; align-items: start; padding-top: 2rem; }
-  @media (min-width: 769px) { .cabecalho { grid-template-columns: 14rem 1fr; gap: 2.5rem; padding-top: 2.5rem; } }
-  .capa { width: 100%; height: auto; border-radius: var(--raio-p); box-shadow: 0 6px 24px rgb(0 0 0 / 0.12); }
-  .cabecalho-texto { min-width: 0; }
-  .rotulo { font-size: 0.875rem; font-weight: 600; color: var(--texto-suave); margin: 0; }
-  h1 { margin: 0.25rem 0; }
-  .direcao { font-size: 0.9375rem; color: var(--texto-suave); margin: 0; }
-  .acoes { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0 0; }
-  blockquote { grid-column: 1 / -1; font-style: italic; border-left: 4px solid var(--marcador); padding-left: 1rem; margin: 1.5rem 0 0; max-width: 36rem; }
-  blockquote footer { font-family: var(--f-ui); font-style: normal; font-size: 0.875rem; color: var(--texto-suave); margin-top: 0.25rem; }
-  .titulo-sec { margin: 2.5rem 0 1rem; }
-  .titulo-sec .ui { font-weight: 500; color: var(--texto-suave); font-size: 0.7em; letter-spacing: 0; }
-  .indice { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 0.75rem 1.25rem; }
-  .indice .cartao { display: grid; grid-template-columns: 2.25rem 1fr; gap: 0.75rem; height: 100%; padding: 1rem 1.25rem; }
-  .num { font-size: 1.25rem; font-weight: 800; color: var(--rotulo); line-height: 1.4; }
-  .texto { display: grid; gap: 0.2rem; min-width: 0; }
-  .seccao { font-size: 0.75rem; font-weight: 600; color: var(--texto-suave); }
-  .texto strong { font-family: var(--f-ui); font-size: 1.0625rem; font-weight: 700; line-height: 1.3; }
-  .resumo { font-size: 0.9375rem; color: var(--texto-suave); line-height: 1.45; margin-top: 0.15rem; }
-  .aviso { margin-top: 2.5rem; color: var(--texto-suave); }
-  .leitor { width: 100%; height: 85vh; border: 1px solid var(--linha); border-radius: var(--raio-p); }
+  .cabecalho {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    padding-top: 2rem;
+  }
+  @media (min-width: 769px) {
+    .cabecalho {
+      grid-template-columns: 14rem 1fr;
+      gap: 2.5rem;
+      padding-top: 2.5rem;
+    }
+  }
+  .capa {
+    width: 100%;
+    height: auto;
+    border-radius: var(--raio-p);
+    box-shadow: 0 6px 24px rgb(0 0 0 / 0.12);
+  }
+  .cabecalho-texto {
+    min-width: 0;
+  }
+  .rotulo {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    margin: 0;
+  }
+  h1 {
+    margin: 0.25rem 0;
+  }
+  .direcao {
+    font-size: 0.9375rem;
+    color: var(--texto-suave);
+    margin: 0;
+  }
+  .acoes {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1.25rem 0 0;
+  }
+  blockquote {
+    grid-column: 1 / -1;
+    font-style: italic;
+    border-left: 4px solid var(--marcador);
+    padding-left: 1rem;
+    margin: 1.5rem 0 0;
+    max-width: 36rem;
+  }
+  blockquote footer {
+    font-family: var(--f-ui);
+    font-style: normal;
+    font-size: 0.875rem;
+    color: var(--texto-suave);
+    margin-top: 0.25rem;
+  }
+  .titulo-sec {
+    margin: 2.5rem 0 1rem;
+  }
+  .titulo-sec .ui {
+    font-weight: 500;
+    color: var(--texto-suave);
+    font-size: 0.7em;
+    letter-spacing: 0;
+  }
+  .indice {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 0.75rem 1.25rem;
+  }
+  .indice .cartao {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1rem 1.25rem;
+  }
+  .num {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--rotulo);
+    line-height: 1.4;
+  }
+  .texto {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .seccao {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+  }
+  .texto strong {
+    font-family: var(--f-ui);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .resumo {
+    font-size: 0.9375rem;
+    color: var(--texto-suave);
+    line-height: 1.45;
+    margin-top: 0.15rem;
+  }
+  .aviso {
+    margin-top: 2.5rem;
+    color: var(--texto-suave);
+  }
+  .leitor {
+    width: 100%;
+    height: 85vh;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-p);
+  }
 </style>

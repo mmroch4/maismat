@@ -5,7 +5,10 @@ import { getCollection } from 'astro:content';
 import { pagina } from '../../../lib/demonstracoes.mjs';
 
 export const getStaticPaths = (async () =>
-  (await getCollection('demonstracoes')).map((d) => ({ params: { id: d.id }, props: { codigo: d.data.codigo } }))) satisfies GetStaticPaths;
+  (await getCollection('demonstracoes')).map((d) => ({
+    params: { id: d.id },
+    props: { codigo: d.data.codigo },
+  }))) satisfies GetStaticPaths;
 
 export const GET: APIRoute = ({ props }) =>
   new Response(pagina(props.codigo), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });

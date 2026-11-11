@@ -43,7 +43,8 @@ export function descodificar(codigo) {
   if (!t) throw new Error('Cola primeiro o teu código.');
   const versao = t.match(/^MAT(\d+)-/);
   if (!versao) throw new Error('Isto não parece um código do +MAT: devia começar por MAT1-.');
-  if (versao[1] !== '1') throw new Error(`Este código é de uma versão do +MAT que este site não conhece (MAT${versao[1]}).`);
+  if (versao[1] !== '1')
+    throw new Error(`Este código é de uma versão do +MAT que este site não conhece (MAT${versao[1]}).`);
   const corpo = t.slice(versao[0].length).replace(/-/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
   const errado = corpo.match(/[^0-9A-HJKMNP-TV-Z]/);
   if (errado) throw new Error(`O código tem um carácter que não pode ter (“${errado[0]}”). Volta a copiá-lo.`);
@@ -63,7 +64,13 @@ export function descodificar(codigo) {
 
   const ids = [];
   for (let i = 0; i < dados.length; i += 4)
-    ids.push('desafio-' + dados.slice(i, i + 4).map((b) => b.toString(16).padStart(2, '0')).join(''));
+    ids.push(
+      'desafio-' +
+        dados
+          .slice(i, i + 4)
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join(''),
+    );
   return ids;
 }
 

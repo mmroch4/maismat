@@ -4,7 +4,9 @@ import Base from '../layouts/Base.astro';
 
 <Base titulo="Sobre" descricao="Sobre o +MAT e a sua versão digital.">
   <div class="contentor prosa">
-    <h1>Sobre o <span class="marcador">+MAT</span></h1>
+    <h1>
+      Sobre o <span class="marcador">+MAT</span>
+    </h1>
     <p>
       O <strong>+MAT</strong> é o jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, publicado desde
       novembro de 2022. Reúne curiosidades, história da Matemática, jogos, desafios, trabalhos de alunos e notícias da
@@ -12,19 +14,20 @@ import Base from '../layouts/Base.astro';
     </p>
 
     <h2>Equipa</h2>
-    <p><strong>Direção e edição:</strong> Rosa Bértolo e Carla Nunes.</p>
     <p>
-      Os artigos contam com a colaboração de professores e alunos do agrupamento, identificados em cada artigo.
+      <strong>Direção e edição:</strong> Rosa Bértolo e Carla Nunes.
     </p>
+    <p>Os artigos contam com a colaboração de professores e alunos do agrupamento, identificados em cada artigo.</p>
 
     <h2>Versão digital</h2>
     <p>
-      A versão digital do +MAT foi concebida e desenvolvida por <strong>Miguel Rocha</strong>{' '}
-      (<a href="https://miguelrocha.dev">miguelrocha.dev</a>) e é disponibilizada gratuitamente à escola, com a condição
+      A versão digital do +MAT foi concebida e desenvolvida por <strong>Miguel Rocha</strong> (
+      <a href="https://miguelrocha.dev">miguelrocha.dev</a>) e é disponibilizada gratuitamente à escola, com a condição
       de que a autoria e estes créditos se mantenham visíveis.
     </p>
     <p>
-      Todas as edições anteriores estão disponíveis no formato original em PDF, na página <a href="/edicoes/">Edições</a>.
+      Todas as edições anteriores estão disponíveis no formato original em PDF, na página{' '}
+      <a href="/edicoes/">Edições</a>.
     </p>
 
     <h2>Participa</h2>
@@ -36,6 +39,12 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <style>
-  .prosa { padding-top: 2rem; }
-  @media (min-width: 769px) { .prosa { padding-top: 2.5rem; } }
+  .prosa {
+    padding-top: 2rem;
+  }
+  @media (min-width: 769px) {
+    .prosa {
+      padding-top: 2.5rem;
+    }
+  }
 </style>

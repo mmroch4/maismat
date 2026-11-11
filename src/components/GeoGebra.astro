@@ -9,19 +9,32 @@ interface Props {
 }
 const { ligacao, titulo, altura = 500 } = Astro.props;
 const enderecos = geogebra(ligacao, altura);
-if (!enderecos) throw new Error(`A ligação «${ligacao}» do bloco «Applet GeoGebra» não é a de um applet. No GeoGebra, carrega em «Partilhar» e copia a ligação (https://www.geogebra.org/m/…).`);
+if (!enderecos)
+  throw new Error(
+    `A ligação «${ligacao}» do bloco «Applet GeoGebra» não é a de um applet. No GeoGebra, carrega em «Partilhar» e copia a ligação (https://www.geogebra.org/m/…).`,
+  );
 ---
 
 <figure class="applet">
-  <maismat-geogebra class="nao-imprimir" data-src={enderecos.iframe} data-titulo={titulo} style={`aspect-ratio: 800 / ${altura}`} data-pagefind-ignore>
+  <maismat-geogebra
+    class="nao-imprimir"
+    data-src={enderecos.iframe}
+    data-titulo={titulo}
+    style={`aspect-ratio: 800 / ${altura}`}
+    data-pagefind-ignore
+  >
     <div class="fachada ui">
-      <p><strong>Applet GeoGebra:</strong> {titulo}</p>
+      <p>
+        <strong>Applet GeoGebra:</strong> {titulo}
+      </p>
       <p class="aviso">Ao abrir, o browser liga-se a geogebra.org, que pode guardar cookies.</p>
       <button type="button">Abrir o applet</button>
       <a href={enderecos.pagina}>ou abrir no site do GeoGebra</a>
     </div>
   </maismat-geogebra>
-  <p class="ui so-imprimir" data-pagefind-ignore>Applet GeoGebra «{titulo}»: {enderecos.pagina}</p>
+  <p class="ui so-imprimir" data-pagefind-ignore>
+    Applet GeoGebra «{titulo}»: {enderecos.pagina}
+  </p>
 </figure>
 
 <script>
@@ -29,7 +42,12 @@ if (!enderecos) throw new Error(`A ligação «${ligacao}» do bloco «Applet Ge
     connectedCallback() {
       this.querySelector('button')!.addEventListener('click', () => {
         const iframe = document.createElement('iframe');
-        Object.assign(iframe, { src: this.dataset.src!, title: this.dataset.titulo!, allow: 'fullscreen', referrerPolicy: 'strict-origin-when-cross-origin' });
+        Object.assign(iframe, {
+          src: this.dataset.src!,
+          title: this.dataset.titulo!,
+          allow: 'fullscreen',
+          referrerPolicy: 'strict-origin-when-cross-origin',
+        });
         // allow-same-origin é seguro aqui: a origem é a do geogebra.org, não a do +MAT.
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
         this.replaceChildren(iframe);
@@ -41,16 +59,66 @@ if (!enderecos) throw new Error(`A ligação «${ligacao}» do bloco «Applet Ge
 </script>
 
 <style>
-  maismat-geogebra { display: grid; position: relative; width: 100%; border-radius: var(--raio); border: 2px dashed var(--campo); background: var(--superficie); }
-  maismat-geogebra:has(iframe) { border-style: solid; border-color: var(--linha); }
-  .fachada { display: grid; place-content: center; justify-items: center; gap: 0.625rem; padding: 1.25rem; text-align: center; font-size: 0.9375rem; }
-  .fachada p { margin: 0; }
-  .aviso { color: var(--texto-suave); font-size: 0.8125rem; }
-  .fachada a { display: inline-flex; align-items: center; min-height: 44px; font-size: 0.875rem; }
-  button { min-height: 44px; padding: 0 1.125rem; border: 0; border-radius: var(--raio); background: var(--primaria); color: var(--primaria-texto); font: 700 0.875rem var(--f-ui); cursor: pointer; }
-  button:hover { background: var(--primaria-forte); }
-  button:focus-visible { outline-color: var(--texto); }
-  maismat-geogebra:not(:defined) button { display: none; }
+  maismat-geogebra {
+    display: grid;
+    position: relative;
+    width: 100%;
+    border-radius: var(--raio);
+    border: 2px dashed var(--campo);
+    background: var(--superficie);
+  }
+  maismat-geogebra:has(iframe) {
+    border-style: solid;
+    border-color: var(--linha);
+  }
+  .fachada {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.625rem;
+    padding: 1.25rem;
+    text-align: center;
+    font-size: 0.9375rem;
+  }
+  .fachada p {
+    margin: 0;
+  }
+  .aviso {
+    color: var(--texto-suave);
+    font-size: 0.8125rem;
+  }
+  .fachada a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.875rem;
+  }
+  button {
+    min-height: 44px;
+    padding: 0 1.125rem;
+    border: 0;
+    border-radius: var(--raio);
+    background: var(--primaria);
+    color: var(--primaria-texto);
+    font: 700 0.875rem var(--f-ui);
+    cursor: pointer;
+  }
+  button:hover {
+    background: var(--primaria-forte);
+  }
+  button:focus-visible {
+    outline-color: var(--texto);
+  }
+  maismat-geogebra:not(:defined) button {
+    display: none;
+  }
   /* O iframe é criado pelo script, por isso não tem o atributo dos estilos deste componente. */
-  maismat-geogebra :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: calc(var(--raio) - 2px); }
+  maismat-geogebra :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: calc(var(--raio) - 2px);
+  }
 </style>

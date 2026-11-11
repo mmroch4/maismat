@@ -10,7 +10,10 @@ export default function remarkFiguras() {
       const legenda = img.title;
       img.title = null;
       no.data = { hName: 'figure' };
-      no.children = [img, { type: 'text', value: legenda, data: { hName: 'figcaption', hChildren: [{ type: 'text', value: legenda }] } }];
+      no.children = [
+        img,
+        { type: 'text', value: legenda, data: { hName: 'figcaption', hChildren: [{ type: 'text', value: legenda }] } },
+      ];
     });
   };
 }

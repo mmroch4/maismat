@@ -45,7 +45,10 @@ function excerto(enunciado: string, max = 180): Segmento[] {
       total += texto.length;
       continue;
     }
-    const corte = texto.slice(0, max - total).replace(/\s+\S*$/, '').replace(/[,;:]$/, '');
+    const corte = texto
+      .slice(0, max - total)
+      .replace(/\s+\S*$/, '')
+      .replace(/[,;:]$/, '');
     segmentos.push({ texto: `${corte}…` });
     return aparar(segmentos);
   }
@@ -71,10 +74,15 @@ export async function desafiosPublicados(): Promise<DesafioArquivo[]> {
       for (const m of (artigo.body ?? '').matchAll(padrao)) {
         const d = blocoDesafio.fromBlock(m);
         const id = d.id;
-        if (!id) throw new Error(`O desafio “${d.titulo}” (${artigo.id}) não tem id. Abre-o no painel e guarda, ou escreve id="desafio-…" no artigo.`);
+        if (!id)
+          throw new Error(
+            `O desafio “${d.titulo}” (${artigo.id}) não tem id. Abre-o no painel e guarda, ou escreve id="desafio-…" no artigo.`,
+          );
         // O mesmo id só pode repetir-se quando é o mesmo problema republicado (por exemplo, nas resoluções).
         if (titulos.has(id) && titulos.get(id) !== d.titulo)
-          throw new Error(`Os desafios “${titulos.get(id)}” e “${d.titulo}” (${artigo.id}) têm o mesmo id ${id}. Se são problemas diferentes, apaga o identificador de um deles no painel para gerar outro.`);
+          throw new Error(
+            `Os desafios “${titulos.get(id)}” e “${d.titulo}” (${artigo.id}) têm o mesmo id ${id}. Se são problemas diferentes, apaga o identificador de um deles no painel para gerar outro.`,
+          );
         titulos.set(id, d.titulo);
         lista.push({
           id,

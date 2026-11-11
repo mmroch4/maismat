@@ -8,13 +8,18 @@ const desafios = await desafiosPublicados();
 const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 ---
 
-<Base titulo="Arquivo de desafios" descricao="Todos os desafios publicados no +MAT, para voltares a encontrá-los e resolvê-los.">
+<Base
+  titulo="Arquivo de desafios"
+  descricao="Todos os desafios publicados no +MAT, para voltares a encontrá-los e resolvê-los."
+>
   <div class="contentor">
     <div class="cabeca">
-      <h1>Arquivo de <span class="marcador">desafios</span></h1>
+      <h1>
+        Arquivo de <span class="marcador">desafios</span>
+      </h1>
       <p>
-        Os {desafios.length} desafios publicados no +MAT, da edição mais recente para a mais antiga.
-        Cada um leva-te ao artigo onde podes responder e, quando existe, ver a resolução.
+        Os {desafios.length} desafios publicados no +MAT, da edição mais recente para a mais antiga. Cada um leva-te ao
+        artigo onde podes responder e, quando existe, ver a resolução.
       </p>
     </div>
 
@@ -25,15 +30,23 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 
     <form class="ui filtros nao-imprimir" hidden>
       <div class="pastilhas" role="group" aria-label="Estado">
-        <button type="button" data-estado="por-resolver" aria-pressed="false">Por resolver · <span class="n"></span></button>
-        <button type="button" data-estado="resolvidos" aria-pressed="false">Resolvidos · <span class="n"></span></button>
-        <button type="button" data-estado="" aria-pressed="true">Todos · <span class="n"></span></button>
+        <button type="button" data-estado="por-resolver" aria-pressed="false">
+          Por resolver · <span class="n"></span>
+        </button>
+        <button type="button" data-estado="resolvidos" aria-pressed="false">
+          Resolvidos · <span class="n"></span>
+        </button>
+        <button type="button" data-estado="" aria-pressed="true">
+          Todos · <span class="n"></span>
+        </button>
       </div>
       <label>
         <span>Edição</span>
         <select name="edicao" class="entrada">
           <option value="">Todas</option>
-          {porEdicao.map(([e]) => <option value={e.id}>{rotuloEdicao(e)}</option>)}
+          {porEdicao.map(([e]) => (
+            <option value={e.id}>{rotuloEdicao(e)}</option>
+          ))}
         </select>
       </label>
       <p class="contagem" role="status" aria-live="polite"></p>
@@ -42,9 +55,9 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     <details id="levar" class="ui transferir nao-imprimir" hidden>
       <summary>Levar o teu progresso para outro computador</summary>
       <p>
-        Os computadores da escola apagam muitas vezes o que fica guardado. Cria um código, envia-o a ti próprio
-        (por email, no Teams ou num documento) e cola-o no outro computador. O código só diz que desafios
-        resolveste: não tem o teu nome nem as tuas respostas.
+        Os computadores da escola apagam muitas vezes o que fica guardado. Cria um código, envia-o a ti próprio (por
+        email, no Teams ou num documento) e cola-o no outro computador. O código só diz que desafios resolveste: não tem
+        o teu nome nem as tuas respostas.
       </p>
       <div class="passos">
         <form class="exportar">
@@ -54,13 +67,17 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
             <span>O teu código</span>
             <textarea name="codigo" rows="3" readonly spellcheck="false"></textarea>
           </label>
-          <button type="button" class="copiar" hidden>Copiar</button>
+          <button type="button" class="copiar" hidden>
+            Copiar
+          </button>
           <p class="mensagem" role="status" aria-live="polite"></p>
           <div class="qr" hidden>
             <p class="passo">Para o telemóvel</p>
             <div class="qr-imagem"></div>
             <p>Lê com a câmara do telemóvel.</p>
-            <p class="ligacao">Ou abre esta ligação: <a href=""></a></p>
+            <p class="ligacao">
+              Ou abre esta ligação: <a href=""></a>
+            </p>
           </div>
         </form>
         <form class="importar">
@@ -73,8 +90,12 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
           <p class="mensagem" role="status" aria-live="polite"></p>
           <div class="confirmar" hidden>
             <p class="pergunta" tabindex="-1"></p>
-            <button type="button" class="sim">Juntar</button>
-            <button type="button" class="nao">Agora não</button>
+            <button type="button" class="sim">
+              Juntar
+            </button>
+            <button type="button" class="nao">
+              Agora não
+            </button>
           </div>
         </form>
       </div>
@@ -89,10 +110,16 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
           {lista.map((d) => (
             <li class="desafio" data-id={d.id}>
               <p class="ui rotulo">
-                <span>Desafio{d.numero && ` ${d.numero}`} · {d.artigo.data.titulo}</span>
-                <span class="resolvido" hidden><span aria-hidden="true">✓</span> Resolvido</span>
+                <span>
+                  Desafio{d.numero && ` ${d.numero}`} · {d.artigo.data.titulo}
+                </span>
+                <span class="resolvido" hidden>
+                  <span aria-hidden="true">✓</span> Resolvido
+                </span>
               </p>
-              <h3><a href={d.url}>{d.titulo}</a></h3>
+              <h3>
+                <a href={d.url}>{d.titulo}</a>
+              </h3>
               {d.excerto.length > 0 && (
                 <p class="excerto">{d.excerto.map((s) => ('html' in s ? <Fragment set:html={s.html} /> : s.texto))}</p>
               )}
@@ -207,7 +234,10 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     copiar.hidden = false;
     desenharQr(ligacaoProgresso(location.origin, ids));
     exportar.codigo.select();
-    avisar(exportar, `Código criado com ${plural(ids.length, 'desafio resolvido', 'desafios resolvidos')}. Copia-o e guarda-o.`);
+    avisar(
+      exportar,
+      `Código criado com ${plural(ids.length, 'desafio resolvido', 'desafios resolvidos')}. Copia-o e guarda-o.`,
+    );
   });
 
   copiar.addEventListener('click', async () => {
@@ -261,7 +291,10 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
         : 'Já tinhas todos os desafios deste código.',
       `Agora tens ${plural(resolvidos.size, 'resolvido', 'resolvidos')}.`,
     ];
-    if (ignorados) partes.push(`${plural(ignorados, 'desafio do código não existe', 'desafios do código não existem')} neste site e ${ignorados === 1 ? 'foi ignorado' : 'foram ignorados'}.`);
+    if (ignorados)
+      partes.push(
+        `${plural(ignorados, 'desafio do código não existe', 'desafios do código não existem')} neste site e ${ignorados === 1 ? 'foi ignorado' : 'foram ignorados'}.`,
+      );
     avisar(importar, partes.join(' '));
   }
 
@@ -319,29 +352,118 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 </script>
 
 <style>
-  .progresso { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; max-width: 30rem; }
-  .neste { font-size: 0.8125rem; color: var(--texto-suave); }
+  .progresso {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    max-width: 30rem;
+  }
+  .neste {
+    font-size: 0.8125rem;
+    color: var(--texto-suave);
+  }
 
-  .filtros { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem 1.25rem; margin: 1.5rem 0 0.5rem; font-size: 0.9375rem; }
-  .filtros label { display: grid; gap: 0.25rem; }
-  .filtros label > span { font-weight: 600; }
-  .contagem { margin: 0; color: var(--texto-suave); flex-basis: 100%; }
+  .filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem 1.25rem;
+    margin: 1.5rem 0 0.5rem;
+    font-size: 0.9375rem;
+  }
+  .filtros label {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .filtros label > span {
+    font-weight: 600;
+  }
+  .contagem {
+    margin: 0;
+    color: var(--texto-suave);
+    flex-basis: 100%;
+  }
 
-  h2 { margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--linha); }
-  h2 .ui { font-size: 0.875rem; font-weight: 600; letter-spacing: 0; color: var(--texto-suave); }
+  h2 {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--linha);
+  }
+  h2 .ui {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--texto-suave);
+  }
 
-  ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1rem; }
-  .desafio { padding: 1rem 1.25rem; min-width: 0; background: var(--superficie); border-radius: var(--raio); box-shadow: var(--sombra); }
-  .desafio[data-resolvido] { box-shadow: 0 0 0 2px var(--ok); }
-  .rotulo { display: flex; justify-content: space-between; gap: 0.75rem; font-size: 0.75rem; font-weight: 600; color: var(--texto-suave); margin: 0; }
-  .rotulo .resolvido { color: var(--ok); white-space: nowrap; }
-  h3 { margin: 0.375rem 0 0; overflow-wrap: anywhere; }
-  h3 a { color: var(--texto); text-decoration: none; }
-  h3 a:hover { text-decoration: underline; }
-  .excerto { font-size: 0.9375rem; line-height: 1.5; color: var(--texto-suave); margin: 0.5rem 0 0; overflow-wrap: anywhere; }
-  .etiquetas { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0.75rem 0 0; font-size: 0.75rem; font-weight: 600; }
-  .etiquetas span { padding: 0.2rem 0.625rem; border-radius: var(--raio-g); background: var(--pastilha); color: var(--texto-suave); }
-  [hidden] { display: none !important; }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem;
+  }
+  .desafio {
+    padding: 1rem 1.25rem;
+    min-width: 0;
+    background: var(--superficie);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+  }
+  .desafio[data-resolvido] {
+    box-shadow: 0 0 0 2px var(--ok);
+  }
+  .rotulo {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    margin: 0;
+  }
+  .rotulo .resolvido {
+    color: var(--ok);
+    white-space: nowrap;
+  }
+  h3 {
+    margin: 0.375rem 0 0;
+    overflow-wrap: anywhere;
+  }
+  h3 a {
+    color: var(--texto);
+    text-decoration: none;
+  }
+  h3 a:hover {
+    text-decoration: underline;
+  }
+  .excerto {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--texto-suave);
+    margin: 0.5rem 0 0;
+    overflow-wrap: anywhere;
+  }
+  .etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 0.75rem 0 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .etiquetas span {
+    padding: 0.2rem 0.625rem;
+    border-radius: var(--raio-g);
+    background: var(--pastilha);
+    color: var(--texto-suave);
+  }
+  [hidden] {
+    display: none !important;
+  }
 
   .transferir {
     margin: 1rem 0 0.5rem;
@@ -352,15 +474,49 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     font-size: 0.9rem;
     max-width: 48rem;
   }
-  .transferir summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; color: var(--primaria); }
-  .transferir > p { color: var(--texto-suave); margin: 0.75rem 0 0; }
-  .passos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1rem 1.5rem; margin-top: 1rem; }
-  .passos form { display: flex; flex-wrap: wrap; align-items: start; align-content: start; gap: 0.6rem; min-width: 0; }
-  .passo { font-weight: 600; margin: 0; width: 100%; }
-  .passos label { display: grid; gap: 0.25rem; width: 100%; }
-  .passos label span { color: var(--texto-suave); }
+  .transferir summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primaria);
+  }
+  .transferir > p {
+    color: var(--texto-suave);
+    margin: 0.75rem 0 0;
+  }
+  .passos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem 1.5rem;
+    margin-top: 1rem;
+  }
+  .passos form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    align-content: start;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .passo {
+    font-weight: 600;
+    margin: 0;
+    width: 100%;
+  }
+  .passos label {
+    display: grid;
+    gap: 0.25rem;
+    width: 100%;
+  }
+  .passos label span {
+    color: var(--texto-suave);
+  }
   textarea {
-    font: 0.85rem/1.4 ui-monospace, monospace;
+    font:
+      0.85rem/1.4 ui-monospace,
+      monospace;
     padding: 0.45rem 0.6rem;
     border: 2px solid var(--campo);
     border-radius: var(--raio-p);
@@ -381,18 +537,64 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     font: 700 0.875rem var(--f-ui);
     cursor: pointer;
   }
-  .passos button:hover { background: var(--primaria-forte); }
-  .passos button:focus-visible { outline-color: var(--texto); }
-  .mensagem { margin: 0; width: 100%; min-height: 1.4em; color: var(--ok); font-weight: 600; }
-  .mensagem.erro { color: var(--erro); }
-  .mensagem:empty { min-height: 0; }
+  .passos button:hover {
+    background: var(--primaria-forte);
+  }
+  .passos button:focus-visible {
+    outline-color: var(--texto);
+  }
+  .mensagem {
+    margin: 0;
+    width: 100%;
+    min-height: 1.4em;
+    color: var(--ok);
+    font-weight: 600;
+  }
+  .mensagem.erro {
+    color: var(--erro);
+  }
+  .mensagem:empty {
+    min-height: 0;
+  }
 
-  .qr, .confirmar { display: flex; flex-wrap: wrap; gap: 0.6rem; width: 100%; }
-  .qr p, .confirmar p { margin: 0; width: 100%; }
-  .qr-imagem { width: 100%; max-width: 16rem; }
-  .qr-imagem :global(svg) { display: block; width: 100%; height: auto; border-radius: 6px; outline: 1px solid var(--linha); }
-  .ligacao { color: var(--texto-suave); font-size: 0.8rem; overflow-wrap: anywhere; word-break: break-all; }
-  .pergunta { font-weight: 600; }
-  .passos .nao { background: none; color: var(--texto); box-shadow: inset 0 0 0 2px var(--campo); }
-  .passos .nao:hover { background: var(--fundo); }
+  .qr,
+  .confirmar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    width: 100%;
+  }
+  .qr p,
+  .confirmar p {
+    margin: 0;
+    width: 100%;
+  }
+  .qr-imagem {
+    width: 100%;
+    max-width: 16rem;
+  }
+  .qr-imagem :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    outline: 1px solid var(--linha);
+  }
+  .ligacao {
+    color: var(--texto-suave);
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+  .pergunta {
+    font-weight: 600;
+  }
+  .passos .nao {
+    background: none;
+    color: var(--texto);
+    box-shadow: inset 0 0 0 2px var(--campo);
+  }
+  .passos .nao:hover {
+    background: var(--fundo);
+  }
 </style>

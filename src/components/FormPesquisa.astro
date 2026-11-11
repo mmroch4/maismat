@@ -1,6 +1,8 @@
 ---
 // Campo de pesquisa da /pesquisa/ e da página 404. O que vier no slot fica por baixo do campo (os filtros).
-interface Props { escondido?: boolean }
+interface Props {
+  escondido?: boolean;
+}
 const { escondido = false } = Astro.props;
 ---
 
@@ -14,10 +16,23 @@ const { escondido = false } = Astro.props;
 </form>
 
 <style>
-  .pesquisa { display: grid; gap: 0.375rem; max-width: 40rem; font-size: 0.9375rem; }
-  .pesquisa[hidden] { display: none; }
-  label { font-weight: 600; }
-  .linha { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .pesquisa {
+    display: grid;
+    gap: 0.375rem;
+    max-width: 40rem;
+    font-size: 0.9375rem;
+  }
+  .pesquisa[hidden] {
+    display: none;
+  }
+  label {
+    font-weight: 600;
+  }
+  .linha {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
   input {
     flex: 1 1 12rem;
     min-width: 0;
@@ -29,7 +44,10 @@ const { escondido = false } = Astro.props;
     color: var(--texto);
     font: 1rem var(--f-ui);
   }
-  input:focus-visible { border-color: var(--primaria); outline-offset: 2px; }
+  input:focus-visible {
+    border-color: var(--primaria);
+    outline-offset: 2px;
+  }
   button {
     flex: 1 1 auto;
     max-width: 100%;
@@ -42,7 +60,15 @@ const { escondido = false } = Astro.props;
     font: 700 0.9375rem var(--f-ui);
     cursor: pointer;
   }
-  @media (min-width: 769px) { button { flex: 0 0 auto; } }
-  button:hover { background: var(--primaria-forte); }
-  button:focus-visible { outline-color: var(--texto); }
+  @media (min-width: 769px) {
+    button {
+      flex: 0 0 auto;
+    }
+  }
+  button:hover {
+    background: var(--primaria-forte);
+  }
+  button:focus-visible {
+    outline-color: var(--texto);
+  }
 </style>

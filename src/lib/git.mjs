@@ -10,7 +10,11 @@ const git = (...args) => execFileSync('git', args, { encoding: 'utf8', stdio: ['
 let completo;
 const historicoCompleto = () => {
   // Num clone parcial (shallow) as datas seriam todas a do último commit: mais vale não as dar.
-  try { completo ??= git('rev-parse', '--is-shallow-repository') === 'false'; } catch { completo = false; }
+  try {
+    completo ??= git('rev-parse', '--is-shallow-repository') === 'false';
+  } catch {
+    completo = false;
+  }
   return completo;
 };
 

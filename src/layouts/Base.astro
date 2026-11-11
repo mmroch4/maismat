@@ -21,7 +21,13 @@ interface Props {
   dados?: Record<string, unknown>;
 }
 
-const { titulo, descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.', artigo = false, naoEncontrada = false, dados } = Astro.props;
+const {
+  titulo,
+  descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.',
+  artigo = false,
+  naoEncontrada = false,
+  dados,
+} = Astro.props;
 const tituloCompleto = titulo ? `${titulo} · +MAT` : '+MAT · Jornal de Matemática';
 const caminho = Astro.url.pathname;
 const endereco = new URL(caminho, Astro.site);
@@ -32,7 +38,14 @@ const edicao = Astro.props.edicao?.data.capa ? Astro.props.edicao : edicoes.find
 const atual = await edicaoAtual();
 const mesAtual = atual && mesAno(atual.data.data).replace(/^./, (c) => c.toUpperCase());
 // O Astro não aumenta imagens: com uma capa mais estreita que 600 px, o og:image:width tem de ser a largura dela.
-const partilha = edicao && (await getImage({ src: edicao.data.capa!, format: 'jpeg', width: Math.min(600, edicao.data.capa!.width), quality: 80 }));
+const partilha =
+  edicao &&
+  (await getImage({
+    src: edicao.data.capa!,
+    format: 'jpeg',
+    width: Math.min(600, edicao.data.capa!.width),
+    quality: 80,
+  }));
 const imagem = partilha && new URL(partilha.src, Astro.site);
 const nav = [
   { href: '/', texto: 'Início', icone: 'inicio' },
@@ -44,7 +57,7 @@ const nav = [
 ] as const;
 // No telemóvel, Secções e Sobre vão para a folha «Mais».
 const navBaixo = nav.filter((l) => l.href !== '/seccoes/' && l.href !== '/sobre/');
-const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.startsWith(href)) ? 'page' : undefined;
+const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.startsWith(href)) ? 'page' : undefined);
 ---
 
 <!doctype html>
@@ -83,20 +96,36 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title="+MAT · Edições" href="/rss.xml" />
-    {dados && <script type="application/ld+json" set:html={jsonLd({ '@context': 'https://schema.org', ...dados, url: endereco.href, image: imagem?.href })} />}
+    {dados && (
+      <script
+        type="application/ld+json"
+        set:html={jsonLd({ '@context': 'https://schema.org', ...dados, url: endereco.href, image: imagem?.href })}
+      />
+    )}
   </head>
   <body>
-    <a class="saltar ui nao-imprimir" href="#conteudo">Saltar para o conteúdo</a>
+    <a class="saltar ui nao-imprimir" href="#conteudo">
+      Saltar para o conteúdo
+    </a>
     <p class="faixa ui nao-imprimir">
-      <span class="so-computador">Versão digital do +MAT desenvolvida por <a href="https://miguelrocha.dev">Miguel Rocha</a> · miguelrocha.dev</span>
-      <span class="so-telemovel">Versão digital por <a href="https://miguelrocha.dev">Miguel Rocha</a></span>
+      <span class="so-computador">
+        Versão digital do +MAT desenvolvida por <a href="https://miguelrocha.dev">Miguel Rocha</a> · miguelrocha.dev
+      </span>
+      <span class="so-telemovel">
+        Versão digital por <a href="https://miguelrocha.dev">Miguel Rocha</a>
+      </span>
     </p>
     <header class="topo ui nao-imprimir">
       <div class="contentor topo-linha">
-        <a href="/" class="marca" aria-label="+MAT, página inicial"><Logotipo /></a>
+        <a href="/" class="marca" aria-label="+MAT, página inicial">
+          <Logotipo />
+        </a>
         <nav class="nav-topo" aria-label="Principal">
           {nav.map((l) => (
-            <a href={l.href} aria-current={atualDe(l.href)}><Icone nome={l.icone} />{l.texto}</a>
+            <a href={l.href} aria-current={atualDe(l.href)}>
+              <Icone nome={l.icone} />
+              {l.texto}
+            </a>
           ))}
         </nav>
         {atual && (
@@ -114,33 +143,59 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     <footer class="rodape ui nao-imprimir">
       <div class="contentor rodape-linha">
         <p>
-          +MAT · Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira · Direção e edição de Rosa Bértolo e Carla Nunes ·
-          Versão digital de <a href="https://miguelrocha.dev">Miguel Rocha</a>
+          +MAT · Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira · Direção e edição de Rosa Bértolo e
+          Carla Nunes · Versão digital de <a href="https://miguelrocha.dev">Miguel Rocha</a>
         </p>
         <p class="rodape-ligacoes">
-          <a href="/sobre/">Sobre e créditos</a><a href="/rss.xml">RSS</a>
-          <button type="button" class="mudar-tema" hidden>Tema escuro</button>
+          <a href="/sobre/">Sobre e créditos</a>
+          <a href="/rss.xml">RSS</a>
+          <button type="button" class="mudar-tema" hidden>
+            Tema escuro
+          </button>
         </p>
       </div>
     </footer>
 
     <nav class="nav-baixo ui nao-imprimir" aria-label="Principal">
       {navBaixo.map((l) => (
-        <a href={l.href} aria-current={atualDe(l.href)}><Icone nome={l.icone} tamanho={22} />{l.texto}</a>
+        <a href={l.href} aria-current={atualDe(l.href)}>
+          <Icone nome={l.icone} tamanho={22} />
+          {l.texto}
+        </a>
       ))}
-      <button type="button" class="abrir-mais" aria-haspopup="dialog" aria-controls="mais"><Icone nome="mais" tamanho={22} />Mais</button>
+      <button type="button" class="abrir-mais" aria-haspopup="dialog" aria-controls="mais">
+        <Icone nome="mais" tamanho={22} />
+        Mais
+      </button>
     </nav>
 
     <dialog id="mais" class="mais ui nao-imprimir" aria-label="Mais">
       <Logotipo />
       <ul>
-        <li><a href="/seccoes/" aria-current={atualDe('/seccoes/')}>Secções</a></li>
-        <li><a href="/sobre/" aria-current={atualDe('/sobre/')}>Sobre o +MAT</a></li>
-        <li><a href="/desafios/#levar">Levar o progresso dos desafios</a></li>
-        <li><a href="/rss.xml">RSS das edições</a></li>
+        <li>
+          <a href="/seccoes/" aria-current={atualDe('/seccoes/')}>
+            Secções
+          </a>
+        </li>
+        <li>
+          <a href="/sobre/" aria-current={atualDe('/sobre/')}>
+            Sobre o +MAT
+          </a>
+        </li>
+        <li>
+          <a href="/desafios/#levar">Levar o progresso dos desafios</a>
+        </li>
+        <li>
+          <a href="/rss.xml">RSS das edições</a>
+        </li>
       </ul>
-      <p>Direção e edição de Rosa Bértolo e Carla Nunes. Versão digital de <a href="https://miguelrocha.dev">Miguel Rocha</a>.</p>
-      <form method="dialog"><button>Fechar</button></form>
+      <p>
+        Direção e edição de Rosa Bértolo e Carla Nunes. Versão digital de{' '}
+        <a href="https://miguelrocha.dev">Miguel Rocha</a>.
+      </p>
+      <form method="dialog">
+        <button>Fechar</button>
+      </form>
     </dialog>
 
     <script>
@@ -181,8 +236,14 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     line-height: 1.4;
     text-align: center;
   }
-  .faixa a { color: var(--texto); font-weight: 600; text-decoration: none; }
-  .faixa a:hover { text-decoration: underline; }
+  .faixa a {
+    color: var(--texto);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .faixa a:hover {
+    text-decoration: underline;
+  }
 
   .topo-linha {
     display: flex;
@@ -191,8 +252,18 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     gap: 1rem;
     min-height: 3.5rem;
   }
-  .marca { display: block; font-size: 1.625rem; color: var(--texto); padding-block: 0.5rem; }
-  .edicao-atual { display: flex; align-items: center; min-height: 44px; text-decoration: none; }
+  .marca {
+    display: block;
+    font-size: 1.625rem;
+    color: var(--texto);
+    padding-block: 0.5rem;
+  }
+  .edicao-atual {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
 
   .nav-topo {
     display: flex;
@@ -213,11 +284,21 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     font-size: 0.875rem;
     text-decoration: none;
   }
-  .nav-topo a:hover { background: var(--pastilha); }
-  .nav-topo a[aria-current] { background: var(--primaria); color: var(--primaria-texto); font-weight: 600; }
-  .nav-topo a:focus-visible { outline-color: var(--texto); }
+  .nav-topo a:hover {
+    background: var(--pastilha);
+  }
+  .nav-topo a[aria-current] {
+    background: var(--primaria);
+    color: var(--primaria-texto);
+    font-weight: 600;
+  }
+  .nav-topo a:focus-visible {
+    outline-color: var(--texto);
+  }
 
-  main { padding-bottom: 4rem; }
+  main {
+    padding-bottom: 4rem;
+  }
 
   .rodape-linha {
     display: flex;
@@ -229,11 +310,27 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     line-height: 1.5;
     color: var(--texto-suave);
   }
-  .rodape p { margin: 0; }
-  .rodape a { color: inherit; text-underline-offset: 3px; }
-  .rodape-ligacoes { display: flex; gap: 1rem; flex-shrink: 0; }
-  .rodape-ligacoes a, .mudar-tema { display: flex; align-items: center; min-height: 44px; }
-  .mudar-tema[hidden] { display: none; }
+  .rodape p {
+    margin: 0;
+  }
+  .rodape a {
+    color: inherit;
+    text-underline-offset: 3px;
+  }
+  .rodape-ligacoes {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+  .rodape-ligacoes a,
+  .mudar-tema {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .mudar-tema[hidden] {
+    display: none;
+  }
   .mudar-tema {
     padding: 0;
     border: 0;
@@ -245,7 +342,9 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     cursor: pointer;
   }
 
-  .nav-baixo { display: none; }
+  .nav-baixo {
+    display: none;
+  }
 
   .mais {
     width: 100%;
@@ -257,9 +356,20 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     background: var(--superficie);
     color: var(--texto);
   }
-  .mais::backdrop { background: rgb(27 36 48 / 0.45); }
-  .mais > :global(.logotipo) { font-size: 1.625rem; margin: 0 0.25rem 0.75rem; }
-  .mais ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+  .mais::backdrop {
+    background: rgb(27 36 48 / 0.45);
+  }
+  .mais > :global(.logotipo) {
+    font-size: 1.625rem;
+    margin: 0 0.25rem 0.75rem;
+  }
+  .mais ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
   .mais li a {
     display: flex;
     align-items: center;
@@ -270,8 +380,16 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     font-weight: 600;
     text-decoration: none;
   }
-  .mais li a:hover, .mais li a[aria-current] { background: var(--fundo); }
-  .mais p { margin: 0.75rem 0.25rem 0; font-size: 0.75rem; line-height: 1.5; color: var(--texto-suave); }
+  .mais li a:hover,
+  .mais li a[aria-current] {
+    background: var(--fundo);
+  }
+  .mais p {
+    margin: 0.75rem 0.25rem 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--texto-suave);
+  }
   .mais form button {
     width: 100%;
     min-height: 48px;
@@ -285,19 +403,43 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
   }
 
   @media (min-width: 769px) {
-    .so-telemovel, .edicao-atual { display: none; }
-    .topo-linha { padding-block: 1rem; }
-    .marca { font-size: 1.875rem; }
-    .rodape-linha { padding-block: 1.25rem 2rem; }
+    .so-telemovel,
+    .edicao-atual {
+      display: none;
+    }
+    .topo-linha {
+      padding-block: 1rem;
+    }
+    .marca {
+      font-size: 1.875rem;
+    }
+    .rodape-linha {
+      padding-block: 1.25rem 2rem;
+    }
   }
 
   @media (max-width: 768px) {
-    .so-computador, .nav-topo { display: none; }
-    .topo { background: var(--superficie); border-bottom: 1px solid var(--linha); }
-    main { padding-bottom: 2.5rem; }
-    .rodape { padding-bottom: calc(57px + env(safe-area-inset-bottom)); }
-    .rodape-linha { display: block; padding-block: 1rem 0.5rem; }
-    .rodape .rodape-ligacoes { margin-top: 0.25rem; }
+    .so-computador,
+    .nav-topo {
+      display: none;
+    }
+    .topo {
+      background: var(--superficie);
+      border-bottom: 1px solid var(--linha);
+    }
+    main {
+      padding-bottom: 2.5rem;
+    }
+    .rodape {
+      padding-bottom: calc(57px + env(safe-area-inset-bottom));
+    }
+    .rodape-linha {
+      display: block;
+      padding-block: 1rem 0.5rem;
+    }
+    .rodape .rodape-ligacoes {
+      margin-top: 0.25rem;
+    }
 
     .nav-baixo {
       position: fixed;
@@ -309,7 +451,8 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
       background: var(--superficie);
       border-top: 1px solid var(--linha);
     }
-    .nav-baixo a, .nav-baixo button {
+    .nav-baixo a,
+    .nav-baixo button {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -324,7 +467,12 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
       text-decoration: none;
       cursor: pointer;
     }
-    .nav-baixo [aria-current] { color: var(--primaria); font-weight: 700; }
-    .nav-baixo :focus-visible { outline-offset: -3px; }
+    .nav-baixo [aria-current] {
+      color: var(--primaria);
+      font-weight: 700;
+    }
+    .nav-baixo :focus-visible {
+      outline-offset: -3px;
+    }
   }
 </style>
