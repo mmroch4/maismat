@@ -89,8 +89,78 @@ Na edição seguinte, para publicar a resolução de um desafio antigo, abra ess
 - **Nota (caixa amarela)**: um texto em destaque.
 - **Caixa “ver mais”**: texto escondido que abre com um clique (por exemplo, uma resolução passo a passo).
 - **Jogo ou animação**: os jogos interativos do site (Triângulo de Pascal, Collatz, Monty Hall, Arranha-céus).
+- **Demonstração**: uma animação ou simulação feita por si (ver a secção 8).
+- **Applet GeoGebra**: um applet do GeoGebra, só com a ligação (ver a secção 9).
 
-## 8. Publicar
+## 8. Demonstrações
+
+Uma demonstração é uma pequena página interativa (uma animação, uma simulação, um gráfico que se mexe) feita em HTML, CSS e JavaScript, à mão ou com a ajuda de uma IA. Fica dentro do artigo, numa caixa isolada do resto do site.
+
+### Criar uma demonstração
+
+1. Prepare o ficheiro HTML (à mão ou com o modelo de pedido para uma IA, mais abaixo).
+2. Experimente-o primeiro no computador: guarde-o como `demonstracao.html` e abra-o com duplo clique. Se funcionar no browser, funciona no site.
+3. No painel, em **Demonstrações** (à esquerda), carregue em **Novo** e preencha:
+   - **Título**: o que a demonstração mostra, por exemplo «Ciclóide: a roda que desenha a curva». É o que os leitores de ecrã anunciam.
+   - **Descrição**: uma ou duas frases. Aparece por baixo da demonstração e serve a quem não a consegue usar.
+   - **Altura inicial**: deixe 400, se não souber. A caixa ajusta-se sozinha ao conteúdo.
+   - **Código**: cole o ficheiro HTML inteiro.
+4. Carregue em **Guardar**. Na pré-visualização (o ícone do **olho**) a demonstração já corre como no site.
+5. No artigo, ponha o cursor onde a quer, carregue em **Inserir → Demonstração** e escolha-a na lista.
+
+A mesma demonstração pode ser usada em vários artigos. Atenção: fica no site assim que a guarda, mesmo que a edição esteja em rascunho (num endereço que nenhum motor de busca mostra e a que só se chega pelo artigo).
+
+### Regras
+
+O site verifica estas regras sempre que alguém guarda. Se uma falhar, o site não é atualizado até ser corrigida, e a mensagem do erro (que o Miguel vê no Cloudflare) diz o que mudar.
+
+- **Um só ficheiro**: o CSS dentro de `<style>` e o JavaScript dentro de `<script>`. Não há como carregar imagens ou outros ficheiros à parte.
+- **Sem serviços externos**: a demonstração não pode ir buscar nada à Internet (fontes, imagens, dados). Só pode usar estas duas bibliotecas, exatamente com estes endereços:
+  - p5.js: `https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.min.js`
+  - JSXGraph: `https://cdn.jsdelivr.net/npm/jsxgraph@1.14.2/distrib/jsxgraphcore.js` (e `…/distrib/jsxgraph.css`)
+- **Coisas que não funcionam lá dentro**: `alert`, `confirm` e `prompt` (não aparece nada), guardar no browser (`localStorage`, cookies), contactar outros sites e abrir janelas novas. As mensagens escrevem-se num parágrafo da própria página.
+- **Adaptada ao telemóvel**: largura a 100% (nada de larguras fixas) e botões com pelo menos 44 píxeis de altura.
+- **Com contraste**: texto escuro sobre fundo claro, e um modo escuro. Não use só a cor para transmitir informação.
+- **Pequena**: até 100 KB.
+- **Português de Portugal** em todos os textos.
+
+### Modelo de pedido para uma IA
+
+Copie o texto abaixo para o ChatGPT, o Copilot, o Gemini ou o Claude, e troque o que está entre parênteses retos:
+
+```
+Faz uma demonstração interativa para alunos do [3.º ciclo] sobre [tema: o que se vê e o que o aluno pode mexer].
+
+Regras obrigatórias:
+1. Um só ficheiro HTML completo (<!doctype html>), com o CSS dentro de <style> e o JavaScript dentro de <script>.
+2. Não carregues nada da Internet (nem fontes, nem imagens, nem dados). Prefere JavaScript simples com <canvas> ou SVG.
+   Se precisares mesmo de uma biblioteca, usa só uma destas, exatamente com este endereço:
+   https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.min.js
+   https://cdn.jsdelivr.net/npm/jsxgraph@1.14.2/distrib/jsxgraphcore.js (com https://cdn.jsdelivr.net/npm/jsxgraph@1.14.2/distrib/jsxgraph.css)
+3. Não uses alert(), confirm(), prompt(), localStorage, sessionStorage, cookies, fetch, formulários que se submetem nem janelas novas: estão bloqueados. Mostra as mensagens num parágrafo da página.
+4. A página vai ficar numa caixa entre 320 e 700 píxeis de largura: usa largura 100%, nenhuma largura fixa, e redesenha quando a janela muda de tamanho. Botões e controlos com pelo menos 44 píxeis de altura.
+5. Contraste forte (texto escuro sobre fundo claro) e um modo escuro com prefers-color-scheme. Não transmitas informação só pela cor.
+6. Acessível: o <canvas> com role="img" e um aria-label que descreve o que mostra; um parágrafo com aria-live="polite" que diz o que está a acontecer; com prefers-reduced-motion, a animação começa parada.
+7. Todo o texto em português de Portugal (não do Brasil).
+8. O ficheiro tem de ter menos de 100 KB.
+Responde só com o ficheiro HTML, num bloco de código.
+```
+
+Se o resultado não estiver bem, responda à IA com o que mudar («a roda é demasiado pequena no telemóvel», «põe um botão para recomeçar»). Antes de colar no painel, experimente sempre o ficheiro no computador.
+
+Exemplo: a demonstração «Ciclóide: a roda que desenha a curva», no artigo da ciclóide (ano 3, edição 3), segue todas estas regras. Pode abri-la em **Demonstrações** para ver o código.
+
+## 9. Applet GeoGebra
+
+1. No GeoGebra, abra o applet e carregue em **Partilhar**. Copie a ligação (começa por `https://www.geogebra.org/m/`).
+2. No artigo, carregue em **Inserir → Applet GeoGebra** e preencha:
+   - **Ligação do applet**: cole a ligação.
+   - **Título**: o que o applet mostra.
+   - **Altura**: 500 serve para a maioria. Em ecrãs mais estreitos, o applet encolhe na mesma proporção.
+
+No site, os alunos veem primeiro o título e um botão **Abrir o applet**: só nesse momento o browser se liga ao GeoGebra (que pode guardar cookies). Na versão para imprimir aparece o título e a ligação.
+
+## 10. Publicar
 
 Enquanto a edição estiver em rascunho, guarde à vontade: nem a edição nem os artigos aparecem no site. Na lista de **Edições**, as que estão em rascunho dizem “· rascunho”.
 
@@ -102,7 +172,7 @@ Quando estiver tudo pronto:
 
 Atenção: nas edições **já publicadas**, cada vez que guarda um artigo a alteração vai logo para o site (também em 2 a 3 minutos).
 
-## 9. Se algo não parecer bem
+## 11. Se algo não parecer bem
 
 - No canto do editor de texto há um botão que mostra o texto “em bruto” (Markdown). Não precisa de o usar; se o abrir sem querer, carregue outra vez para voltar.
 - Os artigos antigos foram convertidos do PDF e podem ter blocos especiais. Pode corrigir gralhas à vontade; para mudanças maiores num artigo antigo, fale primeiro com o Miguel.

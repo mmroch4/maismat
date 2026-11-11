@@ -9,6 +9,12 @@
 - [ ] No Cloudflare Pages: ligar o repositório, com o comando `npm run build`, a pasta `dist` e `main` como ramo de produção.
 - [ ] Convidar a Rosa e a Carla como colaboradoras em Settings → Collaborators, depois de criarem conta no GitHub.
 - [ ] Testar com o login real: criar uma edição em rascunho, um artigo nela, confirmar que não aparece no site, desligar o rascunho e confirmar que aparece.
+- [ ] Com o login real, testar as demonstrações e o GeoGebra no painel (a documentação diz que funciona, mas não deu para testar sem login):
+  - em **Demonstrações → Novo**, o campo «Código» mostra o editor de código e grava o ficheiro `.yml` com o HTML tal como foi colado;
+  - a pré-visualização (olho) corre a demonstração. Se ficar em branco, a moldura da pré-visualização do Sveltia não deixa correr scripts: tirar o `registerPreviewTemplate` de `public/admin/index.html` (fica a ver-se o código);
+  - o novo identificador sai sem acentos (por exemplo `cicloide-…`), por causa do `slug` em `config.json.ts`;
+  - em **Inserir → Demonstração**, a lista mostra as demonstrações pelo título (campo `relation`). Se não mostrar, trocar por um `select` gerado no build em `config.json.ts` (as demonstrações novas só aparecem na lista depois do deploy seguinte);
+  - **Inserir → Applet GeoGebra** recusa uma ligação que não é de um applet e grava `<GeoGebra ligacao="…" titulo="…" altura={500} />`.
 
 ## No dia do lançamento
 
@@ -34,6 +40,12 @@
   curl -s https://maismat.miguelrocha.dev/admin/config.json | grep -o '"site_url":"[^"]*"'
   ```
 - [ ] Com os cabeçalhos novos, o painel (`/admin/`) abre, deixa entrar e mostra as fórmulas na pré-visualização; a pesquisa (`/pesquisa/`) dá resultados; nos desafios, o botão de copiar o código de progresso funciona.
+- [ ] As demonstrações estão isoladas também quando abertas fora do artigo (o `astro preview` não aplica o `_headers`, por isso isto só se vê depois do deploy). Deve aparecer a CSP de `/*` e a de `/demonstracoes/*` juntas por uma vírgula, e o `X-Robots-Tag`:
+  ```bash
+  curl -sI https://maismat.miguelrocha.dev/demonstracoes/cicloide/ | grep -iE "content-security|x-robots"
+  ```
+- [ ] No artigo da ciclóide (`/edicoes/ano3-edicao3/05-cicloide/`), a demonstração aparece e anima, no computador e no telemóvel (o `frame-ancestors 'self'` não a pode bloquear). Abrir `/demonstracoes/cicloide/` diretamente: funciona, e na consola `self.origin` dá `"null"`.
+- [ ] Num artigo com um applet GeoGebra: antes do clique não há pedidos a geogebra.org (separador Rede das ferramentas de programador); depois do clique o applet aparece e o botão de ecrã inteiro funciona.
 - [ ] Colar a ligação de um artigo no WhatsApp ou no Teams: aparece a capa da edição, o título e o resumo.
 - [ ] [PageSpeed Insights](https://pagespeed.web.dev/) com a página inicial, uma edição e um artigo com fórmulas, em telemóvel. Se o LCP passar de 2,5 s ou o CLS de 0,1, ver o que o relatório aponta. Na consola do Chrome não deve haver avisos de fontes «preloaded but not used» (com o separador visível).
 - [ ] [Teste de Resultados Avançados](https://search.google.com/test/rich-results) com um artigo e uma edição: o artigo aparece como *Article*, sem erros, e com o logótipo no *publisher*. Avisos sobre campos opcionais podem ficar.
