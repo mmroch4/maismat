@@ -5,6 +5,7 @@ import { artigosDe, artigosPublicados, mesAno, rotuloEdicao, slugArtigo, type Ar
 import { componentesMdx } from '../../../lib/componentes-mdx';
 import { SECCOES } from '../../../lib/seccoes';
 import { dia, editora, numeroEdicao, pessoas } from '../../../lib/dados-estruturados';
+import { ultimaAtualizacao } from '../../../lib/git.mjs';
 
 export async function getStaticPaths() {
   const artigos = await artigosPublicados();
@@ -29,6 +30,7 @@ const dados = {
   description: resumo,
   author: autoria.length ? autoria : undefined,
   datePublished: dia(edicao.data.data),
+  dateModified: artigo.filePath && ultimaAtualizacao(artigo.filePath),
   inLanguage: 'pt-PT',
   isPartOf: numeroEdicao(edicao, Astro.site!),
   publisher: editora(Astro.site!),

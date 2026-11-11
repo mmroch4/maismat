@@ -9,6 +9,7 @@ import { gunzipSync } from 'node:zlib';
 import config from '../astro.config.mjs';
 import { desafio as bloco } from '../public/admin/componentes.js';
 import { codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../src/lib/progresso.mjs';
+import { LANCAMENTO, ultimaAtualizacao } from '../src/lib/git.mjs';
 import { normalizar } from '../src/lib/respostas.mjs';
 
 const raiz = fileURLToPath(new URL('..', import.meta.url));
@@ -360,6 +361,32 @@ test('cada artigo e cada edição têm dados estruturados válidos, com a capa d
     const imagem = new URL(d.image);
     if (imagem.origin !== site.origin || !existe(`dist${imagem.pathname}`)) erros.push(`${fonte(f)}: a imagem dos dados estruturados (${d.image}) não existe em dist.`);
     if (d.image !== html.match(/<meta property="og:image" content="([^"]*)"/)?.[1]) erros.push(`${fonte(f)}: a imagem dos dados estruturados não é a mesma do og:image.`);
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('a data de atualização dos artigos vem do git, só depois do lançamento, e o logótipo do jornal existe e é quadrado', () => {
+  const erros = [];
+  const logotipos = new Set();
+  for (const f of paginas.filter((f) => artigoDe(f) && !f.includes('/imprimir/'))) {
+    const json = ler(`dist/${f}`).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+    if (!json) continue; // a falta do bloco já é apanhada na verificação dos dados estruturados
+    const d = JSON.parse(json);
+    const md = ['md', 'mdx'].map((x) => `src/content/artigos/${artigoDe(f)}.${x}`).find(existe);
+    const esperada = md && ultimaAtualizacao(md);
+    if (d.dateModified !== esperada)
+      erros.push(`${fonte(f)}: a data de atualização nos dados estruturados (${d.dateModified ?? 'nenhuma'}) não é a do último commit depois de ${LANCAMENTO} (${esperada ?? 'nenhum'}).`);
+    else if (esperada && esperada < d.datePublished) erros.push(`${fonte(f)}: a data de atualização (${esperada}) é anterior à da edição (${d.datePublished}).`);
+    if (d.publisher?.logo?.url) logotipos.add(d.publisher.logo.url);
+    else erros.push(`${fonte(f)}: falta o logótipo do jornal (publisher.logo) nos dados estruturados.`);
+  }
+  for (const url of logotipos) {
+    const { origin, pathname } = new URL(url);
+    if (origin !== site.origin || !existe(`dist${pathname}`)) { erros.push(`O logótipo ${url} não existe em dist. Deve estar em public${pathname}.`); continue; }
+    const png = readFileSync(`${raiz}dist${pathname}`);
+    const [largura, altura] = [png.readUInt32BE(16), png.readUInt32BE(20)];
+    if (png.toString('latin1', 1, 4) !== 'PNG') erros.push(`O logótipo public${pathname} não é um PNG.`);
+    else if (largura !== altura || largura < 112) erros.push(`O logótipo public${pathname} tem ${largura}×${altura}: tem de ser quadrado, com pelo menos 112 px.`);
   }
   assert.ok(!erros.length, erros.join('\n'));
 });

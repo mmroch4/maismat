@@ -9,6 +9,7 @@ export const editora = (site: URL) => ({
   '@type': 'Organization',
   name: JORNAL,
   url: site.href,
+  logo: { '@type': 'ImageObject', url: new URL('/logotipo.png', site).href, width: 512, height: 512 },
   parentOrganization: { '@type': 'EducationalOrganization', name: 'Agrupamento de Escolas Domingos Sequeira' },
 });
 
