@@ -19,10 +19,9 @@ const citacao = {
 const config = {
   backend: {
     name: 'github',
-    // TODO(Miguel): confirmar o endereço do autenticador (base_url) depois de publicar o worker.
     repo: 'mmroch4/maismat',
     branch: 'main',
-    base_url: 'https://maismat-cms-auth.miguelrocha.workers.dev',
+    base_url: 'https://maismat-cms-auth.ianaf.workers.dev',
     commit_messages: {
       create: 'Criar {{collection}} “{{slug}}”',
       update: 'Atualizar {{collection}} “{{slug}}”',
