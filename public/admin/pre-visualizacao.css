@@ -1,0 +1,19 @@
+/* Aspeto dos blocos do +MAT no editor e na pré-visualização (aproximação ao site, sem as fontes). */
+.mm-desafio,
+.mm-nota,
+.mm-detalhes,
+.mm-interativo {
+  display: block;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+}
+.mm-desafio { border: 1px solid #d9dee5; border-top: 4px solid #2e7d4f; }
+.mm-desafio > strong { color: #2e7d4f; }
+.mm-resposta { font-size: 0.85em; color: #6b7280; font-style: italic; }
+.mm-resolucao { border-top: 1px dashed #d9dee5; margin-top: 0.5rem; padding-top: 0.5rem; }
+.mm-nota { background: #fbf3dc; }
+.mm-detalhes { border: 1px solid #d9dee5; }
+.mm-interativo { background: #eef3fb; text-align: center; }
+.mm-galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: 0.5rem; }
+.mm-galeria img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; }

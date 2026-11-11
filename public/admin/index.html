@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>+MAT · Painel de edição</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css"
+      integrity="sha384-WwGtaC6ywCHxA5cstpj/3+xIZvTez8dq2IcBQaXRkenHZ7FVVq1ZROtURwfbtTlG"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="/admin/pre-visualizacao.css" />
+    <script
+      src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"
+      integrity="sha384-a1WQdjRj162i159OYq041X6I4K8NenkrI09LlPmiHg0YOb7CR+wJOraXwK9abpnE"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <script type="module">
+      // Versão fixa: atualizar de propósito, depois de testar.
+      import CMS from 'https://unpkg.com/@sveltia/cms@0.255.1/dist/sveltia-cms.mjs';
+      import { componentes } from '/admin/componentes.js';
+
+      window.CMS = CMS;
+      componentes.forEach((c) => CMS.registerEditorComponent(c));
+      CMS.registerPreviewStyle('https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css');
+      CMS.registerPreviewStyle('/admin/pre-visualizacao.css');
+
+      const config = await (await fetch('/admin/config.json')).json();
+      CMS.init({ config: { ...config, load_config_file: false } });
+    </script>
+  </body>
+</html>

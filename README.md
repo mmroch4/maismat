@@ -23,6 +23,10 @@ npm run dev
 
 ### Escrever artigos
 
+As professoras escrevem no painel de edição em `/admin/` (Sveltia CMS); ver [docs/guia-professoras.md](docs/guia-professoras.md).
+A configuração do painel está em `src/pages/admin/config.json.ts` e os blocos do editor em `public/admin/componentes.js`.
+Os componentes de `src/lib/componentes-mdx.ts` estão disponíveis em todos os artigos sem `import`.
+
 - Fórmulas em LaTeX: `$x^2$` no texto, `$$ ... $$` em destaque.
 - Imagem com legenda: `![descrição](./img/foto.jpg "Legenda")`.
 - Desafio:
