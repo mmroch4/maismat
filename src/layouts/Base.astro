@@ -1,8 +1,9 @@
 ---
 import { getImage } from 'astro:assets';
 import '../styles/global.css';
-// As duas fontes que quase todas as páginas usam logo no início: títulos e texto.
-import fonteTitulos from '@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff2?url';
+import Logotipo from '../components/Logotipo.astro';
+// As duas fontes que quase todas as páginas usam logo no início: títulos e interface, e texto.
+import fonteTitulos from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import fonteTexto from '@fontsource/source-serif-4/files/source-serif-4-latin-400-normal.woff2?url';
 import { edicoesOrdenadas, mesAno, type Edicao } from '../lib/edicoes';
 import { jsonLd } from '../lib/dados-estruturados';
@@ -72,7 +73,7 @@ const nav = [
     <a class="saltar ui nao-imprimir" href="#conteudo">Saltar para o conteúdo</a>
     <header class="topo nao-imprimir">
       <div class="contentor topo-linha">
-        <a href="/" class="marca" aria-label="+MAT, página inicial">+MAT</a>
+        <a href="/" class="marca" aria-label="+MAT, página inicial"><Logotipo /></a>
         <nav class="ui" aria-label="Principal">
           {nav.map((l) => (
             <a href={l.href} aria-current={caminho.startsWith(l.href) ? 'page' : undefined}>{l.texto}</a>
@@ -114,12 +115,10 @@ const nav = [
     padding-block: 0.6rem;
   }
   .marca {
-    font-family: var(--f-titulo);
+    display: block;
     font-size: 2rem;
-    font-weight: 600;
     color: var(--texto);
-    text-decoration: none;
-    letter-spacing: -0.02em;
+    padding-block: 0.375rem;
   }
   nav { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 0.95rem; }
   nav a { color: var(--texto-suave); text-decoration: none; padding-block: 0.25rem; }
