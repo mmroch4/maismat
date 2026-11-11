@@ -421,6 +421,17 @@ test('o robots.txt indica o sitemap do site e não bloqueia nenhuma página do s
       assert.ok(!caminho.startsWith(b), `O robots.txt bloqueia ${caminho} (Disallow: ${b}). As páginas do sitemap têm de poder ser lidas, e as que têm noindex também, senão o noindex não é visto.`);
 });
 
+test('o /sitemap.xml redireciona para o sitemap-index.xml, e cada redirecionamento do _redirects leva a um ficheiro que existe', () => {
+  assert.ok(existe('dist/_redirects'), 'Falta o public/_redirects (com o redirecionamento do /sitemap.xml).');
+  const regras = ler('dist/_redirects').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#')).map((l) => l.split(/\s+/));
+  assert.deepEqual(regras.find(([origem]) => origem === '/sitemap.xml'), ['/sitemap.xml', '/sitemap-index.xml', '301'], 'O public/_redirects devia ter a linha «/sitemap.xml /sitemap-index.xml 301».');
+  for (const [origem, destino] of regras) {
+    if (!destino.startsWith('/')) continue;
+    const ficheiro = destino.endsWith('/') ? `${destino}index.html` : destino;
+    assert.ok(existe(`dist${ficheiro}`), `O public/_redirects manda ${origem} para ${destino}, que não existe em dist.`);
+  }
+});
+
 function regrasHeaders() {
   assert.ok(existe('dist/_headers'), 'Falta o dist/_headers: o public/_headers não foi copiado.');
   const regras = [];

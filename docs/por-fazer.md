@@ -41,6 +41,10 @@
   curl -s https://maismat.miguelrocha.dev/robots.txt
   curl -s https://maismat.miguelrocha.dev/admin/config.json | grep -o '"site_url":"[^"]*"'
   ```
+- [ ] O `/sitemap.xml` redireciona (301) para o `/sitemap-index.xml` (`public/_redirects`):
+  ```bash
+  curl -sI https://maismat.miguelrocha.dev/sitemap.xml | grep -iE "^HTTP|^location"
+  ```
 - [ ] Com os cabeçalhos novos, o painel (`/admin/`) abre, deixa entrar e mostra as fórmulas na pré-visualização; a pesquisa (`/pesquisa/`) dá resultados; nos desafios, o botão de copiar o código de progresso funciona.
 - [x] As demonstrações estão isoladas também quando abertas fora do artigo (o `astro preview` não aplica o `_headers`, por isso isto só se vê depois do deploy). Deve aparecer a CSP de `/*` e a de `/demonstracoes/*` juntas por uma vírgula, e o `X-Robots-Tag`:
   ```bash
