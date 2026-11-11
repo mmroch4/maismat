@@ -8,14 +8,14 @@
 - [x] Registar uma GitHub App (não uma OAuth App: o README do autenticador recomenda-a, porque só tem acesso a este repositório). O «Redirect URI» é `https://<worker>/callback`; permissões: Contents e Pull requests em «Read and write». Instalá-la só em `mmroch4/maismat`. Depois, pôr no worker `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (como segredo) e `ALLOWED_DOMAINS=maismat.miguelrocha.dev`.
 - [x] No Cloudflare Pages: ligar o repositório, com o comando `npm run build`, a pasta `dist` e `main` como ramo de produção. A versão do Node vem do `.nvmrc` (não é preciso `NODE_VERSION`).
 - [ ] Convidar a Rosa e a Carla como colaboradoras em Settings → Collaborators, depois de criarem conta no GitHub.
-- [ ] Testar com o login real: criar uma edição em rascunho, um artigo nela, confirmar que não aparece no site, desligar o rascunho e confirmar que aparece.
+- [x] Testar com o login real: criar uma edição em rascunho, um artigo nela, confirmar que não aparece no site, desligar o rascunho e confirmar que aparece.
 - [ ] Com o login real, testar as demonstrações e o GeoGebra no painel (a documentação diz que funciona, mas não deu para testar sem login):
   - em **Demonstrações → Novo**, o campo «Código» mostra o editor de código e grava o ficheiro `.yml` com o HTML tal como foi colado;
   - a pré-visualização (olho) corre a demonstração. Se ficar em branco, a moldura da pré-visualização do Sveltia não deixa correr scripts: tirar o `registerPreviewTemplate` de `public/admin/index.html` (fica a ver-se o código);
   - o novo identificador sai sem acentos (por exemplo `cicloide-…`), por causa do `slug` em `config.json.ts`;
   - em **Inserir → Demonstração**, a lista mostra as demonstrações pelo título (campo `relation`). Se não mostrar, trocar por um `select` gerado no build em `config.json.ts` (as demonstrações novas só aparecem na lista depois do deploy seguinte);
   - **Inserir → Applet GeoGebra** recusa uma ligação que não é de um applet e grava `<GeoGebra ligacao="…" titulo="…" altura={500} />`.
-- [ ] Com o login real, criar uma edição sem citação nem PDF: o ficheiro gravado não deve ter as linhas `citacao` nem `pdf` (`output.omit_empty_optional_fields` em `config.json.ts`). Se as tiver, o build passa na mesma (o esquema aceita `null` e a verificação ignora `pdf: ''`).
+- [x] Com o login real, criar uma edição sem citação nem PDF: o ficheiro gravado não deve ter as linhas `citacao` nem `pdf` (`output.omit_empty_optional_fields` em `config.json.ts`). Se as tiver, o build passa na mesma (o esquema aceita `null` e a verificação ignora `pdf: ''`).
 - [ ] Com o login real, numa edição, carregar no campo «PDF original» um PDF com mais de 25 MB: o painel deve recusá-lo antes de gravar (`max_file_size` em `config.json.ts`). Se o aceitar, o build falha na mesma com a verificação dos 25 MiB, mas a professora só o descobre depois de gravar.
 
 ## No dia do lançamento
