@@ -148,7 +148,7 @@ const config = {
           name: 'body',
           label: 'Texto do artigo',
           widget: 'richtext',
-          editor_components: ['image', 'formula', 'formula-destaque', 'desafio', 'galeria', 'nota', 'detalhes', 'interativo', 'demonstracao'],
+          editor_components: ['image', 'formula', 'formula-destaque', 'desafio', 'galeria', 'nota', 'detalhes', 'interativo', 'demonstracao', 'geogebra'],
           hint: 'Usa o botão “Inserir” para fórmulas, desafios, imagens e caixas.',
         },
       ],

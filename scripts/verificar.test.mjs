@@ -7,7 +7,7 @@ import { before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import config from '../astro.config.mjs';
-import { desafio as bloco, demonstracao as blocoDemonstracao } from '../public/admin/componentes.js';
+import { appletGeoGebra, desafio as bloco, demonstracao as blocoDemonstracao, geogebra } from '../public/admin/componentes.js';
 import { BIBLIOTECAS, CSP, TAMANHO_MAXIMO } from '../src/lib/demonstracoes.mjs';
 import { codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../src/lib/progresso.mjs';
 import { LANCAMENTO, ultimaAtualizacao } from '../src/lib/git.mjs';
@@ -553,5 +553,32 @@ test('as páginas das demonstrações começam pela CSP, têm noindex e ficam fo
     erros.push(`O public/_headers tem de ter, na regra /demonstracoes/*, «Content-Security-Policy: sandbox allow-scripts; …» (sem allow-same-origin). Sem isso, quem abrir a demonstração fora do artigo corre o código dela no site, com acesso à sessão do painel.`);
   if (!/connect-src 'none'/.test(politica)) erros.push(`O public/_headers tem de ter connect-src 'none' na CSP da regra /demonstracoes/*.`);
   if (!/noindex/.test(regra['x-robots-tag'] ?? '')) erros.push('O public/_headers tem de ter «X-Robots-Tag: noindex» na regra /demonstracoes/*.');
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('cada applet GeoGebra tem uma ligação válida, título e altura, e só contacta o GeoGebra depois do clique', () => {
+  const erros = [];
+  const padraoBloco = new RegExp(appletGeoGebra.pattern.source, 'gm');
+  for (const f of artigosMdx) {
+    const texto = ler(`src/content/artigos/${f}`);
+    const blocos = [...texto.matchAll(padraoBloco)];
+    if ((texto.match(/<GeoGebra\b/g) ?? []).length !== blocos.length)
+      erros.push(`No artigo src/content/artigos/${f}: há um <GeoGebra> escrito à mão que o painel não reconhece. Apaga-o e insere-o outra vez com Inserir → Applet GeoGebra.`);
+    for (const m of blocos) {
+      const { ligacao, titulo, altura } = appletGeoGebra.fromBlock(m);
+      if (!geogebra(ligacao, altura))
+        erros.push(`No artigo src/content/artigos/${f}: a ligação «${ligacao}» do bloco «Applet GeoGebra» não é a de um applet. No GeoGebra, abre o applet, carrega em «Partilhar» e copia a ligação (https://www.geogebra.org/m/…).`);
+      if (!titulo.trim()) erros.push(`No artigo src/content/artigos/${f}: o applet GeoGebra ${ligacao} não tem título. Escreve no bloco o que o applet mostra; é o que os leitores de ecrã anunciam.`);
+      if (!(Number.isInteger(altura) && altura >= 250 && altura <= 900))
+        erros.push(`No artigo src/content/artigos/${f}: a altura do applet GeoGebra ${ligacao} é ${altura}; tem de ser um número inteiro entre 250 e 900.`);
+    }
+  }
+  for (const f of paginas)
+    for (const [el] of ler(`dist/${f}`).matchAll(/<maismat-geogebra\b[^>]*>/g)) {
+      const src = atributo(el.match(/\sdata-src="([^"]*)"/)?.[1] ?? '');
+      if (!/^https:\/\/www\.geogebra\.org\/material\/iframe\/id\/[A-Za-z0-9]{8}\//.test(src))
+        erros.push(`No código do site (src/components/GeoGebra.astro), página dist/${f}: o botão do applet abriria ${src || '(nada)'}, que não é um applet do GeoGebra.`);
+      if (!el.match(/\sdata-titulo="([^"]*)"/)?.[1].trim()) erros.push(`${fonte(f)}: o applet GeoGebra ${src} não tem título.`);
+    }
   assert.ok(!erros.length, erros.join('\n'));
 });

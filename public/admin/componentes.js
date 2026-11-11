@@ -289,4 +289,50 @@ export const demonstracao = {
   toPreview: ({ id = '' }) => caixa('interativo', `▶ Demonstração: ${id}`),
 };
 
-export const componentes = [formula, formulaDestaque, desafio, galeria, nota, detalhes, interativo, demonstracao];
+// Applets do GeoGebra: aceita a ligação de «Partilhar» e dá o endereço que incorpora só o applet.
+// Também usados por src/components/GeoGebra.astro e pelas verificações.
+export const GEOGEBRA = /^https:\/\/(?:www\.)?geogebra\.org\/(?:m|calculator|classic|graphing|geometry|3d)\/([A-Za-z0-9]{8})\/?(?:[?#].*)?$/;
+
+export function geogebra(ligacao = '', altura = 500) {
+  const id = ligacao.trim().match(GEOGEBRA)?.[1];
+  return id && {
+    pagina: `https://www.geogebra.org/m/${id}`,
+    iframe: `https://www.geogebra.org/material/iframe/id/${id}/width/800/height/${altura}/border/888888/sfsb/true/smb/false/stb/false/stbh/false/ai/false/asb/false/sri/true/rc/false/ld/false/sdz/false/ctl/false`,
+  };
+}
+
+export const appletGeoGebra = {
+  id: 'geogebra',
+  label: 'Applet GeoGebra',
+  icon: 'change_history',
+  mode: 'dialog',
+  summary: '{{titulo}}',
+  fields: [
+    {
+      name: 'ligacao',
+      label: 'Ligação do applet',
+      hint: 'No GeoGebra, abre o applet, carrega em «Partilhar» e copia a ligação, por exemplo https://www.geogebra.org/m/p68vtggs.',
+      pattern: [GEOGEBRA.source, 'Tem de ser a ligação de um applet: https://www.geogebra.org/m/ seguido de 8 letras e algarismos.'],
+    },
+    { name: 'titulo', label: 'Título', hint: 'O que o applet mostra. É o que os leitores de ecrã anunciam.' },
+    {
+      name: 'altura',
+      label: 'Altura (px)',
+      widget: 'number',
+      value_type: 'int',
+      min: 250,
+      max: 900,
+      default: 500,
+      hint: 'A altura com 800 px de largura; nos ecrãs mais estreitos o applet encolhe na mesma proporção.',
+    },
+  ],
+  pattern: /^<GeoGebra\b(?<attrs>(?:[^>"{}]|"[^"]*"|\{[^}]*\})*?)\s*\/>$/m,
+  fromBlock: (m) => {
+    const { ligacao = '', titulo = '', altura = 500 } = lerAtributos(m.groups.attrs);
+    return { ligacao, titulo, altura };
+  },
+  toBlock: ({ ligacao = '', titulo = '', altura = 500 }) => `<GeoGebra${atributo('ligacao', ligacao.trim())}${atributo('titulo', titulo)}${atributo('altura', altura)} />`,
+  toPreview: ({ titulo = '' }) => caixa('interativo', `△ GeoGebra: ${titulo}`),
+};
+
+export const componentes = [formula, formulaDestaque, desafio, galeria, nota, detalhes, interativo, demonstracao, appletGeoGebra];
