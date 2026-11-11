@@ -66,7 +66,6 @@
 - [ ] A demonstração da ciclóide aparece dentro da moldura nova (o painel de pré-visualização bloqueia iframes, por isso só se viu a moldura vazia).
 - [ ] Só com o teclado, da página inicial até responder a um desafio: o anel de foco de 3 px vê-se sempre, também sobre os botões azuis e na barra em pastilha.
 - [ ] Com «Reduzir movimento» ligado no sistema, o anel de progresso aparece já cheio e os cartões não sobem.
-- [ ] O destaque azul do início no modo escuro (azul claro com texto escuro): ver se fica bem ou se deve passar a superfície escura.
 - [ ] Imprimir uma edição: sem faixa, barras, folha «Mais» nem rodapé.
 - [ ] No PageSpeed Insights, a Playfair já não aparece nos pedidos e as duas fontes pré-carregadas (Inter e Source Serif 4) são usadas.
 

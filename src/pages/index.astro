@@ -99,6 +99,11 @@ const mes = mesAno(atual.data.data).split(' ')[0];
     text-decoration: none;
   }
   .ler:focus-visible { outline-color: var(--primaria-texto); }
+  @media (prefers-color-scheme: dark) {
+    .destaque { background: var(--superficie); color: var(--texto); box-shadow: var(--sombra); }
+    .ler { background: var(--primaria); color: var(--primaria-texto); }
+    .ler:focus-visible { outline-color: var(--texto); }
+  }
   .capa-img img { display: block; width: 100%; height: auto; border-radius: var(--raio-p); transform: rotate(3deg); box-shadow: 0 12px 30px rgb(0 0 0 / 0.3); }
 
   .progresso { display: grid; gap: 1rem; align-content: start; padding: 1.5rem; }
