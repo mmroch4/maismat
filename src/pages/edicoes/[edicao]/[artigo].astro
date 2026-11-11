@@ -24,12 +24,12 @@ const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
 ---
 
 <Base titulo={titulo} descricao={resumo} edicao={edicao} artigo>
-  <article class="contentor" data-pagefind-body data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`}>
+  <article class="contentor" data-pagefind-body data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`} data-pagefind-sort={`data:${edicao.data.data.toISOString().slice(0, 10)}`}>
     <header>
       <p class="ui migalhas" data-pagefind-ignore>
         <a href={`/edicoes/${edicao.id}/`}>{rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span></a>
       </p>
-      <a class="etiqueta" href={`/seccoes/${seccao}/`} data-pagefind-filter={`seccao:${SECCOES[seccao]}`}>+ {SECCOES[seccao]}</a>
+      <a class="etiqueta" href={`/seccoes/${seccao}/`} data-pagefind-filter={`seccao:${SECCOES[seccao]}`} data-pagefind-ignore>+ {SECCOES[seccao]}</a>
       <h1>{titulo}</h1>
       {(autores || nivel) && (
         <p class="ui meta">

@@ -259,13 +259,15 @@ test('os PDFs indicados nas edições existem', () => {
   }
 });
 
-test('na pesquisa, cada artigo tem os filtros de edição e secção, e cada edição o de edição', () => {
+test('na pesquisa, cada artigo tem os filtros de edição e secção, cada edição o de edição, e todos a data para ordenar', () => {
   const pasta = 'dist/pagefind/fragment';
   for (const f of readdirSync(raiz + pasta)) {
-    const { url, filters } = JSON.parse(gunzipSync(readFileSync(`${raiz}${pasta}/${f}`)).toString('utf8').replace(/^pagefind_dcd/, ''));
+    const { url, filters, content, meta } = JSON.parse(gunzipSync(readFileSync(`${raiz}${pasta}/${f}`)).toString('utf8').replace(/^pagefind_dcd/, ''));
     const artigo = url.split('/').length === 5;
     assert.equal(filters.edicao?.length, 1, `${url} não tem o filtro de edição na pesquisa.`);
     assert.equal(filters.seccao?.length, artigo ? 1 : undefined, `${url} ${artigo ? 'não tem' : 'não devia ter'} o filtro de secção na pesquisa.`);
+    assert.match(ler(`dist${url}index.html`), /data-pagefind-sort="data:\d{4}-\d{2}-\d{2}"/, `${url} não tem a data para ordenar os resultados da pesquisa.`);
+    if (artigo) assert.ok(content.startsWith(meta.title), `O texto de ${url} na pesquisa não começa pelo título (tem a etiqueta da secção à frente?).`);
   }
 });
 

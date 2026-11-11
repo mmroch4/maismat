@@ -47,7 +47,7 @@ const filtros = [
   type Pagefind = {
     options(o: object): Promise<void>;
     filters(): Promise<Record<string, Record<string, number>>>;
-    search(q: string | null, o?: { filters: Record<string, string> }): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
+    search(q: string | null, o?: { filters: Record<string, string>; sort?: Record<string, 'asc' | 'desc'> }): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
   };
 
   const POR_PAGINA = 10;
@@ -102,7 +102,8 @@ const filtros = [
       return;
     }
     const filtros = Object.fromEntries(listas.filter((s) => s.value).map((s) => [s.name, s.selectedOptions[0].dataset.valor!]));
-    const r = await pagefind.search(termo || null, { filters: filtros });
+    // Sem termo não há relevância: as edições mais recentes primeiro.
+    const r = await pagefind.search(termo || null, { filters: filtros, sort: termo ? undefined : { data: 'desc' } });
     if (!r || este !== pedido) return;
     lista.replaceChildren();
     pendentes = r.results;
