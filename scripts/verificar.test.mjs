@@ -390,3 +390,16 @@ test('a data de atualização dos artigos vem do git, só depois do lançamento,
   }
   assert.ok(!erros.length, erros.join('\n'));
 });
+
+test('o robots.txt indica o sitemap do site e não bloqueia nenhuma página do sitemap nem as que têm noindex', () => {
+  assert.ok(existe('dist/robots.txt'), 'Falta o dist/robots.txt (gerado por src/pages/robots.txt.ts).');
+  const linhas = ler('dist/robots.txt').split('\n').map((l) => l.replace(/#.*/, '').trim());
+  const sitemaps = linhas.filter((l) => /^sitemap:/i.test(l)).map((l) => l.replace(/^sitemap:\s*/i, ''));
+  assert.deepEqual(sitemaps, [`${site.origin}/sitemap-index.xml`], `O robots.txt devia indicar só o sitemap ${site.origin}/sitemap-index.xml (o domínio muda-se em astro.config.mjs).`);
+  assert.ok(existe('dist/sitemap-index.xml'), 'O robots.txt indica o sitemap-index.xml, que não existe em dist.');
+  const bloqueados = linhas.filter((l) => /^disallow:/i.test(l)).map((l) => l.replace(/^disallow:\s*/i, '')).filter(Boolean);
+  const urls = [...ler('dist/sitemap-0.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, u]) => new URL(u).pathname);
+  for (const caminho of [...urls, '/404.html', '/admin/'])
+    for (const b of bloqueados)
+      assert.ok(!caminho.startsWith(b), `O robots.txt bloqueia ${caminho} (Disallow: ${b}). As páginas do sitemap têm de poder ser lidas, e as que têm noindex também, senão o noindex não é visto.`);
+});
