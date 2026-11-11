@@ -1,0 +1,25 @@
+---
+// Páginas por onde se chega a tudo sem pesquisa: alternativa da /pesquisa/ e página 404.
+import { edicoesOrdenadas, mesAno, rotuloEdicao } from '../lib/edicoes';
+
+const edicoes = await edicoesOrdenadas();
+---
+
+<ul class="ui paginas">
+  <li><a href="/desafios/">Arquivo de desafios</a></li>
+  <li><a href="/seccoes/">Secções</a></li>
+  <li>
+    <a href="/edicoes/">Edições</a>
+    <ul>
+      {edicoes.map((e) => (
+        <li><a href={`/edicoes/${e.id}/`}>{rotuloEdicao(e)} · <span class="cap">{mesAno(e.data.data)}</span></a></li>
+      ))}
+    </ul>
+  </li>
+</ul>
+
+<style>
+  .paginas, .paginas ul { padding-left: 1.25rem; }
+  li { margin: 0.25rem 0; }
+  .cap { text-transform: capitalize; }
+</style>

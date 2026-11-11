@@ -1,14 +1,23 @@
 ---
+import { getImage } from 'astro:assets';
 import '../styles/global.css';
+import { edicoesOrdenadas, mesAno, type Edicao } from '../lib/edicoes';
 
 interface Props {
   titulo?: string;
   descricao?: string;
+  // Edição cuja capa aparece ao partilhar a página; por omissão, a mais recente com capa.
+  edicao?: Edicao;
+  artigo?: boolean;
 }
 
-const { titulo, descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.' } = Astro.props;
+const { titulo, descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.', artigo = false } = Astro.props;
 const tituloCompleto = titulo ? `${titulo} · +MAT` : '+MAT · Jornal de Matemática';
 const caminho = Astro.url.pathname;
+
+// Partilha (WhatsApp, Teams…): a capa inteira em JPEG, que todos leem.
+const edicao = Astro.props.edicao?.data.capa ? Astro.props.edicao : (await edicoesOrdenadas()).find((e) => e.data.capa);
+const partilha = edicao && (await getImage({ src: edicao.data.capa!, format: 'jpeg', width: 600, quality: 80 }));
 const nav = [
   { href: '/edicoes/', texto: 'Edições' },
   { href: '/seccoes/', texto: 'Secções' },
@@ -27,6 +36,20 @@ const nav = [
     <meta name="description" content={descricao} />
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descricao} />
+    <meta property="og:type" content={artigo ? 'article' : 'website'} />
+    <meta property="og:url" content={new URL(caminho, Astro.site)} />
+    <meta property="og:site_name" content="+MAT" />
+    <meta property="og:locale" content="pt_PT" />
+    {partilha && (
+      <>
+        <meta property="og:image" content={new URL(partilha.src, Astro.site)} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content={String(partilha.attributes.width)} />
+        <meta property="og:image:height" content={String(partilha.attributes.height)} />
+        <meta property="og:image:alt" content={`Capa da edição de ${mesAno(edicao.data.data)} do +MAT`} />
+      </>
+    )}
+    <meta name="twitter:card" content="summary" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title="+MAT · Edições" href="/rss.xml" />

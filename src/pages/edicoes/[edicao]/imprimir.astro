@@ -16,7 +16,7 @@ const artigos = await Promise.all(
 );
 ---
 
-<Base titulo={`${rotuloEdicao(edicao)} — versão para imprimir`}>
+<Base titulo={`${rotuloEdicao(edicao)} — versão para imprimir`} edicao={edicao}>
   <div class="contentor impressao">
     <p class="ui nao-imprimir dica">
       Usa <kbd>Ctrl</kbd>+<kbd>P</kbd> (ou <kbd>⌘</kbd>+<kbd>P</kbd>) e escolhe “Guardar como PDF”.

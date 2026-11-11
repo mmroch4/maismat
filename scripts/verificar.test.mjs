@@ -187,3 +187,103 @@ test('a ligação do QR leva e traz o progresso, e recusa fragmentos estragados'
   assert.throws(() => descodificar(codigoDaLigacao(hash + 'U')), /carácter que não pode ter/);
   assert.throws(() => descodificar(codigoDaLigacao('#progresso=%E0%A4%A')), /devia começar por MAT1-/);
 });
+
+// Todas as páginas geradas, e o ficheiro que quem edita deve abrir para corrigir cada uma.
+const paginas = readdirSync(raiz + 'dist', { recursive: true }).filter((f) => f.endsWith('.html') && !f.startsWith('pagefind/'));
+const artigoDe = (f) => f.match(/^edicoes\/([^/]+)\/([^/]+)\/index\.html$/)?.filter((_, i) => i).join('/');
+function fonte(f) {
+  const artigo = artigoDe(f);
+  if (artigo && artigo.split('/')[1] !== 'imprimir') {
+    const md = ['md', 'mdx'].map((x) => `src/content/artigos/${artigo}.${x}`).find(existe);
+    if (md) return `No artigo ${md}`;
+  }
+  const edicao = f.match(/^edicoes\/([^/]+)\//)?.[1];
+  if (edicao && existe(`src/content/edicoes/${edicao}.md`)) return `Na edição src/content/edicoes/${edicao}.md ou num dos seus artigos`;
+  return `No código do site (src/pages, src/components ou src/layouts), página dist/${f}`;
+}
+const atributo = (html) => html.replace(/&(?:#x([0-9a-f]+)|#(\d+)|(\w+));/gi, (e, hex, dec, nome) =>
+  hex ? String.fromCodePoint(parseInt(hex, 16)) : dec ? String.fromCodePoint(Number(dec)) : (entidades[nome] ?? e));
+const decodificar = (s) => { try { return decodeURIComponent(s); } catch { return s; } };
+
+test('a página 404 existe e fica fora do sitemap e da pesquisa', () => {
+  assert.ok(existe('dist/404.html'), 'Falta o dist/404.html: o Cloudflare Pages mostraria a página de erro dele.');
+  assert.ok(!ler('dist/sitemap-0.xml').includes('/404'), 'A página 404 está no sitemap.');
+  assert.ok(!ler('dist/404.html').includes('data-pagefind-body'), 'A página 404 seria indexada pela pesquisa.');
+});
+
+test('as ligações internas levam a páginas e âncoras que existem', () => {
+  const ids = new Map();
+  const idsDe = (ficheiro) => {
+    if (!ids.has(ficheiro)) ids.set(ficheiro, new Set([...ler(ficheiro).matchAll(/\sid="([^"]+)"/g)].map(([, id]) => atributo(id))));
+    return ids.get(ficheiro);
+  };
+  const destino = (caminho) =>
+    (caminho.endsWith('/') ? [`${caminho}index.html`] : [caminho, `${caminho}.html`, `${caminho}/index.html`]).map((c) => `dist${c}`).find((c) => existe(c) && !c.endsWith('/'));
+  const erros = [];
+  for (const f of paginas) {
+    const html = ler(`dist/${f}`);
+    const ligacoes = [
+      ...[...html.matchAll(/\s(?:href|src)="(\/[^"]*)"/g)].map(([, u]) => u),
+      ...[...html.matchAll(/\ssrcset="([^"]*)"/g)].flatMap(([, s]) => s.split(',').map((x) => x.trim().split(/\s+/)[0])),
+    ].map(atributo).filter((u) => u.startsWith('/') && !u.startsWith('//') && !u.startsWith('/pagefind/'));
+    for (const u of new Set(ligacoes)) {
+      const [caminho, ancora] = u.replace(/\?[^#]*/, '').split('#');
+      const alvo = destino(decodificar(caminho));
+      if (!alvo) erros.push(`${fonte(f)}: a ligação ${u} leva a uma página ou ficheiro que não existe. Corrige o endereço ou carrega o ficheiro no painel.`);
+      else if (ancora && alvo.endsWith('.html') && !idsDe(alvo).has(decodificar(ancora)))
+        erros.push(`${fonte(f)}: a ligação ${u} aponta para #${decodificar(ancora)}, que não existe em ${caminho}. Corrige a parte depois do # na ligação.`);
+    }
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('todas as imagens têm descrição, e nos artigos não pode ficar vazia', () => {
+  const erros = [];
+  for (const f of paginas) {
+    const artigo = artigoDe(f) && !f.includes('/imprimir/');
+    for (const [img] of ler(`dist/${f}`).matchAll(/<img\b[^>]*>/g)) {
+      const nome = img.match(/\ssrc="([^"]*)"/)?.[1].split('/').pop().split('.')[0] ?? '(sem endereço)';
+      const alt = img.match(/\salt="([^"]*)"/)?.[1];
+      if (alt === undefined) erros.push(`${fonte(f)}: a imagem «${nome}» não tem descrição (alt). Escreve uma descrição curta do que a imagem mostra.`);
+      else if (artigo && !alt.trim()) erros.push(`${fonte(f)}: a imagem «${nome}» tem a descrição vazia. Abre o artigo no painel e escreve o que a imagem mostra, para quem não a consegue ver.`);
+    }
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('os PDFs indicados nas edições existem', () => {
+  for (const e of edicoes.filter((e) => e.pdf)) {
+    const pdf = e.pdf.replace(/^["']|["']$/g, '');
+    assert.ok(pdf.startsWith('/') && existe(`public${pdf}`),
+      `A edição src/content/edicoes/${e.id}.md tem no campo «PDF original» o ficheiro ${pdf}, que não existe em public/. Carrega o PDF no painel ou corrige o campo.`);
+  }
+});
+
+test('na pesquisa, cada artigo tem os filtros de edição e secção, e cada edição o de edição', () => {
+  const pasta = 'dist/pagefind/fragment';
+  for (const f of readdirSync(raiz + pasta)) {
+    const { url, filters } = JSON.parse(gunzipSync(readFileSync(`${raiz}${pasta}/${f}`)).toString('utf8').replace(/^pagefind_dcd/, ''));
+    const artigo = url.split('/').length === 5;
+    assert.equal(filters.edicao?.length, 1, `${url} não tem o filtro de edição na pesquisa.`);
+    assert.equal(filters.seccao?.length, artigo ? 1 : undefined, `${url} ${artigo ? 'não tem' : 'não devia ter'} o filtro de secção na pesquisa.`);
+  }
+});
+
+// Largura e altura de um JPEG, lidas do marcador SOF.
+function tamanhoJpeg(b) {
+  for (let i = 2; i < b.length; i += 2 + b.readUInt16BE(i + 2))
+    if (b[i + 1] >= 0xc0 && b[i + 1] <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(b[i + 1])) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
+}
+
+test('cada página tem imagem de partilha, que existe em dist com o tamanho declarado', () => {
+  for (const f of paginas.filter((f) => !f.startsWith('admin/'))) {
+    const html = ler(`dist/${f}`);
+    const meta = (p) => html.match(new RegExp(`<meta property="og:${p}" content="([^"]*)"`))?.[1];
+    const imagem = meta('image');
+    assert.ok(imagem, `A página dist/${f} não tem imagem de partilha (og:image).`);
+    const { origin, pathname } = new URL(imagem);
+    assert.equal(origin, 'https://maismat.miguelrocha.dev', `A imagem de partilha de dist/${f} não aponta para o site.`);
+    assert.ok(existe(`dist${pathname}`), `A imagem de partilha de dist/${f} (${pathname}) não existe em dist.`);
+    assert.deepEqual(tamanhoJpeg(readFileSync(`${raiz}dist${pathname}`)), [Number(meta('image:width')), Number(meta('image:height'))], `A imagem de partilha de dist/${f} não tem o tamanho declarado.`);
+  }
+});

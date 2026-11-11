@@ -1,39 +1,43 @@
 ---
 import Base from '../layouts/Base.astro';
-import { edicoesOrdenadas, mesAno, rotuloEdicao } from '../lib/edicoes';
+import FormPesquisa from '../components/FormPesquisa.astro';
+import PaginasDoJornal from '../components/PaginasDoJornal.astro';
+import { edicoesOrdenadas, rotuloEdicao } from '../lib/edicoes';
+import { SECCOES } from '../lib/seccoes';
 
-const edicoes = await edicoesOrdenadas();
+// No URL vão os ids (?edicao=ano3-edicao2&seccao=geometria); no Pagefind, o texto que está nas páginas.
+const edicoes = (await edicoesOrdenadas()).map((e) => ({ id: e.id, valor: rotuloEdicao(e) }));
+const seccoes = Object.entries(SECCOES).map(([id, nome]) => ({ id, valor: nome }));
+const filtros = [
+  { nome: 'edicao', rotulo: 'Edição', opcoes: edicoes },
+  { nome: 'seccao', rotulo: 'Secção', opcoes: seccoes },
+];
 ---
 
 <Base titulo="Pesquisar" descricao="Pesquisa nos artigos e nas edições do +MAT.">
   <div class="contentor">
     <h1>Pesquisar no +MAT</h1>
 
-    <form class="ui pesquisa" action="/pesquisa/" method="get" role="search" hidden>
-      <label for="q">O que procuras?</label>
-      <div class="linha">
-        <input id="q" type="search" name="q" autocomplete="off" spellcheck="false" />
-        <button type="submit">Pesquisar</button>
+    <FormPesquisa escondido>
+      <div class="filtros">
+        {filtros.map((f) => (
+          <div class="filtro">
+            <label for={f.nome}>{f.rotulo}</label>
+            <select id={f.nome} name={f.nome}>
+              <option value="">Todas</option>
+              {f.opcoes.map((o) => <option value={o.id} data-valor={o.valor}>{o.valor}</option>)}
+            </select>
+          </div>
+        ))}
       </div>
-    </form>
+    </FormPesquisa>
     <p class="ui estado" role="status" aria-live="polite"></p>
     <ol class="resultados"></ol>
     <button type="button" class="ui mais" hidden>Mostrar mais resultados</button>
 
     <section class="ui alternativa" aria-labelledby="alt-titulo">
       <p id="alt-titulo" class="aviso">A pesquisa precisa de JavaScript. Podes procurar nestas páginas:</p>
-      <ul>
-        <li><a href="/desafios/">Arquivo de desafios</a></li>
-        <li><a href="/seccoes/">Secções</a></li>
-        <li>
-          <a href="/edicoes/">Edições</a>
-          <ul>
-            {edicoes.map((e) => (
-              <li><a href={`/edicoes/${e.id}/`}>{rotuloEdicao(e)} · <span class="cap">{mesAno(e.data.data)}</span></a></li>
-            ))}
-          </ul>
-        </li>
-      </ul>
+      <PaginasDoJornal />
     </section>
   </div>
 </Base>
@@ -42,12 +46,14 @@ const edicoes = await edicoesOrdenadas();
   type Resultado = { url: string; excerpt: string; meta: { title?: string; edicao?: string } };
   type Pagefind = {
     options(o: object): Promise<void>;
-    search(q: string): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
+    filters(): Promise<Record<string, Record<string, number>>>;
+    search(q: string | null, o?: { filters: Record<string, string> }): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
   };
 
   const POR_PAGINA = 10;
   const form = document.querySelector<HTMLFormElement>('.pesquisa')!;
   const campo = form.querySelector<HTMLInputElement>('input')!;
+  const listas = [...form.querySelectorAll('select')];
   const estado = document.querySelector<HTMLElement>('.estado')!;
   const lista = document.querySelector<HTMLOListElement>('.resultados')!;
   const mais = document.querySelector<HTMLButtonElement>('.mais')!;
@@ -81,34 +87,41 @@ const edicoes = await edicoesOrdenadas();
     mais.hidden = pendentes.length === 0;
   }
 
-  async function pesquisar(q: string) {
+  async function pesquisar() {
     const este = ++pedido;
-    const termo = q.trim();
-    history.replaceState(null, '', termo ? `?q=${encodeURIComponent(termo)}` : location.pathname);
-    if (!termo) {
+    const termo = campo.value.trim();
+    const escolhidas = listas.map((s) => s.selectedOptions[0]).filter((o) => o.value);
+    const parametros = new URLSearchParams();
+    if (termo) parametros.set('q', termo);
+    for (const s of listas) if (s.value) parametros.set(s.name, s.value);
+    history.replaceState(null, '', parametros.size ? `?${parametros}` : location.pathname);
+    if (!termo && !escolhidas.length) {
       lista.replaceChildren();
       mais.hidden = true;
       estado.textContent = '';
       return;
     }
-    const r = await pagefind.search(termo);
+    const filtros = Object.fromEntries(listas.filter((s) => s.value).map((s) => [s.name, s.selectedOptions[0].dataset.valor!]));
+    const r = await pagefind.search(termo || null, { filters: filtros });
     if (!r || este !== pedido) return;
     lista.replaceChildren();
     pendentes = r.results;
     const n = r.results.length;
-    estado.textContent = n === 0 ? `Não encontrei nada para «${termo}».` : `${n === 1 ? '1 resultado' : `${n} resultados`} para «${termo}».`;
+    const onde = [termo && `para «${termo}»`, escolhidas.length && `em ${escolhidas.map((o) => o.dataset.valor).join(', ')}`].filter(Boolean).join(' ');
+    estado.textContent = n === 0 ? `Não encontrei nada ${onde}.` : `${n === 1 ? '1 resultado' : `${n} resultados`} ${onde}.`;
     await mostrar(POR_PAGINA);
   }
 
   let espera: number;
   campo.addEventListener('input', () => {
     clearTimeout(espera);
-    espera = window.setTimeout(() => pesquisar(campo.value), 300);
+    espera = window.setTimeout(pesquisar, 300);
   });
+  for (const s of listas) s.addEventListener('change', pesquisar);
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     clearTimeout(espera);
-    pesquisar(campo.value);
+    pesquisar();
   });
   mais.addEventListener('click', () => mostrar(POR_PAGINA));
 
@@ -117,10 +130,19 @@ const edicoes = await edicoesOrdenadas();
     const url = '/pagefind/pagefind.js';
     pagefind = await import(/* @vite-ignore */ url);
     await pagefind.options({ excerptLength: 24 });
+    const contagens = await pagefind.filters();
+    for (const s of listas)
+      for (const o of [...s.options].filter((o) => o.value)) {
+        const n = contagens[s.name]?.[o.dataset.valor!] ?? 0;
+        if (n) o.textContent += ` (${n})`;
+        else o.remove();
+      }
+    const parametros = new URLSearchParams(location.search);
+    campo.value = parametros.get('q') ?? '';
+    for (const s of listas) s.value = [...s.options].some((o) => o.value === parametros.get(s.name)) ? parametros.get(s.name)! : '';
     form.hidden = false;
     alternativa.hidden = true;
-    campo.value = new URLSearchParams(location.search).get('q') ?? '';
-    if (campo.value) pesquisar(campo.value);
+    if (campo.value || listas.some((s) => s.value)) pesquisar();
     else campo.focus();
   } catch {
     alternativa.querySelector('.aviso')!.textContent = 'A pesquisa não está disponível neste momento. Podes procurar nestas páginas:';
@@ -131,21 +153,20 @@ const edicoes = await edicoesOrdenadas();
   h1 { font-size: 2.5rem; margin-top: 2.5rem; margin-bottom: 1rem; }
   [hidden] { display: none !important; }
 
-  .pesquisa { display: grid; gap: 0.35rem; max-width: 40rem; font-size: 0.95rem; }
-  .pesquisa label { color: var(--texto-suave); }
-  .linha { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  input {
-    flex: 1 1 12rem;
-    min-width: 0;
+  .filtros { display: flex; gap: 0.5rem 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .filtro { display: grid; gap: 0.35rem; flex: 1 1 12rem; min-width: 0; }
+  .filtro label { color: var(--texto-suave); }
+  select {
+    width: 100%;
     font: inherit;
-    font-size: 1.05rem;
-    padding: 0.5rem 0.7rem;
+    padding: 0.45rem 0.6rem;
     border: 1px solid var(--campo);
     border-radius: 6px;
     background: var(--superficie);
     color: var(--texto);
   }
-  button {
+
+  .mais {
     font: inherit;
     font-weight: 600;
     padding: 0.5rem 1.1rem;
@@ -155,7 +176,7 @@ const edicoes = await edicoesOrdenadas();
     color: #fff;
     cursor: pointer;
   }
-  button:hover { background: var(--azul-escuro); }
+  .mais:hover { background: var(--azul-escuro); }
 
   .estado { color: var(--texto-suave); font-size: 0.9rem; margin: 1rem 0 0; }
   .estado:empty { margin: 0; }
@@ -171,7 +192,4 @@ const edicoes = await edicoesOrdenadas();
 
   .alternativa { font-size: 0.95rem; }
   .aviso { color: var(--texto-suave); }
-  .alternativa ul { padding-left: 1.25rem; }
-  .alternativa li { margin: 0.25rem 0; }
-  .cap { text-transform: capitalize; }
 </style>

@@ -14,8 +14,8 @@ const { data, capa, pdf, direcao, citacao, convertida } = edicao.data;
 const artigos = await artigosDe(edicao.id);
 ---
 
-<Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`}>
-  <div data-pagefind-body data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`}>
+<Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`} edicao={edicao}>
+  <div data-pagefind-body data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`}>
   <div class="contentor cabecalho">
     {capa && <Image src={capa} alt="Capa" width={400} class="capa" />}
     <div>

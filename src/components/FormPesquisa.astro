@@ -1,0 +1,43 @@
+---
+// Campo de pesquisa da /pesquisa/ e da página 404. O que vier no slot fica por baixo do campo (os filtros).
+interface Props { escondido?: boolean }
+const { escondido = false } = Astro.props;
+---
+
+<form class="ui pesquisa" action="/pesquisa/" method="get" role="search" hidden={escondido}>
+  <label for="q">O que procuras?</label>
+  <div class="linha">
+    <input id="q" type="search" name="q" autocomplete="off" spellcheck="false" />
+    <button type="submit">Pesquisar</button>
+  </div>
+  <slot />
+</form>
+
+<style>
+  .pesquisa { display: grid; gap: 0.35rem; max-width: 40rem; font-size: 0.95rem; }
+  .pesquisa[hidden] { display: none; }
+  label { color: var(--texto-suave); }
+  .linha { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    font: inherit;
+    font-size: 1.05rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--campo);
+    border-radius: 6px;
+    background: var(--superficie);
+    color: var(--texto);
+  }
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 0.5rem 1.1rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--azul);
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: var(--azul-escuro); }
+</style>

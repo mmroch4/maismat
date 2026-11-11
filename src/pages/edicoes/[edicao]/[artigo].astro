@@ -23,13 +23,13 @@ const { titulo, seccao, autores, nivel, citacao, resumo } = artigo.data;
 const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
 ---
 
-<Base titulo={titulo} descricao={resumo}>
-  <article class="contentor" data-pagefind-body data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`}>
+<Base titulo={titulo} descricao={resumo} edicao={edicao} artigo>
+  <article class="contentor" data-pagefind-body data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`} data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`}>
     <header>
       <p class="ui migalhas" data-pagefind-ignore>
         <a href={`/edicoes/${edicao.id}/`}>{rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span></a>
       </p>
-      <a class="etiqueta" href={`/seccoes/${seccao}/`}>+ {SECCOES[seccao]}</a>
+      <a class="etiqueta" href={`/seccoes/${seccao}/`} data-pagefind-filter={`seccao:${SECCOES[seccao]}`}>+ {SECCOES[seccao]}</a>
       <h1>{titulo}</h1>
       {(autores || nivel) && (
         <p class="ui meta">
