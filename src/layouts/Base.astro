@@ -6,14 +6,14 @@ import Icone from '../components/Icone.astro';
 // As duas fontes que quase todas as páginas usam logo no início: títulos e interface, e texto.
 import fonteTitulos from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import fonteTexto from '@fontsource/source-serif-4/files/source-serif-4-latin-400-normal.woff2?url';
-import { edicaoAtual, edicoesOrdenadas, mesAno, type Edicao } from '../lib/edicoes';
-import { jsonLd } from '../lib/dados-estruturados';
+import { getCurrentIssue, getSortedIssues, monthYear, type Issue } from '../lib/issues';
+import { jsonLd } from '../lib/structured-data';
 
 interface Props {
   titulo?: string;
   descricao?: string;
   // Edição cuja capa aparece ao partilhar a página; por omissão, a mais recente com capa.
-  edicao?: Edicao;
+  edicao?: Issue;
   artigo?: boolean;
   // A 404 é servida em qualquer endereço: não tem endereço próprio e não deve ser indexada.
   naoEncontrada?: boolean;
@@ -33,10 +33,10 @@ const caminho = Astro.url.pathname;
 const endereco = new URL(caminho, Astro.site);
 
 // Partilha (WhatsApp, Teams…): a capa inteira em JPEG, que todos leem.
-const edicoes = await edicoesOrdenadas();
+const edicoes = await getSortedIssues();
 const edicao = Astro.props.edicao?.data.capa ? Astro.props.edicao : edicoes.find((e) => e.data.capa);
-const atual = await edicaoAtual();
-const mesAtual = atual && mesAno(atual.data.data).replace(/^./, (c) => c.toUpperCase());
+const atual = await getCurrentIssue();
+const mesAtual = atual && monthYear(atual.data.data).replace(/^./, (c) => c.toUpperCase());
 // O Astro não aumenta imagens: com uma capa mais estreita que 600 px, o og:image:width tem de ser a largura dela.
 const partilha =
   edicao &&
@@ -89,7 +89,7 @@ const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.sta
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content={String(partilha.attributes.width)} />
         <meta property="og:image:height" content={String(partilha.attributes.height)} />
-        <meta property="og:image:alt" content={`Capa da edição de ${mesAno(edicao.data.data)} do +MAT`} />
+        <meta property="og:image:alt" content={`Capa da edição de ${monthYear(edicao.data.data)} do +MAT`} />
       </>
     )}
     <meta name="twitter:card" content="summary" />

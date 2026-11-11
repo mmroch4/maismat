@@ -1,11 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { artigosPublicados } from '../../lib/edicoes';
-import { SECCOES, type Seccao } from '../../lib/seccoes';
+import { getPublishedArticles } from '../../lib/issues';
+import { SECTIONS, type SectionId } from '../../lib/sections';
 
-const artigos = await artigosPublicados();
-const contagem = (s: Seccao) => artigos.filter((a) => a.data.seccao === s).length;
-const lista = (Object.keys(SECCOES) as Seccao[]).filter((s) => contagem(s) > 0);
+const artigos = await getPublishedArticles();
+const contagem = (s: SectionId) => artigos.filter((a) => a.data.seccao === s).length;
+const lista = (Object.keys(SECTIONS) as SectionId[]).filter((s) => contagem(s) > 0);
 ---
 
 <Base titulo="Secções">
@@ -20,7 +20,7 @@ const lista = (Object.keys(SECCOES) as Seccao[]).filter((s) => contagem(s) > 0);
       {lista.map((s) => (
         <li>
           <a class="cartao" href={`/seccoes/${s}/`}>
-            <span class="nome">{SECCOES[s]}</span>{' '}
+            <span class="nome">{SECTIONS[s]}</span>{' '}
             <span class="n">{contagem(s) === 1 ? '1 artigo' : `${contagem(s)} artigos`}</span>
           </a>
         </li>

@@ -1,18 +1,18 @@
 ---
 import { Image } from 'astro:assets';
-import { artigosDe, mesAno, type Edicao } from '../lib/edicoes';
+import { getIssueArticles, monthYear, type Issue } from '../lib/issues';
 
 interface Props {
-  edicao: Edicao;
+  edicao: Issue;
 }
 const { edicao } = Astro.props;
 const { capa, data, convertida, numero } = edicao.data;
-const artigos = convertida ? (await artigosDe(edicao.id)).length : 0;
+const artigos = convertida ? (await getIssueArticles(edicao.id)).length : 0;
 ---
 
 <a class="capa-edicao" href={`/edicoes/${edicao.id}/`}>
-  {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={360} />}
-  <span class="mes ui cap">{mesAno(data)}</span>
+  {capa && <Image src={capa} alt={`Capa da edição de ${monthYear(data)}`} width={360} />}
+  <span class="mes ui cap">{monthYear(data)}</span>
   <span class="ui rotulo">
     Edição {String(numero).padStart(2, '0')}
     {artigos > 0 && ` · ${artigos} artigos`}

@@ -1,8 +1,8 @@
 ---
 // Páginas por onde se chega a tudo sem pesquisa: alternativa da /pesquisa/ e página 404.
-import { edicoesOrdenadas, mesAno, rotuloEdicao } from '../lib/edicoes';
+import { getSortedIssues, monthYear, issueLabel } from '../lib/issues';
 
-const edicoes = await edicoesOrdenadas();
+const edicoes = await getSortedIssues();
 ---
 
 <ul class="ui paginas">
@@ -18,7 +18,7 @@ const edicoes = await edicoesOrdenadas();
       {edicoes.map((e) => (
         <li>
           <a href={`/edicoes/${e.id}/`}>
-            {rotuloEdicao(e)} · <span class="cap">{mesAno(e.data.data)}</span>
+            {issueLabel(e)} · <span class="cap">{monthYear(e.data.data)}</span>
           </a>
         </li>
       ))}

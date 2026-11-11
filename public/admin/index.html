@@ -24,7 +24,7 @@
       // Versão fixa: atualizar de propósito, depois de testar.
       import CMS from 'https://unpkg.com/@sveltia/cms@0.255.1/dist/sveltia-cms.mjs';
       import { componentes } from '/admin/componentes.js';
-      import { pagina } from '/admin/demonstracoes.mjs';
+      import { demoPage } from '/admin/demos.js';
 
       window.CMS = CMS;
       componentes.forEach((c) => CMS.registerEditorComponent(c));
@@ -33,7 +33,7 @@
       // A demonstração corre como no site: isolada (sem allow-same-origin), longe da sessão do painel.
       CMS.registerPreviewTemplate('demonstracoes', ({ entry }) =>
         h('iframe', {
-          srcDoc: pagina(entry.getIn(['data', 'codigo']) ?? ''),
+          srcDoc: demoPage(entry.getIn(['data', 'codigo']) ?? ''),
           sandbox: 'allow-scripts',
           title: entry.getIn(['data', 'titulo']) ?? 'Demonstração',
           style: { width: '100%', height: `${entry.getIn(['data', 'altura']) ?? 400}px`, border: 0 },

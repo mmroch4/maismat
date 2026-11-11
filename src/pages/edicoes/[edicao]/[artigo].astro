@@ -1,42 +1,49 @@
 ---
 import { getEntry, render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import { artigosDe, artigosPublicados, mesAno, rotuloEdicao, slugArtigo, type Artigo } from '../../../lib/edicoes';
-import { componentesMdx } from '../../../lib/componentes-mdx';
-import { SECCOES } from '../../../lib/seccoes';
-import { dia, editora, numeroEdicao, pessoas } from '../../../lib/dados-estruturados';
-import { ultimaAtualizacao } from '../../../lib/git.mjs';
+import {
+  getIssueArticles,
+  getPublishedArticles,
+  monthYear,
+  issueLabel,
+  articleSlug,
+  type Article,
+} from '../../../lib/issues';
+import { mdxComponents } from '../../../lib/mdx-components';
+import { SECTIONS } from '../../../lib/sections';
+import { isoDay, publisher, publicationIssue, persons } from '../../../lib/structured-data';
+import { lastUpdated } from '../../../lib/git';
 
 export async function getStaticPaths() {
-  const artigos = await artigosPublicados();
+  const artigos = await getPublishedArticles();
   return artigos.map((artigo) => ({
-    params: { edicao: artigo.data.edicao.id, artigo: slugArtigo(artigo) },
+    params: { edicao: artigo.data.edicao.id, artigo: articleSlug(artigo) },
     props: { artigo },
   }));
 }
 
-const { artigo } = Astro.props as { artigo: Artigo };
+const { artigo } = Astro.props as { artigo: Article };
 const edicao = (await getEntry(artigo.data.edicao))!;
 const { Content } = await render(artigo);
-const irmaos = await artigosDe(edicao.id);
+const irmaos = await getIssueArticles(edicao.id);
 const i = irmaos.findIndex((a) => a.id === artigo.id);
 const [anterior, seguinte] = [irmaos[i - 1], irmaos[i + 1]];
 const { titulo, seccao, autores, nivel, citacao, resumo } = artigo.data;
-const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
+const url = (a: Article) => `/edicoes/${edicao.id}/${articleSlug(a)}/`;
 const minutos = Math.max(1, Math.round((artigo.body ?? '').split(/\s+/).filter(Boolean).length / 200));
 // O marcador dourado vai na última palavra do título, se for comprida o bastante para se ver.
 const partes = titulo.match(/^(.*\s)(\p{L}{5,})([^\p{L}]*)$/u);
-const autoria = pessoas(autores);
+const autoria = persons(autores);
 const dados = {
   '@type': 'Article',
   headline: titulo,
   description: resumo,
   author: autoria.length ? autoria : undefined,
-  datePublished: dia(edicao.data.data),
-  dateModified: artigo.filePath && ultimaAtualizacao(artigo.filePath),
+  datePublished: isoDay(edicao.data.data),
+  dateModified: artigo.filePath && lastUpdated(artigo.filePath),
   inLanguage: 'pt-PT',
-  isPartOf: numeroEdicao(edicao, Astro.site!),
-  publisher: editora(Astro.site!),
+  isPartOf: publicationIssue(edicao, Astro.site!),
+  publisher: publisher(Astro.site!),
 };
 ---
 
@@ -44,18 +51,18 @@ const dados = {
   <article
     class="contentor"
     data-pagefind-body
-    data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`}
-    data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`}
+    data-pagefind-meta={`edicao:${issueLabel(edicao)} · ${monthYear(edicao.data.data)}`}
+    data-pagefind-filter={`edicao:${issueLabel(edicao)}`}
     data-pagefind-sort={`data:${edicao.data.data.toISOString().slice(0, 10)}`}
   >
     <header>
       <a
         class="etiqueta"
         href={`/seccoes/${seccao}/`}
-        data-pagefind-filter={`seccao:${SECCOES[seccao]}`}
+        data-pagefind-filter={`seccao:${SECTIONS[seccao]}`}
         data-pagefind-ignore
       >
-        {SECCOES[seccao]}
+        {SECTIONS[seccao]}
       </a>
       <h1>
         {partes ? (
@@ -70,7 +77,7 @@ const dados = {
       </h1>
       <p class="ui meta" data-pagefind-ignore>
         <a href={`/edicoes/${edicao.id}/`}>
-          {rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span>
+          {issueLabel(edicao)} · <span class="cap">{monthYear(edicao.data.data)}</span>
         </a>
         <span>
           {i + 1} de {irmaos.length}
@@ -91,7 +98,7 @@ const dados = {
     </header>
 
     <div class="prosa">
-      <Content components={componentesMdx} />
+      <Content components={mdxComponents} />
     </div>
 
     <nav class="ui navegacao nao-imprimir" aria-label="Artigos desta edição" data-pagefind-ignore>

@@ -1,16 +1,16 @@
 ---
 import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { artigosPublicados, mesAno, rotuloEdicao, slugArtigo } from '../../lib/edicoes';
-import { SECCOES, SECCAO_IDS, type Seccao } from '../../lib/seccoes';
+import { getPublishedArticles, monthYear, issueLabel, articleSlug } from '../../lib/issues';
+import { SECTIONS, SECTION_IDS, type SectionId } from '../../lib/sections';
 
 export function getStaticPaths() {
-  return SECCAO_IDS.map((seccao) => ({ params: { seccao } }));
+  return SECTION_IDS.map((seccao) => ({ params: { seccao } }));
 }
 
-const seccao = Astro.params.seccao as Seccao;
+const seccao = Astro.params.seccao as SectionId;
 const artigos = await Promise.all(
-  (await artigosPublicados((a) => a.data.seccao === seccao)).map(async (a) => ({
+  (await getPublishedArticles((a) => a.data.seccao === seccao)).map(async (a) => ({
     a,
     e: (await getEntry(a.data.edicao))!,
   })),
@@ -18,21 +18,21 @@ const artigos = await Promise.all(
 artigos.sort((x, y) => y.e.data.data.getTime() - x.e.data.data.getTime() || x.a.data.ordem - y.a.data.ordem);
 ---
 
-<Base titulo={SECCOES[seccao]}>
+<Base titulo={SECTIONS[seccao]}>
   <div class="contentor">
     <div class="cabeca">
       <p class="ui">
         <a href="/seccoes/">← Todas as secções</a>
       </p>
-      <h1>{SECCOES[seccao]}</h1>
+      <h1>{SECTIONS[seccao]}</h1>
     </div>
     {artigos.length === 0 && <p>Ainda não há artigos nesta secção na versão digital.</p>}
     <ul>
       {artigos.map(({ a, e }) => (
         <li>
-          <a class="cartao" href={`/edicoes/${e.id}/${slugArtigo(a)}/`}>
+          <a class="cartao" href={`/edicoes/${e.id}/${articleSlug(a)}/`}>
             <span class="ui quando">
-              {rotuloEdicao(e)} · <span class="cap">{mesAno(e.data.data)}</span>
+              {issueLabel(e)} · <span class="cap">{monthYear(e.data.data)}</span>
             </span>
             <strong class="ui">{a.data.titulo}</strong>
             {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}
