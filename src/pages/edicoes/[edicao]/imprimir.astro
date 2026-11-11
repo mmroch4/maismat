@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
 import { artigosDe, mesAno, rotuloEdicao, type Edicao } from '../../../lib/edicoes';
+import { componentesMdx } from '../../../lib/componentes-mdx';
 import { SECCOES } from '../../../lib/seccoes';
 
 export async function getStaticPaths() {
@@ -33,7 +34,7 @@ const artigos = await Promise.all(
         <span class="etiqueta">+ {SECCOES[a.data.seccao]}</span>
         <h2>{a.data.titulo}</h2>
         {a.data.autores && <p class="ui autores">{a.data.autores.join(', ')}</p>}
-        <div class="prosa"><Content /></div>
+        <div class="prosa"><Content components={componentesMdx} /></div>
       </section>
     ))}
     <p class="ui creditos">+MAT · maismat.miguelrocha.dev · Versão digital: Miguel Rocha</p>

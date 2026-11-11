@@ -2,6 +2,7 @@
 import { getCollection, getEntry, render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
 import { artigosDe, mesAno, rotuloEdicao, slugArtigo, type Artigo } from '../../../lib/edicoes';
+import { componentesMdx } from '../../../lib/componentes-mdx';
 import { SECCOES } from '../../../lib/seccoes';
 
 export async function getStaticPaths() {
@@ -40,7 +41,7 @@ const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
     </header>
 
     <div class="prosa">
-      <Content />
+      <Content components={componentesMdx} />
     </div>
 
     <nav class="ui navegacao nao-imprimir" aria-label="Artigos desta edição">
