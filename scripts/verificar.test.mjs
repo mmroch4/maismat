@@ -2,7 +2,7 @@
 // Apanham os enganos que o painel não impede: respostas impossíveis, ids repetidos, respostas à vista, rascunhos publicados.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
@@ -402,4 +402,34 @@ test('o robots.txt indica o sitemap do site e não bloqueia nenhuma página do s
   for (const caminho of [...urls, '/404.html', '/admin/'])
     for (const b of bloqueados)
       assert.ok(!caminho.startsWith(b), `O robots.txt bloqueia ${caminho} (Disallow: ${b}). As páginas do sitemap têm de poder ser lidas, e as que têm noindex também, senão o noindex não é visto.`);
+});
+
+test('o _headers protege todas as páginas e só põe cache longa em ficheiros com hash no nome', () => {
+  assert.ok(existe('dist/_headers'), 'Falta o dist/_headers: o public/_headers não foi copiado.');
+  const regras = [];
+  for (const linha of ler('dist/_headers').split('\n')) {
+    if (!linha.trim() || linha.trim().startsWith('#')) continue;
+    if (!/^\s/.test(linha)) regras.push({ padrao: linha.trim(), cabecalhos: {} });
+    else {
+      const [, nome, valor] = linha.trim().match(/^([^:]+):\s*(.*)$/) ?? [];
+      assert.ok(nome && regras.length, `O public/_headers tem uma linha que não percebo: «${linha.trim()}».`);
+      regras.at(-1).cabecalhos[nome.toLowerCase()] = valor;
+    }
+  }
+  const todas = regras.find((r) => r.padrao === '/*')?.cabecalhos ?? {};
+  for (const nome of ['x-content-type-options', 'referrer-policy', 'x-frame-options', 'content-security-policy', 'permissions-policy', 'strict-transport-security'])
+    assert.ok(todas[nome], `O public/_headers não tem ${nome} na regra /* (para todas as páginas).`);
+  assert.ok(!/(script|default)-src/.test(todas['content-security-policy']), 'A Content-Security-Policy no public/_headers limita os scripts: o painel (jsDelivr, unpkg) e a pesquisa (WebAssembly) deixariam de funcionar.');
+
+  const ficheiros = readdirSync(raiz + 'dist', { recursive: true }).filter((f) => statSync(`${raiz}dist/${f}`).isFile()).map((f) => `/${f}`);
+  const comHash = (f) => /\.[A-Za-z0-9_-]{8,}\.[a-z0-9]+$/.test(f);
+  for (const { padrao, cabecalhos } of regras.filter((r) => r.padrao !== '/*')) {
+    const re = new RegExp(`^${padrao.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    const abrangidos = ficheiros.filter((f) => re.test(f));
+    assert.ok(abrangidos.length, `A regra ${padrao} do public/_headers não abrange nenhum ficheiro em dist. O endereço está bem escrito?`);
+    const idade = Number(cabecalhos['cache-control']?.match(/max-age=(\d+)/)?.[1] ?? 0);
+    if (idade > 86400 || /immutable/.test(cabecalhos['cache-control'] ?? ''))
+      for (const f of abrangidos)
+        assert.ok(comHash(f), `A regra ${padrao} do public/_headers guarda ${f} em cache por muito tempo, mas o nome não tem hash: quem visitou o site continuaria a ver a versão antiga.`);
+  }
 });

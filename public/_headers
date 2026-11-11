@@ -1,0 +1,16 @@
+# Cabeçalhos do Cloudflare Pages (https://developers.cloudflare.com/pages/configuration/headers/).
+# Não há Content-Security-Policy completa: o painel carrega scripts do jsDelivr e do unpkg,
+# a pesquisa usa WebAssembly e há scripts inline. Só se impede o site de ser metido noutros sites.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+
+# Os ficheiros em /_astro/ têm um hash no nome: quando mudam, mudam de nome.
+# Os de /img/ e /pdf/ não, porque o painel substitui-os com o mesmo nome; ficam com a cache normal.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
