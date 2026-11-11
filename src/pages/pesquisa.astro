@@ -28,7 +28,7 @@ const seccoes = Object.entries(SECCOES).map(([id, nome]) => ({ id, valor: nome }
         </fieldset>
         <div class="filtro">
           <label for="edicao">Edição</label>
-          <select id="edicao" name="edicao" class="campo">
+          <select id="edicao" name="edicao" class="entrada">
             <option value="">Todas</option>
             {edicoes.map((o) => <option value={o.id} data-valor={o.valor}>{o.valor}</option>)}
           </select>

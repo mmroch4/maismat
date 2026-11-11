@@ -141,13 +141,16 @@ const pista = (v: number) => (v ? String(v) : '');
 <style>
   .arranha {
     display: block;
-    background: var(--dourado-claro);
+    background: var(--superficie);
     border-radius: var(--raio);
-    padding: 1.25rem;
+    box-shadow: var(--sombra);
+    padding: 0 1.25rem 1.25rem;
     margin: 2rem 0;
     text-align: center;
+    overflow: hidden;
   }
-  .titulo { margin: 0 0 0.75rem; font-weight: 600; }
+  /* A moldura dos jogos é a faixa dourada com o nome */
+  .titulo { margin: 0 -1.25rem 1rem; padding: 0.625rem 1rem; background: var(--etiqueta); color: var(--etiqueta-texto); font-size: 0.875rem; font-weight: 700; text-align: left; }
   .tabuleiro {
     display: inline-grid;
     grid-template-columns: repeat(calc(var(--n) + 2), 2.75rem);
@@ -159,31 +162,31 @@ const pista = (v: number) => (v ? String(v) : '');
     place-items: center;
     font-family: var(--f-ui);
     font-weight: 700;
-    color: var(--azul-escuro);
+    color: var(--rotulo);
   }
-  @media (prefers-color-scheme: dark) { .pista { color: var(--dourado); } }
   .casa {
     font: 600 1.35rem var(--f-ui);
-    color: var(--destaque);
+    color: var(--primaria);
     background: var(--superficie);
-    border: 2px solid var(--linha);
-    border-radius: 6px;
+    border: 2px solid var(--campo);
+    border-radius: var(--raio-p);
     cursor: pointer;
   }
-  .casa:focus-visible { outline: 3px solid var(--dourado); outline-offset: 1px; }
-  .casa[data-fixa] { color: var(--texto); background: var(--linha); cursor: default; }
+  .casa:focus-visible { outline: 3px solid var(--primaria); outline-offset: 1px; }
+  .casa[data-fixa] { color: var(--texto); background: var(--pastilha); border-color: var(--pastilha); cursor: default; }
   .casa.conflito { border-color: var(--erro); color: var(--erro); }
   [data-resolvido='sim'] .casa { border-color: var(--ok); }
-  .ajuda { font-size: 0.8rem; color: var(--texto-suave); margin: 0.75rem 0 0; }
+  .ajuda { font-size: 0.8125rem; color: var(--texto-suave); margin: 0.75rem 0 0; }
   .estado { min-height: 1.4em; font-weight: 600; margin: 0.5rem 0; }
   [data-resolvido='sim'] .estado { color: var(--ok); }
   .limpar {
-    font-size: 0.85rem;
-    background: none;
-    border: 1px solid var(--linha);
-    border-radius: 6px;
-    padding: 0.35rem 0.8rem;
-    color: var(--texto);
+    min-height: 44px;
+    padding: 0 1rem;
+    border: 2px solid var(--primaria);
+    border-radius: var(--raio);
+    background: var(--superficie);
+    color: var(--primaria);
+    font: 700 0.875rem var(--f-ui);
     cursor: pointer;
   }
   @media (max-width: 26rem) {

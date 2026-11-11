@@ -41,14 +41,6 @@
   --raio: 14px;
   --raio-g: 22px;
 
-  /* Nomes antigos, enquanto os componentes não passam aos novos */
-  --azul: #3d5a78;
-  --azul-escuro: #2b3e52;
-  --dourado: #e2c98a;
-  --dourado-claro: #f5efe0;
-  --verde: var(--ok);
-  --laranja: #e5481b;
-  --destaque: var(--primaria);
   color-scheme: light;
 }
 
@@ -73,7 +65,6 @@
     --erro: #f2867e;
     --erro-fundo: #36201e;
     --sombra: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
-    --dourado-claro: #2a2620;
     color-scheme: dark;
   }
 }
@@ -93,7 +84,7 @@ body {
 
 img { max-width: 100%; height: auto; }
 
-a { color: var(--destaque); text-underline-offset: 0.15em; }
+a { color: var(--primaria); text-underline-offset: 0.15em; }
 
 h1, h2, h3 { font-family: var(--f-titulo); font-weight: 800; line-height: 1.15; text-wrap: balance; }
 h1 { font-size: 1.875rem; letter-spacing: -0.03em; line-height: 1.1; }
@@ -182,7 +173,7 @@ a.cartao:hover { transform: translateY(-2px); }
 .pastilhas button[aria-pressed='true'] { background: var(--superficie); font-weight: 700; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
 
 /* Listas de escolha e caixas de texto */
-.campo {
+.entrada {
   min-height: 44px;
   padding: 0 0.625rem;
   border: 2px solid var(--campo);
@@ -192,7 +183,7 @@ a.cartao:hover { transform: translateY(-2px); }
   font: 0.9375rem var(--f-ui);
   max-width: 100%;
 }
-.campo:focus-visible { border-color: var(--primaria); outline-offset: 2px; }
+.entrada:focus-visible { border-color: var(--primaria); outline-offset: 2px; }
 
 :focus-visible { outline: 3px solid var(--primaria); outline-offset: 3px; }
 

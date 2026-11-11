@@ -31,7 +31,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       </div>
       <label>
         <span>Edição</span>
-        <select name="edicao" class="campo">
+        <select name="edicao" class="entrada">
           <option value="">Todas</option>
           {porEdicao.map(([e]) => <option value={e.id}>{rotuloEdicao(e)}</option>)}
         </select>

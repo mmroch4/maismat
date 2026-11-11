@@ -114,25 +114,26 @@
 </script>
 
 <style>
-  .monty { display: block; background: var(--dourado-claro); border-radius: var(--raio); padding: 1.25rem; margin: 2rem 0; text-align: center; }
+  .monty { display: block; background: var(--superficie); border-radius: var(--raio); box-shadow: var(--sombra); border-top: 6px solid var(--etiqueta); padding: 1.25rem; margin: 2rem 0; text-align: center; }
   .instrucao { font-weight: 600; min-height: 2.8em; margin: 0 0 0.75rem; }
   .portas { display: flex; justify-content: center; gap: 0.75rem; }
   .porta {
-    width: 5.5rem; height: 8rem; border-radius: 6px 6px 0 0; border: 3px solid var(--azul-escuro);
-    background: linear-gradient(#5aa9e6, #2f7cc0); color: #fff; cursor: pointer; display: grid; place-items: center; font: 700 1.6rem var(--f-ui);
+    width: 5.5rem; height: 8rem; border-radius: var(--raio-p) var(--raio-p) 0 0; border: 3px solid var(--primaria-forte);
+    background: linear-gradient(#4f7398, #3d5a78); color: #fff; cursor: pointer; display: grid; place-items: center; font: 700 1.6rem var(--f-ui);
     position: relative;
   }
   .porta:disabled { cursor: default; }
-  .porta[data-estado='escolhida'] { outline: 4px solid var(--dourado); outline-offset: 2px; }
+  .porta[data-estado='escolhida'] { outline: 4px solid var(--etiqueta); outline-offset: 2px; }
   .porta[data-estado='aberta'], .porta[data-estado='final'] { background: var(--superficie); color: var(--texto); }
-  .porta[data-estado='final'] { outline: 4px solid var(--verde); outline-offset: 2px; }
+  .porta[data-estado='final'] { outline: 4px solid var(--ok); outline-offset: 2px; }
   .premio { font-size: 2.4rem; position: absolute; bottom: 0.6rem; }
   .porta[data-estado='aberta'] .num, .porta[data-estado='final'] .num { position: absolute; top: 0.3rem; font-size: 1rem; }
   .acoes { display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0; min-height: 2.4rem; flex-wrap: wrap; }
   .acoes button, .simular {
-    font: inherit; font-weight: 600; font-size: 0.9rem; padding: 0.45rem 1rem; border-radius: 6px; border: 0; background: var(--azul); color: #fff; cursor: pointer;
+    min-height: 44px; padding: 0 1.125rem; border-radius: var(--raio); border: 2px solid var(--primaria); background: var(--primaria); color: var(--primaria-texto); font: 700 0.875rem var(--f-ui); cursor: pointer;
   }
-  .simular { background: none; border: 1px solid var(--linha); color: var(--texto); margin-top: 0.75rem; }
+  .acoes button:focus-visible { outline-color: var(--texto); }
+  .simular { background: var(--superficie); color: var(--primaria); margin-top: 0.75rem; }
   .placar { margin: 0 auto; border-collapse: collapse; font-size: 0.85rem; }
   .placar th, .placar td { padding: 0.3rem 0.7rem; border-bottom: 1px solid var(--linha); }
   .placar thead th { font-weight: 600; color: var(--texto-suave); }

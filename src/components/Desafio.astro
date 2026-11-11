@@ -132,59 +132,99 @@ const temResolucao = Astro.slots.has('resolucao');
 </script>
 
 <style>
+  /* Os estados vêm de data-estado (errado, certo), postos pelo script; o resto é CSS. */
   .desafio {
     display: block;
-    background: var(--superficie);
-    border: 1px solid var(--linha);
-    border-top: 4px solid var(--verde);
+    background: var(--fundo);
     border-radius: var(--raio);
-    padding: 1.25rem 1.5rem;
+    box-shadow: inset 0 0 0 1px var(--linha);
+    padding: 1.25rem;
     margin: 2rem 0;
   }
+  [data-estado='errado'] { background: var(--erro-fundo); box-shadow: none; }
+  [data-estado='certo'] { background: var(--ok-fundo); box-shadow: none; }
+
   header { margin-bottom: 0.75rem; }
-  .rotulo { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--verde); }
-  h3 { margin: 0.15rem 0 0; font-size: 1.3rem; }
+  .rotulo {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+    padding: 0.2rem 0.625rem;
+    border-radius: var(--raio-g);
+    background: var(--etiqueta);
+    color: var(--etiqueta-texto);
+  }
+  [data-estado='certo'] .rotulo { background: var(--ok); color: var(--superficie); }
+  [data-estado='certo'] .rotulo::before { content: '✓ ' / ''; }
+  h3 { margin: 0.5rem 0 0; }
   .enunciado > :global(* + *) { margin-top: 0.8em; }
   .enunciado :global(p) { margin-bottom: 0; }
-  .fonte { font-size: 0.8rem; color: var(--texto-suave); text-align: right; font-style: italic; }
+  .fonte { font-size: 0.8125rem; color: var(--texto-suave); text-align: right; font-style: italic; }
 
-  .resposta { margin-top: 1.25rem; display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; font-size: 0.95rem; }
-  .resposta > label { display: grid; gap: 0.3rem; }
-  .campo { display: flex; align-items: center; gap: 0.4rem; }
+  .resposta { margin-top: 1.25rem; display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; font-size: 0.9375rem; }
+  .resposta > label { display: grid; gap: 0.25rem; font-weight: 600; }
+  .campo { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; }
   input[type='text'] {
-    font: inherit;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--campo);
-    border-radius: 6px;
-    background: var(--fundo);
-    color: var(--texto);
+    min-height: 44px;
     width: 12rem;
+    max-width: 100%;
+    padding: 0 0.625rem;
+    border: 2px solid var(--campo);
+    border-radius: var(--raio-p);
+    background: var(--superficie);
+    color: var(--texto);
+    font: 1rem var(--f-ui);
   }
-  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 0.4rem; width: 100%; }
-  legend { margin-bottom: 0.4rem; }
-  .opcao { display: flex; gap: 0.5rem; align-items: baseline; cursor: pointer; }
-  button {
-    font: inherit;
-    font-weight: 600;
-    padding: 0.5rem 1.1rem;
-    border: 0;
-    border-radius: 6px;
-    background: var(--azul);
-    color: #fff;
+  input[type='text']:focus-visible { border-color: var(--primaria); outline-offset: 2px; }
+  [data-estado='errado'] input[type='text'] { border-color: var(--erro); }
+
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 0.5rem; width: 100%; }
+  legend { margin-bottom: 0.5rem; font-weight: 600; }
+  .opcao {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    min-height: 52px;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--campo);
+    border-radius: var(--raio);
+    background: var(--superficie);
     cursor: pointer;
   }
-  button:hover { background: var(--azul-escuro); }
-  .feedback { margin: 0; width: 100%; min-height: 1.4em; font-weight: 600; }
+  .opcao:has(:checked) { border-color: var(--primaria); background: var(--pastilha); font-weight: 600; }
+  .opcao:has(:focus-visible) { outline: 3px solid var(--primaria); outline-offset: 3px; }
+  .opcao input { width: 1.125rem; height: 1.125rem; margin: 0; flex-shrink: 0; accent-color: var(--primaria); }
+  .opcao input:focus-visible { outline: none; }
+  [data-estado='certo'] .opcao:has(:checked) { border-color: var(--ok); background: var(--superficie); }
+  [data-estado='errado'] .opcao:has(:checked) { border-color: var(--erro); background: var(--superficie); }
+
+  button {
+    min-height: 44px;
+    padding: 0 1.375rem;
+    border: 0;
+    border-radius: var(--raio);
+    background: var(--primaria);
+    color: var(--primaria-texto);
+    font: 700 0.9375rem var(--f-ui);
+    cursor: pointer;
+  }
+  button:hover { background: var(--primaria-forte); }
+  button:focus-visible { outline-color: var(--texto); }
+  .feedback { margin: 0; width: 100%; min-height: 1.4em; font-weight: 700; }
+  .feedback:empty { min-height: 0; }
   [data-estado='certo'] .feedback { color: var(--ok); }
   [data-estado='errado'] .feedback { color: var(--erro); }
-  [data-estado='certo'] { border-top-color: var(--ok); }
+  [data-estado='errado'] .feedback::before { content: '✕ ' / ''; }
 
-  .resolucao { margin-top: 1rem; border-top: 1px dashed var(--linha); padding-top: 0.75rem; }
-  .resolucao summary { cursor: pointer; font-weight: 600; color: var(--destaque); font-size: 0.95rem; }
-  .resolucao > div { margin-top: 0.75rem; }
+  .resolucao { margin-top: 1rem; }
+  .resolucao summary { display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; color: var(--primaria); font-size: 0.9375rem; }
+  .resolucao > div { margin-top: 0.5rem; padding: 0.875rem 1rem; border-radius: var(--raio-p); background: var(--superficie); }
+  .resolucao[open] > div { animation: abrir 200ms ease-out; }
+  @keyframes abrir { from { opacity: 0; transform: translateY(-4px); } }
   .resolucao :global(p) { margin-bottom: 0; }
   .resolucao > div > :global(* + *) { margin-top: 0.8em; }
-  .pendente { font-size: 0.85rem; color: var(--texto-suave); margin: 1rem 0 0; }
+  .pendente { font-size: 0.875rem; line-height: 1.5; color: var(--texto-suave); margin: 1rem 0 0; }
 
   @media print {
     .resolucao:not([open]) { display: none; }

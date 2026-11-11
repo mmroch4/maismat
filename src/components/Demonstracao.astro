@@ -14,6 +14,7 @@ const endereco = `/demonstracoes/${id}/`;
 
 <figure class="demonstracao">
   <maismat-demonstracao class="nao-imprimir">
+    <p class="ui barra" data-pagefind-ignore><strong>Demonstração · {titulo}</strong> <span>isolada</span></p>
     <iframe src={endereco} title={titulo} sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" height={altura}></iframe>
   </maismat-demonstracao>
   <figcaption>{descricao}</figcaption>
@@ -36,6 +37,9 @@ const endereco = `/demonstracoes/${id}/`;
 </script>
 
 <style>
-  maismat-demonstracao { display: block; }
-  iframe { display: block; width: 100%; border: 0; border-radius: var(--raio); background: var(--superficie); box-shadow: 0 0 0 1px var(--linha); }
+  /* Só a moldura: o iframe e o sandbox não mudam */
+  maismat-demonstracao { display: block; overflow: hidden; border-radius: var(--raio); border: 1px solid var(--linha); background: var(--superficie); }
+  .barra { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 0; padding: 0.625rem 0.875rem; background: var(--fundo); border-bottom: 1px solid var(--linha); font-size: 0.8125rem; line-height: 1.4; }
+  .barra span { color: var(--texto-suave); }
+  iframe { display: block; width: 100%; border: 0; background: var(--superficie); }
 </style>

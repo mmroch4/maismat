@@ -41,12 +41,16 @@ if (!enderecos) throw new Error(`A ligação «${ligacao}» do bloco «Applet Ge
 </script>
 
 <style>
-  maismat-geogebra { display: grid; position: relative; width: 100%; border-radius: var(--raio); background: var(--dourado-claro); }
-  .fachada { display: grid; place-content: center; justify-items: center; gap: 0.6rem; padding: 1.25rem; text-align: center; font-size: 0.95rem; }
+  maismat-geogebra { display: grid; position: relative; width: 100%; border-radius: var(--raio); border: 2px dashed var(--campo); background: var(--superficie); }
+  maismat-geogebra:has(iframe) { border-style: solid; border-color: var(--linha); }
+  .fachada { display: grid; place-content: center; justify-items: center; gap: 0.625rem; padding: 1.25rem; text-align: center; font-size: 0.9375rem; }
   .fachada p { margin: 0; }
-  .aviso { color: var(--texto-suave); font-size: 0.85rem; }
-  button { font: inherit; font-weight: 600; background: var(--azul); color: #fff; border: 0; border-radius: 6px; padding: 0.6rem 1.2rem; min-height: 44px; cursor: pointer; }
+  .aviso { color: var(--texto-suave); font-size: 0.8125rem; }
+  .fachada a { display: inline-flex; align-items: center; min-height: 44px; font-size: 0.875rem; }
+  button { min-height: 44px; padding: 0 1.125rem; border: 0; border-radius: var(--raio); background: var(--primaria); color: var(--primaria-texto); font: 700 0.875rem var(--f-ui); cursor: pointer; }
+  button:hover { background: var(--primaria-forte); }
+  button:focus-visible { outline-color: var(--texto); }
   maismat-geogebra:not(:defined) button { display: none; }
   /* O iframe é criado pelo script, por isso não tem o atributo dos estilos deste componente. */
-  maismat-geogebra :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: var(--raio); }
+  maismat-geogebra :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: calc(var(--raio) - 2px); }
 </style>
