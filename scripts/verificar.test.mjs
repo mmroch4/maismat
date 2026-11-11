@@ -282,6 +282,15 @@ test('os PDFs indicados nas edições existem', () => {
   }
 });
 
+test('nenhum ficheiro do site passa de 25 MiB (o limite do Cloudflare Pages)', () => {
+  const limite = 25 * 1024 * 1024;
+  for (const f of readdirSync(raiz + 'dist', { recursive: true })) {
+    const { size } = statSync(`${raiz}dist/${f}`);
+    assert.ok(size <= limite,
+      `O ficheiro ${f} tem ${(size / 1024 / 1024).toFixed(1).replace(".", ",")} MiB e o Cloudflare Pages não publica ficheiros com mais de 25 MiB. Reduz o tamanho do PDF (por exemplo, com «Reduzir tamanho do ficheiro» no Acrobat ou num compressor de PDF) e carrega-o de novo no painel.`);
+  }
+});
+
 test('na pesquisa, cada artigo tem os filtros de edição e secção, cada edição o de edição, e todos a data para ordenar', () => {
   const pasta = 'dist/pagefind/fragment';
   for (const f of readdirSync(raiz + pasta)) {
