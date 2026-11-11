@@ -14,3 +14,10 @@
 # Os de /img/ e /pdf/ não, porque o painel substitui-os com o mesmo nome; ficam com a cache normal.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Demonstrações das professoras: correm sempre isoladas (origem opaca), mesmo abertas fora do artigo.
+# O Cloudflare junta esta CSP à de /* com uma vírgula: são duas políticas e o browser aplica as duas.
+# A lista de bibliotecas está na CSP dentro de cada página (src/lib/demonstracoes.mjs).
+/demonstracoes/*
+  Content-Security-Policy: sandbox allow-scripts; connect-src 'none'; form-action 'none'; base-uri 'none'
+  X-Robots-Tag: noindex

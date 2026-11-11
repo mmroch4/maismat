@@ -7,7 +7,8 @@ import { before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import config from '../astro.config.mjs';
-import { desafio as bloco } from '../public/admin/componentes.js';
+import { desafio as bloco, demonstracao as blocoDemonstracao } from '../public/admin/componentes.js';
+import { BIBLIOTECAS, CSP, TAMANHO_MAXIMO } from '../src/lib/demonstracoes.mjs';
 import { codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../src/lib/progresso.mjs';
 import { LANCAMENTO, ultimaAtualizacao } from '../src/lib/git.mjs';
 import { normalizar } from '../src/lib/respostas.mjs';
@@ -196,7 +197,11 @@ test('a ligação do QR leva e traz o progresso, e recusa fragmentos estragados'
 // Todas as páginas geradas, e o ficheiro que quem edita deve abrir para corrigir cada uma.
 const paginas = readdirSync(raiz + 'dist', { recursive: true }).filter((f) => f.endsWith('.html') && !f.startsWith('pagefind/'));
 const artigoDe = (f) => f.match(/^edicoes\/([^/]+)\/([^/]+)\/index\.html$/)?.filter((_, i) => i).join('/');
+// As demonstrações não usam o layout Base: não têm canónico, imagem de partilha nem fontes do site.
+const demonstracaoDe = (f) => f.match(/^demonstracoes\/([^/]+)\/index\.html$/)?.[1];
 function fonte(f) {
+  const demonstracao = demonstracaoDe(f);
+  if (demonstracao) return `Na demonstração src/content/demonstracoes/${demonstracao}.yml`;
   const artigo = artigoDe(f);
   if (artigo && artigo.split('/')[1] !== 'imprimir') {
     const md = ['md', 'mdx'].map((x) => `src/content/artigos/${artigo}.${x}`).find(existe);
@@ -296,7 +301,7 @@ function tamanhoJpeg(b) {
 }
 
 test('cada página tem imagem de partilha, que existe em dist com o tamanho declarado', () => {
-  for (const f of paginas.filter((f) => !f.startsWith('admin/'))) {
+  for (const f of paginas.filter((f) => !f.startsWith('admin/') && !demonstracaoDe(f))) {
     const html = ler(`dist/${f}`);
     const meta = (p) => html.match(new RegExp(`<meta property="og:${p}" content="([^"]*)"`))?.[1];
     const imagem = meta('image');
@@ -308,19 +313,19 @@ test('cada página tem imagem de partilha, que existe em dist com o tamanho decl
   }
 });
 
-test('cada página tem o endereço canónico igual ao og:url, e só a 404 e o painel ficam fora dos motores de busca', () => {
+test('cada página tem o endereço canónico igual ao og:url, e só a 404, o painel e as demonstrações ficam fora dos motores de busca', () => {
   const erros = [];
   for (const f of paginas) {
     const html = ler(`dist/${f}`);
     const canonico = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
     const ogUrl = html.match(/<meta property="og:url" content="([^"]*)"/)?.[1];
     const noindex = /<meta name="robots" content="[^"]*noindex/.test(html);
-    if (f === '404.html' || f.startsWith('admin/')) {
+    if (f === '404.html' || f.startsWith('admin/') || demonstracaoDe(f)) {
       if (!noindex) erros.push(`A página dist/${f} não tem <meta name="robots" content="noindex"> e seria indexada pelos motores de busca.`);
       if (canonico) erros.push(`A página dist/${f} não devia ter endereço canónico: é servida noutros endereços.`);
       continue;
     }
-    if (noindex) erros.push(`${fonte(f)}: a página tem noindex e ficaria fora dos motores de busca. Só a 404 e o painel o podem ter.`);
+    if (noindex) erros.push(`${fonte(f)}: a página tem noindex e ficaria fora dos motores de busca. Só a 404, o painel e as demonstrações o podem ter.`);
     if (!canonico) { erros.push(`${fonte(f)}: a página não tem endereço canónico (<link rel="canonical">). Usa o layout Base.`); continue; }
     const url = new URL(atributo(canonico));
     if (url.origin !== site.origin) erros.push(`${fonte(f)}: o endereço canónico ${canonico} não é do site ${site.origin} (o domínio muda-se em astro.config.mjs).`);
@@ -399,12 +404,13 @@ test('o robots.txt indica o sitemap do site e não bloqueia nenhuma página do s
   assert.ok(existe('dist/sitemap-index.xml'), 'O robots.txt indica o sitemap-index.xml, que não existe em dist.');
   const bloqueados = linhas.filter((l) => /^disallow:/i.test(l)).map((l) => l.replace(/^disallow:\s*/i, '')).filter(Boolean);
   const urls = [...ler('dist/sitemap-0.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, u]) => new URL(u).pathname);
-  for (const caminho of [...urls, '/404.html', '/admin/'])
+  const demonstracoes = paginas.filter(demonstracaoDe).map((f) => `/${f.replace(/index\.html$/, '')}`);
+  for (const caminho of [...urls, '/404.html', '/admin/', ...demonstracoes])
     for (const b of bloqueados)
       assert.ok(!caminho.startsWith(b), `O robots.txt bloqueia ${caminho} (Disallow: ${b}). As páginas do sitemap têm de poder ser lidas, e as que têm noindex também, senão o noindex não é visto.`);
 });
 
-test('o _headers protege todas as páginas e só põe cache longa em ficheiros com hash no nome', () => {
+function regrasHeaders() {
   assert.ok(existe('dist/_headers'), 'Falta o dist/_headers: o public/_headers não foi copiado.');
   const regras = [];
   for (const linha of ler('dist/_headers').split('\n')) {
@@ -416,6 +422,11 @@ test('o _headers protege todas as páginas e só põe cache longa em ficheiros c
       regras.at(-1).cabecalhos[nome.toLowerCase()] = valor;
     }
   }
+  return regras;
+}
+
+test('o _headers protege todas as páginas e só põe cache longa em ficheiros com hash no nome', () => {
+  const regras = regrasHeaders();
   const todas = regras.find((r) => r.padrao === '/*')?.cabecalhos ?? {};
   for (const nome of ['x-content-type-options', 'referrer-policy', 'x-frame-options', 'content-security-policy', 'permissions-policy', 'strict-transport-security'])
     assert.ok(todas[nome], `O public/_headers não tem ${nome} na regra /* (para todas as páginas).`);
@@ -436,7 +447,7 @@ test('o _headers protege todas as páginas e só põe cache longa em ficheiros c
 
 test('as fontes pré-carregadas são as que o CSS usa, e a capa principal da página inicial e das edições carrega primeiro', () => {
   const erros = [];
-  for (const f of paginas.filter((f) => !f.startsWith('admin/'))) {
+  for (const f of paginas.filter((f) => !f.startsWith('admin/') && !demonstracaoDe(f))) {
     const html = ler(`dist/${f}`);
     const css = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(([, h]) => ler(`dist${h}`)).join('');
     const preloads = [...html.matchAll(/<link rel="preload"[^>]*>/g)].map(([l]) => l);
@@ -453,5 +464,94 @@ test('as fontes pré-carregadas são as que o CSS usa, e a capa principal da pá
         erros.push(`A capa no topo de dist/${f} tem de ter loading="eager" e fetchpriority="high", para aparecer o mais cedo possível. Corrige em src/pages/index.astro ou src/pages/edicoes/[edicao]/index.astro.`);
     }
   }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+// ---- Demonstrações (src/content/demonstracoes): correm isoladas, sem rede e fora dos motores de busca.
+
+const artigosMdx = readdirSync(raiz + 'src/content/artigos', { recursive: true }).filter((f) => /\.mdx?$/.test(f));
+const demonstracoesSrc = readdirSync(raiz + 'src/content/demonstracoes').filter((f) => f.endsWith('.yml')).map((f) => f.replace(/\.yml$/, ''));
+const paginasDemonstracao = paginas.filter(demonstracaoDe);
+// O código da professora, sem o que o site lhe acrescenta (src/lib/demonstracoes.mjs).
+const codigoDe = (html) => html.replace(/<meta http-equiv="Content-Security-Policy" content="[^"]*">|<script>new ResizeObserver[\s\S]*?<\/script>/g, '');
+
+test('cada bloco «Demonstração» dos artigos usa uma demonstração que existe', () => {
+  const erros = [];
+  const padraoBloco = new RegExp(blocoDemonstracao.pattern.source, 'gm');
+  for (const f of artigosMdx) {
+    const texto = ler(`src/content/artigos/${f}`);
+    const blocos = [...texto.matchAll(padraoBloco)];
+    if ((texto.match(/<Demonstracao\b/g) ?? []).length !== blocos.length)
+      erros.push(`No artigo src/content/artigos/${f}: há um <Demonstracao> escrito à mão que o painel não reconhece. Apaga-o e insere-o outra vez com Inserir → Demonstração.`);
+    for (const { groups: { id } } of blocos)
+      if (!demonstracoesSrc.includes(id))
+        erros.push(`No artigo src/content/artigos/${f}: o bloco «Demonstração» usa «${id}», que não existe. Escolhe outra no bloco, ou cria-a em «Demonstrações» no painel.`);
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('cada demonstração é pequena, só carrega bibliotecas aprovadas e não usa o que está bloqueado', () => {
+  assert.deepEqual(paginasDemonstracao.map(demonstracaoDe).toSorted(), demonstracoesSrc.toSorted(), 'Há demonstrações em src/content/demonstracoes sem página em dist, ou o contrário.');
+  const bloqueados = [
+    [/\b(alert|confirm|prompt)\s*\(/, (x) => `${x}(), que está bloqueado nas demonstrações e não mostra nada. Escreve a mensagem num parágrafo da página`],
+    [/\b(localStorage|sessionStorage|indexedDB|document\.cookie)\b/, (x) => `${x}, que não funciona nas demonstrações (estão isoladas do resto do site). Tira essa parte, ou pede à IA uma versão que não guarde nada no browser`],
+    [/\b(fetch|XMLHttpRequest|WebSocket|EventSource)\b|\bwindow\.open\s*\(/, (x) => `${x.replace(/\s*\($/, '()')}, que está bloqueado: as demonstrações não podem contactar outros sites nem abrir janelas`],
+  ];
+  const erros = [];
+  for (const f of paginasDemonstracao) {
+    const codigo = codigoDe(ler(`dist/${f}`));
+    const onde = fonte(f);
+    const tamanho = Buffer.byteLength(codigo);
+    if (tamanho > TAMANHO_MAXIMO) erros.push(`${onde}: o código tem ${Math.round(tamanho / 1000)} KB; o máximo é ${TAMANHO_MAXIMO / 1000} KB. Imagens metidas no código (data:) ocupam muito: desenha-as com o canvas ou tira-as.`);
+    const enderecos = [
+      ...codigo.matchAll(/\s(?:src|href|action|data|poster)\s*=\s*["']([^"']*)["']/gi),
+      ...codigo.matchAll(/url\(\s*["']?([^"')]+)/gi),
+      ...codigo.matchAll(/@import\s+["']([^"']+)/gi),
+      ...codigo.matchAll(/\bimport\s*\(?\s*(?:[\w{}\s,*]+from\s*)?["']([^"']+)["']/g),
+    ].map(([, u]) => u.trim());
+    for (const u of new Set(enderecos))
+      if (!/^(data:|blob:|#)/.test(u) && !BIBLIOTECAS.some((b) => u.startsWith(b)))
+        erros.push(`${onde}: o código usa ${u}, que não está na lista de bibliotecas aprovadas e não vai carregar. As demonstrações só podem carregar ${BIBLIOTECAS.map((b) => `${b}…`).join(' ou ')} (guia, secção «Demonstrações»); para outra, fala com o Miguel.`);
+    for (const [re, mensagem] of bloqueados) {
+      const m = codigo.match(re);
+      if (m) erros.push(`${onde}: o código usa ${mensagem(m[1] ?? m[0])}.`);
+    }
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('os iframes do site têm título, e os das demonstrações estão isolados (sandbox sem allow-same-origin)', () => {
+  const erros = [];
+  for (const f of paginas.filter((f) => !demonstracaoDe(f))) {
+    for (const [iframe] of ler(`dist/${f}`).matchAll(/<iframe\b[^>]*>/g)) {
+      const attr = (nome) => iframe.match(new RegExp(`\\s${nome}="([^"]*)"`))?.[1];
+      const src = atributo(attr('src') ?? '');
+      if (!attr('title')?.trim()) erros.push(`${fonte(f)}: o iframe ${src} não tem título (title). Quem usa um leitor de ecrã não saberia o que é.`);
+      const id = src.match(/^\/demonstracoes\/([^/]+)\/$/)?.[1];
+      if (!id) erros.push(`${fonte(f)}: há um <iframe> de ${src || '(sem endereço)'}. Os conteúdos de outros sites só entram pelo bloco «Applet GeoGebra», e as demonstrações pelo bloco «Demonstração».`);
+      else if (attr('sandbox') !== 'allow-scripts')
+        erros.push(`No código do site (src/components/Demonstracao.astro), página dist/${f}: o iframe ${src} tem sandbox="${attr('sandbox') ?? ''}" em vez de sandbox="allow-scripts". Sem sandbox, ou com allow-same-origin, a demonstração podia ler a sessão do painel e o progresso dos alunos.`);
+      else if (!existe(`dist${src}index.html`)) erros.push(`${fonte(f)}: o iframe leva à demonstração «${id}», que não existe em dist.`);
+    }
+  }
+  assert.ok(!erros.length, erros.join('\n'));
+});
+
+test('as páginas das demonstrações começam pela CSP, têm noindex e ficam fora do sitemap, e o _headers isola-as', () => {
+  const erros = [];
+  const sitemap = ler('dist/sitemap-0.xml');
+  for (const f of paginasDemonstracao) {
+    const html = ler(`dist/${f}`);
+    const csp = html.match(/<head\b[^>]*>\s*<meta http-equiv="Content-Security-Policy" content="([^"]*)">/)?.[1];
+    if (csp !== CSP) erros.push(`A página dist/${f} não começa pela Content-Security-Policy de src/lib/demonstracoes.mjs: sem ela, a demonstração podia carregar código de qualquer site. Corrige a função pagina() em src/lib/demonstracoes.mjs.`);
+    if (!/<meta name="robots" content="noindex">/.test(html)) erros.push(`A página dist/${f} não tem <meta name="robots" content="noindex"> (função pagina() em src/lib/demonstracoes.mjs).`);
+    if (sitemap.includes(`/${f.replace(/index\.html$/, '')}`)) erros.push(`A demonstração dist/${f} está no sitemap. Deve ficar de fora (filtro do sitemap em astro.config.mjs).`);
+  }
+  const regra = regrasHeaders().find((r) => r.padrao === '/demonstracoes/*')?.cabecalhos ?? {};
+  const politica = regra['content-security-policy'] ?? '';
+  if (!/(^|;)\s*sandbox allow-scripts\s*(;|$)/.test(politica) || /allow-same-origin/.test(politica))
+    erros.push(`O public/_headers tem de ter, na regra /demonstracoes/*, «Content-Security-Policy: sandbox allow-scripts; …» (sem allow-same-origin). Sem isso, quem abrir a demonstração fora do artigo corre o código dela no site, com acesso à sessão do painel.`);
+  if (!/connect-src 'none'/.test(politica)) erros.push(`O public/_headers tem de ter connect-src 'none' na CSP da regra /demonstracoes/*.`);
+  if (!/noindex/.test(regra['x-robots-tag'] ?? '')) erros.push('O public/_headers tem de ter «X-Robots-Tag: noindex» na regra /demonstracoes/*.');
   assert.ok(!erros.length, erros.join('\n'));
 });

@@ -11,8 +11,8 @@ export default defineConfig({
   site: 'https://maismat.miguelrocha.dev',
   integrations: [
     mdx(),
-    // A versão para imprimir repete os artigos da edição: fica fora do sitemap.
-    sitemap({ filter: (pagina) => !pagina.endsWith('/imprimir/') }),
+    // A versão para imprimir repete os artigos da edição, e as demonstrações só se abrem dentro dos artigos.
+    sitemap({ filter: (pagina) => !pagina.endsWith('/imprimir/') && !pagina.includes('/demonstracoes/') }),
   ],
   markdown: {
     remarkPlugins: [remarkMath, remarkFiguras],

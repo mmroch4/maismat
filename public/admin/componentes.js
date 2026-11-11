@@ -265,4 +265,28 @@ export const interativo = {
   toPreview: ({ componente = 'TrianguloPascal' }) => caixa('interativo', `🎲 ${INTERATIVOS[componente] ?? componente}`),
 };
 
-export const componentes = [formula, formulaDestaque, desafio, galeria, nota, detalhes, interativo];
+export const demonstracao = {
+  id: 'demonstracao',
+  label: 'Demonstração',
+  icon: 'animation',
+  mode: 'dialog',
+  summary: '{{id}}',
+  fields: [
+    {
+      name: 'id',
+      label: 'Qual',
+      widget: 'relation',
+      collection: 'demonstracoes',
+      value_field: '{{slug}}',
+      search_fields: ['titulo'],
+      display_fields: ['titulo'],
+      hint: 'Cria-a primeiro em «Demonstrações», no menu da esquerda.',
+    },
+  ],
+  pattern: /^<Demonstracao id="(?<id>[^"]*)" \/>$/m,
+  fromBlock: (m) => ({ id: m.groups.id }),
+  toBlock: ({ id = '' }) => `<Demonstracao id="${id}" />`,
+  toPreview: ({ id = '' }) => caixa('interativo', `▶ Demonstração: ${id}`),
+};
+
+export const componentes = [formula, formulaDestaque, desafio, galeria, nota, detalhes, interativo, demonstracao];

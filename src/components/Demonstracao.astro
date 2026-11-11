@@ -1,0 +1,41 @@
+---
+/** Demonstração feita pelas professoras (src/content/demonstracoes), isolada num iframe sem acesso ao resto do site. */
+import { getEntry } from 'astro:content';
+
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+const demonstracao = await getEntry('demonstracoes', id);
+if (!demonstracao) throw new Error(`A demonstração «${id}» não existe em src/content/demonstracoes. Cria-a no painel, em «Demonstrações», ou escolhe outra no bloco do artigo.`);
+const { titulo, descricao, altura } = demonstracao.data;
+const endereco = `/demonstracoes/${id}/`;
+---
+
+<figure class="demonstracao">
+  <maismat-demonstracao class="nao-imprimir">
+    <iframe src={endereco} title={titulo} sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" height={altura}></iframe>
+  </maismat-demonstracao>
+  <figcaption>{descricao}</figcaption>
+  <p class="ui so-imprimir" data-pagefind-ignore>Demonstração interativa «{titulo}»: experimente-a em {new URL(endereco, Astro.site)}</p>
+</figure>
+
+<script>
+  // Sem allow-same-origin, a demonstração não chega a esta página: só pode pedir a altura de que precisa.
+  class Demonstracao extends HTMLElement {
+    connectedCallback() {
+      const iframe = this.querySelector('iframe')!;
+      addEventListener('message', (e) => {
+        if (e.source !== iframe.contentWindow || e.data?.maismat !== 'altura') return;
+        const altura = Number(e.data.altura);
+        if (Number.isFinite(altura)) iframe.height = String(Math.min(Math.max(Math.ceil(altura), 150), 1200));
+      });
+    }
+  }
+  customElements.define('maismat-demonstracao', Demonstracao);
+</script>
+
+<style>
+  maismat-demonstracao { display: block; }
+  iframe { display: block; width: 100%; border: 0; border-radius: var(--raio); background: var(--superficie); box-shadow: 0 0 0 1px var(--linha); }
+</style>
