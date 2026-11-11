@@ -124,6 +124,75 @@ h3 { font-size: 1.0625rem; font-weight: 700; }
 }
 
 .ui { font-family: var(--f-ui); }
+.cap { text-transform: capitalize; }
+.visualmente-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Título de página: espaço por cima e uma frase suave por baixo */
+.cabeca { padding-top: 2rem; margin-bottom: 1.5rem; }
+.cabeca h1 { margin: 0; }
+.cabeca p { font-family: var(--f-ui); font-size: 0.9375rem; color: var(--texto-suave); margin: 0.5rem 0 0; max-width: 40rem; }
+@media (min-width: 769px) { .cabeca { padding-top: 2.5rem; } }
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1.375rem;
+  border: 2px solid var(--primaria);
+  border-radius: var(--raio);
+  background: var(--primaria);
+  color: var(--primaria-texto);
+  font: 700 0.9375rem/1.2 var(--f-ui);
+  text-decoration: none;
+  cursor: pointer;
+}
+.botao:hover { background: var(--primaria-forte); border-color: var(--primaria-forte); }
+.botao:focus-visible { outline-color: var(--texto); }
+.botao.secundario { background: var(--superficie); color: var(--primaria); }
+.botao.secundario:hover { background: var(--pastilha); }
+
+/* Cartão branco: o raio, a sombra e, ao passar o rato, uma subida de 2 px */
+.cartao {
+  display: block;
+  background: var(--superficie);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  color: var(--texto);
+  text-decoration: none;
+  transition: transform 150ms ease;
+}
+a.cartao:hover { transform: translateY(-2px); }
+
+/* Grupo de pastilhas que se escolhem (filtros) */
+.pastilhas { display: inline-flex; gap: 4px; padding: 4px; max-width: 100%; background: var(--pastilha); border-radius: 24px; }
+.pastilhas button {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0 clamp(0.625rem, 3vw, 1rem);
+  white-space: nowrap;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--texto);
+  font: 500 clamp(0.8125rem, 3.4vw, 0.875rem) var(--f-ui);
+  cursor: pointer;
+}
+.pastilhas button[aria-pressed='true'] { background: var(--superficie); font-weight: 700; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+
+/* Listas de escolha e caixas de texto */
+.campo {
+  min-height: 44px;
+  padding: 0 0.625rem;
+  border: 2px solid var(--campo);
+  border-radius: var(--raio-p);
+  background: var(--superficie);
+  color: var(--texto);
+  font: 0.9375rem var(--f-ui);
+  max-width: 100%;
+}
+.campo:focus-visible { border-color: var(--primaria); outline-offset: 2px; }
 
 :focus-visible { outline: 3px solid var(--primaria); outline-offset: 3px; }
 

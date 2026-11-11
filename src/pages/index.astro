@@ -2,41 +2,51 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CartaoEdicao from '../components/CartaoEdicao.astro';
-import { artigosDe, edicoesOrdenadas, mesAno, rotuloEdicao, slugArtigo } from '../lib/edicoes';
+import AnelProgresso from '../components/AnelProgresso.astro';
+import { artigosDe, edicaoAtual, edicoesOrdenadas, mesAno, rotuloEdicao, slugArtigo } from '../lib/edicoes';
+import { desafiosPublicados } from '../lib/desafios';
 import { SECCOES } from '../lib/seccoes';
 
 const edicoes = await edicoesOrdenadas();
-const atual = edicoes.find((e) => e.data.convertida) ?? edicoes[0];
+const atual = await edicaoAtual();
 const artigos = await artigosDe(atual.id);
+const desafios = await desafiosPublicados();
+const novos = new Set(desafios.filter((d) => d.edicao.id === atual.id).map((d) => d.id)).size;
+// A primeira frase da citação da capa serve de título; sem citação, o nome do jornal.
+const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal de Matemática';
+const mes = mesAno(atual.data.data).split(' ')[0];
 ---
 
 <Base>
-  <section class="contentor capa">
-    <div class="capa-texto">
-      <p class="ui escola">Agrupamento de Escolas Domingos Sequeira</p>
-      <h1>+MAT <span>Jornal de Matemática</span></h1>
-      <p class="ui edicao">{rotuloEdicao(atual)} · <span class="cap">{mesAno(atual.data.data)}</span></p>
-      {atual.data.citacao && (
-        <blockquote>
-          <p>“{atual.data.citacao.texto}”</p>
-          <footer>— {atual.data.citacao.autor}</footer>
-        </blockquote>
+  <h1 class="visualmente-oculto">+MAT, Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira</h1>
+  <section class="contentor topo-inicio" aria-labelledby="edicao-atual">
+    <div class="destaque">
+      <div class="destaque-texto">
+        <p class="ui rotulo">{rotuloEdicao(atual)} · <span class="cap">{mesAno(atual.data.data)}</span></p>
+        <h2 id="edicao-atual">{frase}</h2>
+        {atual.data.citacao && <p class="autor">— {atual.data.citacao.autor}</p>}
+        <p class="direcao">Direção e edição de {atual.data.direcao.join(' e ')}</p>
+        <a class="ui ler" href={`/edicoes/${atual.id}/`}>Ler a edição</a>
+      </div>
+      {atual.data.capa && (
+        <a href={`/edicoes/${atual.id}/`} class="capa-img" tabindex="-1" aria-hidden="true">
+          <Image src={atual.data.capa} alt="Capa da edição atual" width={480} loading="eager" fetchpriority="high" />
+        </a>
       )}
-      <a class="ui botao" href={`/edicoes/${atual.id}/`}>Ler a edição</a>
     </div>
-    {atual.data.capa && (
-      <a href={`/edicoes/${atual.id}/`} class="capa-img">
-        <Image src={atual.data.capa} alt="Capa da edição atual" width={480} loading="eager" fetchpriority="high" />
-      </a>
-    )}
+    <div class="cartao progresso ui">
+      <h2>Os teus desafios</h2>
+      <AnelProgresso ids={desafios.map((d) => d.id)} />
+      <a class="botao secundario" href="/desafios/">{novos === 1 ? '1 desafio novo' : `${novos} desafios novos`} em {mes}</a>
+    </div>
   </section>
 
-  <section class="contentor">
-    <h2 class="secao-titulo">Nesta edição</h2>
+  <section class="contentor" aria-labelledby="nesta-edicao">
+    <h2 id="nesta-edicao" class="secao-titulo">Nesta edição</h2>
     <ol class="sumario">
       {artigos.map((a) => (
         <li>
-          <a href={`/edicoes/${atual.id}/${slugArtigo(a)}/`}>
+          <a class="cartao" href={`/edicoes/${atual.id}/${slugArtigo(a)}/`}>
             <span class="etiqueta">{SECCOES[a.data.seccao]}</span>
             <strong>{a.data.titulo}</strong>
             {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}
@@ -46,8 +56,8 @@ const artigos = await artigosDe(atual.id);
     </ol>
   </section>
 
-  <section class="contentor">
-    <h2 class="secao-titulo">Edições anteriores</h2>
+  <section class="contentor" aria-labelledby="anteriores">
+    <h2 id="anteriores" class="secao-titulo">Edições anteriores</h2>
     <div class="grelha-edicoes">
       {edicoes.filter((e) => e.id !== atual.id).map((e) => <CartaoEdicao edicao={e} />)}
     </div>
@@ -55,39 +65,50 @@ const artigos = await artigosDe(atual.id);
 </Base>
 
 <style>
-  .capa {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 3rem;
-    align-items: center;
-    padding-block: 3rem;
-  }
-  @media (max-width: 48rem) { .capa { grid-template-columns: 1fr; gap: 2rem; padding-block: 2rem; } }
-  .escola { color: var(--texto-suave); font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
-  h1 { font-size: clamp(3.5rem, 10vw, 6rem); margin: 0.2rem 0; letter-spacing: -0.03em; line-height: 1; }
-  h1 span { display: block; font-size: 0.3em; letter-spacing: 0; color: var(--texto-suave); margin-top: 0.5rem; }
-  .edicao { font-size: 0.9rem; border-block: 1px solid var(--linha); padding-block: 0.4rem; display: inline-block; }
-  .cap { text-transform: capitalize; }
-  blockquote { font-family: var(--f-titulo); font-style: italic; font-size: 1.25rem; margin: 1.5rem 0; max-width: 34rem; }
-  blockquote p { margin: 0; }
-  blockquote footer { font-family: var(--f-ui); font-style: normal; font-size: 0.85rem; color: var(--texto-suave); margin-top: 0.5rem; }
-  .botao {
-    display: inline-block; background: var(--azul); color: #fff; text-decoration: none;
-    padding: 0.7rem 1.4rem; border-radius: 6px; font-weight: 600;
-  }
-  .botao:hover { background: var(--azul-escuro); }
-  .capa-img img { border-radius: 8px; box-shadow: 0 12px 40px rgb(0 0 0 / 0.15); transform: rotate(1.5deg); width: 100%; }
-  @media (max-width: 48rem) { .capa-img { max-width: 20rem; margin: 0 auto; } }
+  .topo-inicio { display: grid; gap: 1rem; padding-top: 1rem; }
+  @media (min-width: 769px) { .topo-inicio { grid-template-columns: 2fr 1fr; gap: 1.5rem; padding-top: 1.5rem; } }
 
-  .secao-titulo { font-size: 1.6rem; border-bottom: 3px solid var(--dourado); padding-bottom: 0.4rem; margin-top: 3rem; }
-  .sumario { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 1rem; }
-  .sumario a {
-    display: grid; gap: 0.4rem; justify-items: start; height: 100%;
-    padding: 1rem 1.1rem; border: 1px solid var(--linha); border-radius: var(--raio);
-    background: var(--superficie); color: var(--texto); text-decoration: none;
+  .destaque {
+    display: grid;
+    grid-template-columns: 1fr 7rem;
+    gap: 1.25rem;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: var(--raio);
+    background: var(--primaria);
+    color: var(--primaria-texto);
   }
-  .sumario a:hover { border-color: var(--dourado); }
-  .sumario strong { font-family: var(--f-titulo); font-size: 1.15rem; font-weight: 600; }
-  .resumo { font-size: 0.95rem; color: var(--texto-suave); line-height: 1.45; }
-  .grelha-edicoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1.5rem; }
+  @media (min-width: 769px) { .destaque { grid-template-columns: 1fr 13.75rem; gap: 2rem; padding: 2.5rem; } }
+  .destaque-texto { display: grid; gap: 0.75rem; justify-items: start; }
+  .destaque p { margin: 0; }
+  .rotulo { font-size: 0.875rem; font-weight: 600; }
+  .destaque h2 { margin: 0; font-size: 1.75rem; line-height: 1.05; letter-spacing: -0.03em; }
+  @media (min-width: 769px) { .destaque h2 { font-size: 2.75rem; } }
+  .autor { font-family: var(--f-ui); font-size: 0.875rem; }
+  .direcao { font-size: 1.0625rem; opacity: 0.92; }
+  .ler {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 1.375rem;
+    border-radius: 24px;
+    background: var(--superficie);
+    color: var(--texto);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+  .ler:focus-visible { outline-color: var(--primaria-texto); }
+  .capa-img img { display: block; width: 100%; height: auto; border-radius: var(--raio-p); transform: rotate(3deg); box-shadow: 0 12px 30px rgb(0 0 0 / 0.3); }
+
+  .progresso { display: grid; gap: 1rem; align-content: start; padding: 1.5rem; }
+  .progresso h2 { margin: 0; font-size: 1.125rem; letter-spacing: 0; }
+
+  .secao-titulo { margin: 2.5rem 0 1rem; }
+  .sumario { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: 1rem 1.25rem; }
+  .sumario .cartao { display: grid; gap: 0.5rem; justify-items: start; align-content: start; height: 100%; padding: 1.25rem; }
+  .sumario strong { font-family: var(--f-ui); font-size: 1.0625rem; font-weight: 700; line-height: 1.3; }
+  @media (min-width: 769px) { .sumario strong { font-size: 1.1875rem; } }
+  .resumo { font-size: 0.9375rem; color: var(--texto-suave); line-height: 1.45; }
+  .grelha-edicoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 1.5rem; }
 </style>

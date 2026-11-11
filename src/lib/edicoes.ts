@@ -22,6 +22,12 @@ export async function edicoesOrdenadas() {
   return todas.sort((a, b) => b.data.data.getTime() - a.data.data.getTime());
 }
 
+// A edição que o site apresenta como atual: a mais recente já convertida para a versão digital.
+export async function edicaoAtual() {
+  const edicoes = await edicoesOrdenadas();
+  return edicoes.find((e) => e.data.convertida) ?? edicoes[0];
+}
+
 export async function artigosDe(edicaoId: string) {
   const artigos = await artigosPublicados((a) => a.data.edicao.id === edicaoId);
   return artigos.sort((a, b) => a.data.ordem - b.data.ordem);

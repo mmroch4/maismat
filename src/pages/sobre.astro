@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 
 <Base titulo="Sobre" descricao="Sobre o +MAT e a sua versão digital.">
   <div class="contentor prosa">
-    <h1>Sobre o +MAT</h1>
+    <h1>Sobre o <span class="marcador">+MAT</span></h1>
     <p>
       O <strong>+MAT</strong> é o jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, publicado desde
       novembro de 2022. Reúne curiosidades, história da Matemática, jogos, desafios, trabalhos de alunos e notícias da
@@ -36,6 +36,6 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <style>
-  .prosa { padding-top: 2.5rem; }
-  h1 { font-size: 2.5rem; }
+  .prosa { padding-top: 2rem; }
+  @media (min-width: 769px) { .prosa { padding-top: 2.5rem; } }
 </style>

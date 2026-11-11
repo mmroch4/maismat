@@ -1,19 +1,30 @@
 ---
 import Base from '../../layouts/Base.astro';
 import CartaoEdicao from '../../components/CartaoEdicao.astro';
-import { edicoesOrdenadas } from '../../lib/edicoes';
+import { edicoesOrdenadas, mesAno } from '../../lib/edicoes';
 
 const edicoes = await edicoesOrdenadas();
 const porAno = Map.groupBy(edicoes, (e) => e.data.ano);
+// O ano letivo vai de setembro a agosto: maio de 2025 é 2024/25.
+const anoLetivo = (d: Date) => {
+  const inicio = d.getUTCFullYear() - (d.getUTCMonth() < 8 ? 1 : 0);
+  return `${inicio}/${String(inicio + 1).slice(2)}`;
+};
+const primeira = edicoes.at(-1);
 ---
 
 <Base titulo="Edições" descricao="Todas as edições do +MAT, Jornal de Matemática.">
   <div class="contentor">
-    <h1>Edições</h1>
-    <p class="ui intro">O +MAT publica três edições por ano letivo. As edições marcadas com <em>PDF</em> ainda estão a ser convertidas para a versão digital.</p>
+    <div class="cabeca">
+      <h1><span class="marcador">Edições</span></h1>
+      <p>
+        {edicoes.length} edições{primeira && ` desde ${mesAno(primeira.data.data)}`}, três por ano letivo.
+        As marcadas com <em>PDF</em> ainda estão a ser convertidas para a versão digital.
+      </p>
+    </div>
     {[...porAno].map(([ano, lista]) => (
-      <section>
-        <h2>Ano {ano}</h2>
+      <section aria-labelledby={`ano-${ano}`}>
+        <h2 id={`ano-${ano}`}>Ano {ano} <span class="ui">{anoLetivo(lista[0].data.data)}</span></h2>
         <div class="grelha">{lista.map((e) => <CartaoEdicao edicao={e} />)}</div>
       </section>
     ))}
@@ -21,8 +32,7 @@ const porAno = Map.groupBy(edicoes, (e) => e.data.ano);
 </Base>
 
 <style>
-  h1 { font-size: 2.5rem; margin-top: 2.5rem; }
-  .intro { color: var(--texto-suave); font-size: 0.95rem; max-width: 40rem; }
-  h2 { font-size: 1.4rem; border-bottom: 3px solid var(--dourado); padding-bottom: 0.3rem; margin-top: 2.5rem; }
-  .grelha { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1.5rem; }
+  h2 { display: flex; align-items: baseline; gap: 0.75rem; margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--linha); }
+  h2 .ui { font-size: 0.875rem; font-weight: 600; letter-spacing: 0; color: var(--texto-suave); }
+  .grelha { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 1.5rem; }
 </style>

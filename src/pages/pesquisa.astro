@@ -8,32 +8,36 @@ import { SECCOES } from '../lib/seccoes';
 // No URL vão os ids (?edicao=ano3-edicao2&seccao=geometria); no Pagefind, o texto que está nas páginas.
 const edicoes = (await edicoesOrdenadas()).map((e) => ({ id: e.id, valor: rotuloEdicao(e) }));
 const seccoes = Object.entries(SECCOES).map(([id, nome]) => ({ id, valor: nome }));
-const filtros = [
-  { nome: 'edicao', rotulo: 'Edição', opcoes: edicoes },
-  { nome: 'seccao', rotulo: 'Secção', opcoes: seccoes },
-];
 ---
 
 <Base titulo="Pesquisar" descricao="Pesquisa nos artigos e nas edições do +MAT.">
   <div class="contentor">
-    <h1>Pesquisar no +MAT</h1>
+    <div class="cabeca">
+      <h1><span class="marcador">Pesquisar</span> no +MAT</h1>
+    </div>
 
     <FormPesquisa escondido>
       <div class="filtros">
-        {filtros.map((f) => (
-          <div class="filtro">
-            <label for={f.nome}>{f.rotulo}</label>
-            <select id={f.nome} name={f.nome}>
-              <option value="">Todas</option>
-              {f.opcoes.map((o) => <option value={o.id} data-valor={o.valor}>{o.valor}</option>)}
-            </select>
+        <fieldset>
+          <legend>Secção</legend>
+          <div class="caixas">
+            {seccoes.map((o) => (
+              <label><input type="checkbox" name="seccao" value={o.id} data-valor={o.valor} /> {o.valor} <span class="n"></span></label>
+            ))}
           </div>
-        ))}
+        </fieldset>
+        <div class="filtro">
+          <label for="edicao">Edição</label>
+          <select id="edicao" name="edicao" class="campo">
+            <option value="">Todas</option>
+            {edicoes.map((o) => <option value={o.id} data-valor={o.valor}>{o.valor}</option>)}
+          </select>
+        </div>
       </div>
     </FormPesquisa>
     <p class="ui estado" role="status" aria-live="polite"></p>
     <ol class="resultados"></ol>
-    <button type="button" class="ui mais" hidden>Mostrar mais resultados</button>
+    <button type="button" class="botao secundario mostrar-mais" hidden>Mostrar mais resultados</button>
 
     <section class="ui alternativa" aria-labelledby="alt-titulo">
       <p id="alt-titulo" class="aviso">A pesquisa precisa de JavaScript. Podes procurar nestas páginas:</p>
@@ -47,16 +51,17 @@ const filtros = [
   type Pagefind = {
     options(o: object): Promise<void>;
     filters(): Promise<Record<string, Record<string, number>>>;
-    search(q: string | null, o?: { filters: Record<string, string>; sort?: Record<string, 'asc' | 'desc'> }): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
+    search(q: string | null, o?: { filters: Record<string, string | { any: string[] }>; sort?: Record<string, 'asc' | 'desc'> }): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
   };
 
   const POR_PAGINA = 10;
   const form = document.querySelector<HTMLFormElement>('.pesquisa')!;
   const campo = form.querySelector<HTMLInputElement>('input')!;
-  const listas = [...form.querySelectorAll('select')];
+  const edicao = form.querySelector<HTMLSelectElement>('select')!;
+  const caixas = [...form.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
   const estado = document.querySelector<HTMLElement>('.estado')!;
   const lista = document.querySelector<HTMLOListElement>('.resultados')!;
-  const mais = document.querySelector<HTMLButtonElement>('.mais')!;
+  const mais = document.querySelector<HTMLButtonElement>('.mostrar-mais')!;
   const alternativa = document.querySelector<HTMLElement>('.alternativa')!;
 
   let pagefind: Pagefind;
@@ -90,25 +95,30 @@ const filtros = [
   async function pesquisar() {
     const este = ++pedido;
     const termo = campo.value.trim();
-    const escolhidas = listas.map((s) => s.selectedOptions[0]).filter((o) => o.value);
+    const marcadas = caixas.filter((c) => c.checked);
     const parametros = new URLSearchParams();
     if (termo) parametros.set('q', termo);
-    for (const s of listas) if (s.value) parametros.set(s.name, s.value);
+    if (edicao.value) parametros.set('edicao', edicao.value);
+    for (const c of marcadas) parametros.append('seccao', c.value);
     history.replaceState(null, '', parametros.size ? `?${parametros}` : location.pathname);
-    if (!termo && !escolhidas.length) {
+    if (!termo && !edicao.value && !marcadas.length) {
       lista.replaceChildren();
       mais.hidden = true;
       estado.textContent = '';
       return;
     }
-    const filtros = Object.fromEntries(listas.filter((s) => s.value).map((s) => [s.name, s.selectedOptions[0].dataset.valor!]));
+    // O Pagefind aceita várias secções de uma vez: basta uma delas.
+    const filtros: Record<string, string | { any: string[] }> = {};
+    if (edicao.value) filtros.edicao = edicao.selectedOptions[0].dataset.valor!;
+    if (marcadas.length) filtros.seccao = { any: marcadas.map((c) => c.dataset.valor!) };
     // Sem termo não há relevância: as edições mais recentes primeiro.
     const r = await pagefind.search(termo || null, { filters: filtros, sort: termo ? undefined : { data: 'desc' } });
     if (!r || este !== pedido) return;
     lista.replaceChildren();
     pendentes = r.results;
     const n = r.results.length;
-    const onde = [termo && `para «${termo}»`, escolhidas.length && `em ${escolhidas.map((o) => o.dataset.valor).join(', ')}`].filter(Boolean).join(' ');
+    const nomes = [...marcadas.map((c) => c.dataset.valor!), edicao.value && edicao.selectedOptions[0].dataset.valor!].filter(Boolean);
+    const onde = [termo && `para «${termo}»`, nomes.length && `em ${nomes.join(', ')}`].filter(Boolean).join(' ');
     estado.textContent = n === 0 ? `Não encontrei nada ${onde}.` : `${n === 1 ? '1 resultado' : `${n} resultados`} ${onde}.`;
     await mostrar(POR_PAGINA);
   }
@@ -118,7 +128,7 @@ const filtros = [
     clearTimeout(espera);
     espera = window.setTimeout(pesquisar, 300);
   });
-  for (const s of listas) s.addEventListener('change', pesquisar);
+  for (const c of [edicao, ...caixas]) c.addEventListener('change', pesquisar);
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     clearTimeout(espera);
@@ -132,18 +142,26 @@ const filtros = [
     pagefind = await import(/* @vite-ignore */ url);
     await pagefind.options({ excerptLength: 24 });
     const contagens = await pagefind.filters();
-    for (const s of listas)
-      for (const o of [...s.options].filter((o) => o.value)) {
-        const n = contagens[s.name]?.[o.dataset.valor!] ?? 0;
-        if (n) o.textContent += ` (${n})`;
-        else o.remove();
-      }
+    for (const o of [...edicao.options].filter((o) => o.value)) {
+      const n = contagens.edicao?.[o.dataset.valor!] ?? 0;
+      if (n) o.textContent += ` (${n})`;
+      else o.remove();
+    }
+    for (const c of caixas) {
+      const n = contagens.seccao?.[c.dataset.valor!] ?? 0;
+      if (n) c.parentElement!.querySelector('.n')!.textContent = String(n);
+      else c.parentElement!.remove();
+    }
     const parametros = new URLSearchParams(location.search);
     campo.value = parametros.get('q') ?? '';
-    for (const s of listas) s.value = [...s.options].some((o) => o.value === parametros.get(s.name)) ? parametros.get(s.name)! : '';
+    edicao.value = [...edicao.options].some((o) => o.value === parametros.get('edicao')) ? parametros.get('edicao')! : '';
+    const pedidas = parametros.getAll('seccao');
+    for (const c of caixas) c.checked = pedidas.includes(c.value);
     form.hidden = false;
+    // No telemóvel a linha das secções desliza: a primeira escolhida tem de se ver.
+    caixas.find((c) => c.checked)?.parentElement!.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     alternativa.hidden = true;
-    if (campo.value || listas.some((s) => s.value)) pesquisar();
+    if (campo.value || edicao.value || pedidas.length) pesquisar();
     else campo.focus();
   } catch {
     alternativa.querySelector('.aviso')!.textContent = 'A pesquisa não está disponível neste momento. Podes procurar nestas páginas:';
@@ -151,45 +169,45 @@ const filtros = [
 </script>
 
 <style>
-  h1 { font-size: 2.5rem; margin-top: 2.5rem; margin-bottom: 1rem; }
   [hidden] { display: none !important; }
 
-  .filtros { display: flex; gap: 0.5rem 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
-  .filtro { display: grid; gap: 0.35rem; flex: 1 1 12rem; min-width: 0; }
-  .filtro label { color: var(--texto-suave); }
-  select {
-    width: 100%;
-    font: inherit;
-    padding: 0.45rem 0.6rem;
-    border: 1px solid var(--campo);
-    border-radius: 6px;
-    background: var(--superficie);
-    color: var(--texto);
+  .filtros { display: grid; gap: 1rem; margin-top: 1rem; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend, .filtro label { font-weight: 600; margin-bottom: 0.375rem; padding: 0; }
+  .caixas { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  /* No telemóvel as secções ficam numa só linha, que desliza para o lado */
+  @media (max-width: 768px) {
+    .caixas { flex-wrap: nowrap; overflow-x: auto; margin-inline: -1rem; padding: 0.25rem 1rem; scrollbar-width: none; }
+    .caixas label { flex-shrink: 0; }
   }
-
-  .mais {
-    font: inherit;
-    font-weight: 600;
-    padding: 0.5rem 1.1rem;
-    border: 0;
-    border-radius: 6px;
-    background: var(--azul);
-    color: #fff;
+  .caixas label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 0.875rem;
+    border-radius: var(--raio-g);
+    background: var(--superficie);
+    box-shadow: inset 0 0 0 2px var(--linha);
+    white-space: nowrap;
     cursor: pointer;
   }
-  .mais:hover { background: var(--azul-escuro); }
+  .caixas label:has(:checked) { background: var(--pastilha); box-shadow: inset 0 0 0 2px var(--primaria); font-weight: 600; }
+  .caixas input { width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--primaria); }
+  .caixas .n { font-size: 0.8125rem; color: var(--texto-suave); font-weight: 400; }
+  .filtro { display: grid; max-width: 20rem; }
 
-  .estado { color: var(--texto-suave); font-size: 0.9rem; margin: 1rem 0 0; }
+  .estado { color: var(--texto-suave); font-family: var(--f-ui); font-size: 0.9375rem; margin: 1.5rem 0 0; }
   .estado:empty { margin: 0; }
 
-  .resultados { list-style: none; padding: 0; margin: 0.5rem 0 1.5rem; max-width: var(--leitura); }
+  .resultados { list-style: none; padding: 0; margin: 0.75rem 0 1.5rem; max-width: var(--leitura); display: grid; gap: 0.75rem; }
   /* Os resultados são criados no browser e não têm o atributo de escopo do Astro: daí o :global. */
-  .resultados :global(li) { padding: 1rem 0; border-bottom: 1px solid var(--linha); min-width: 0; }
-  .resultados :global(a) { font-family: var(--f-titulo); font-size: 1.3rem; font-weight: 600; color: var(--texto); text-decoration: none; overflow-wrap: anywhere; }
-  .resultados :global(a:hover) { color: var(--destaque); text-decoration: underline; }
-  .resultados :global(.meta) { font-size: 0.8rem; color: var(--texto-suave); margin: 0.15rem 0 0; text-transform: capitalize; }
-  .resultados :global(.excerto) { font-size: 1rem; color: var(--texto-suave); margin: 0.4rem 0 0; overflow-wrap: anywhere; }
-  .resultados :global(mark) { background: var(--dourado-claro); color: var(--texto); box-shadow: inset 0 -2px var(--dourado); padding: 0 0.1em; }
+  .resultados :global(li) { padding: 1rem 1.25rem; background: var(--superficie); border-radius: var(--raio); box-shadow: var(--sombra); min-width: 0; }
+  .resultados :global(a) { font-family: var(--f-ui); font-size: 1.125rem; font-weight: 700; color: var(--texto); text-decoration: none; overflow-wrap: anywhere; }
+  .resultados :global(a:hover) { text-decoration: underline; }
+  .resultados :global(.meta) { font-size: 0.8125rem; color: var(--texto-suave); margin: 0.15rem 0 0; text-transform: capitalize; }
+  .resultados :global(.excerto) { font-size: 0.9375rem; color: var(--texto-suave); margin: 0.4rem 0 0; overflow-wrap: anywhere; }
+  .resultados :global(mark) { background: linear-gradient(transparent 55%, var(--marcador) 55%); color: var(--texto); padding: 0 0.05em; }
 
   .alternativa { font-size: 0.95rem; }
   .aviso { color: var(--texto-suave); }

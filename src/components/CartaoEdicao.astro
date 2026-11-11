@@ -7,7 +7,7 @@ const { edicao } = Astro.props;
 const { capa, data, convertida } = edicao.data;
 ---
 
-<a class="cartao" href={`/edicoes/${edicao.id}/`}>
+<a class="capa-edicao" href={`/edicoes/${edicao.id}/`}>
   {capa && <Image src={capa} alt={`Capa da edição de ${mesAno(data)}`} width={360} />}
   <span class="ui rotulo">{rotuloEdicao(edicao)}</span>
   <span class="mes">{mesAno(data)}</span>
@@ -15,7 +15,7 @@ const { capa, data, convertida } = edicao.data;
 </a>
 
 <style>
-  .cartao { display: grid; gap: 0.2rem; text-decoration: none; color: var(--texto); position: relative; }
+  .capa-edicao { display: grid; gap: 0.2rem; text-decoration: none; color: var(--texto); position: relative; }
   img {
     width: 100%;
     aspect-ratio: 210 / 297;
@@ -25,7 +25,7 @@ const { capa, data, convertida } = edicao.data;
     transition: transform 0.15s;
     margin-bottom: 0.5rem;
   }
-  .cartao:hover img { transform: translateY(-3px); }
+  .capa-edicao:hover img { transform: translateY(-3px); }
   .rotulo { font-size: 0.75rem; color: var(--texto-suave); letter-spacing: 0.04em; }
   .mes { font-family: var(--f-titulo); font-size: 1.15rem; text-transform: capitalize; }
   .so-pdf {

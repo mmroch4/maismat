@@ -10,19 +10,21 @@ const lista = (Object.keys(SECCOES) as Seccao[]).filter((s) => contagem(s) > 0);
 
 <Base titulo="Secções">
   <div class="contentor">
-    <h1>Secções</h1>
+    <div class="cabeca">
+      <h1><span class="marcador">Secções</span></h1>
+      <p>Os artigos do +MAT arrumados pelas secções do jornal.</p>
+    </div>
     <ul class="ui">
       {lista.map((s) => (
-        <li><a href={`/seccoes/${s}/`}>+ {SECCOES[s]}</a> <span>{contagem(s)}</span></li>
+        <li><a class="cartao" href={`/seccoes/${s}/`}><span class="nome">{SECCOES[s]}</span> <span class="n">{contagem(s) === 1 ? '1 artigo' : `${contagem(s)} artigos`}</span></a></li>
       ))}
     </ul>
   </div>
 </Base>
 
 <style>
-  h1 { font-size: 2.5rem; margin-top: 2.5rem; }
-  ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0.75rem; }
-  li { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1rem; background: var(--superficie); border: 1px solid var(--linha); border-left: 4px solid var(--dourado); border-radius: 6px; }
-  a { font-weight: 600; color: var(--texto); text-decoration: none; }
-  span { color: var(--texto-suave); font-size: 0.85rem; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 0.75rem; }
+  .cartao { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 56px; padding: 0.75rem 1.25rem; }
+  .nome { font-weight: 700; }
+  .n { color: var(--texto-suave); font-size: 0.875rem; }
 </style>
