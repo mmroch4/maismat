@@ -1,5 +1,5 @@
 ---
-rascunho: true
+rascunho: false
 ano: 5
 numero: 1
 data: 2026-11-11
