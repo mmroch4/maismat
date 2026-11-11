@@ -34,6 +34,36 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       <p class="contagem" role="status" aria-live="polite"></p>
     </form>
 
+    <details class="ui transferir nao-imprimir" hidden>
+      <summary>Levar o teu progresso para outro computador</summary>
+      <p>
+        Os computadores da escola apagam muitas vezes o que fica guardado. Cria um código, envia-o a ti próprio
+        (por email, no Teams ou num documento) e cola-o no outro computador. O código só diz que desafios
+        resolveste: não tem o teu nome nem as tuas respostas.
+      </p>
+      <div class="passos">
+        <form class="exportar">
+          <p class="passo">Neste computador</p>
+          <button type="submit">Criar o meu código</button>
+          <label hidden>
+            <span>O teu código</span>
+            <textarea name="codigo" rows="3" readonly spellcheck="false"></textarea>
+          </label>
+          <button type="button" class="copiar" hidden>Copiar</button>
+          <p class="mensagem" role="status" aria-live="polite"></p>
+        </form>
+        <form class="importar">
+          <p class="passo">No outro computador</p>
+          <label>
+            <span>Cola aqui o teu código</span>
+            <textarea name="codigo" rows="3" spellcheck="false" autocomplete="off"></textarea>
+          </label>
+          <button type="submit">Juntar ao meu progresso</button>
+          <p class="mensagem" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </details>
+
     {porEdicao.map(([e, lista]) => (
       <section class="edicao" data-edicao={e.id} aria-labelledby={`ed-${e.id}`}>
         <h2 id={`ed-${e.id}`}>
@@ -63,6 +93,8 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 </Base>
 
 <script>
+  import { ID, codificar, descodificar } from '../lib/progresso.mjs';
+
   const form = document.querySelector<HTMLFormElement>('.filtros')!;
   const contagem = form.querySelector<HTMLElement>('.contagem')!;
   const seccoes = [...document.querySelectorAll<HTMLElement>('.edicao')];
@@ -79,12 +111,15 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 
   // Por id: um desafio republicado (por exemplo, nas resoluções) conta uma vez só.
   const resolvidos = new Set<string>();
-  for (const li of itens) {
-    if (!resolvido(li.dataset.id!)) continue;
-    li.dataset.resolvido = '';
-    li.querySelector<HTMLElement>('.resolvido')!.hidden = false;
-    resolvidos.add(li.dataset.id!);
+  function marcar() {
+    for (const li of itens) {
+      if (!resolvido(li.dataset.id!)) continue;
+      li.dataset.resolvido = '';
+      li.querySelector<HTMLElement>('.resolvido')!.hidden = false;
+      resolvidos.add(li.dataset.id!);
+    }
   }
+  marcar();
 
   function filtrar() {
     const edicao = form.edicao.value;
@@ -108,6 +143,78 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   // A contagem é preenchida antes de o formulário aparecer, para não ser anunciada ao abrir a página.
   filtrar();
   form.hidden = false;
+
+  const transferir = document.querySelector<HTMLDetailsElement>('.transferir')!;
+  const exportar = transferir.querySelector<HTMLFormElement>('.exportar')!;
+  const importar = transferir.querySelector<HTMLFormElement>('.importar')!;
+  const copiar = exportar.querySelector<HTMLButtonElement>('.copiar')!;
+  const conhecidos = new Set(itens.map((li) => li.dataset.id!));
+  const plural = (n: number, um: string, varios: string) => (n === 1 ? `1 ${um}` : `${n} ${varios}`);
+
+  function avisar(f: HTMLFormElement, texto: string, erro = false) {
+    const m = f.querySelector<HTMLElement>('.mensagem')!;
+    m.textContent = texto;
+    m.classList.toggle('erro', erro);
+  }
+
+  exportar.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const ids: string[] = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i) ?? '';
+        const id = k.slice('maismat:'.length);
+        if (k.startsWith('maismat:') && ID.test(id) && localStorage.getItem(k) === 'ok') ids.push(id);
+      }
+    } catch {
+      return avisar(exportar, 'Este browser não deixa ler o progresso guardado.', true);
+    }
+    if (!ids.length) return avisar(exportar, 'Ainda não resolveste nenhum desafio neste computador.', true);
+    exportar.codigo.value = codificar(ids);
+    exportar.codigo.closest('label')!.hidden = false;
+    copiar.hidden = false;
+    exportar.codigo.select();
+    avisar(exportar, `Código criado com ${plural(ids.length, 'desafio resolvido', 'desafios resolvidos')}. Copia-o e guarda-o.`);
+  });
+
+  copiar.addEventListener('click', async () => {
+    exportar.codigo.select();
+    try {
+      await navigator.clipboard.writeText(exportar.codigo.value);
+      avisar(exportar, 'Código copiado. Cola-o num email, no Teams ou num documento.');
+    } catch {
+      avisar(exportar, 'Não consegui copiar sozinho. O código está selecionado: copia-o com Ctrl+C.');
+    }
+  });
+
+  importar.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let ids: string[];
+    try {
+      ids = descodificar(importar.codigo.value);
+    } catch (erro) {
+      return avisar(importar, (erro as Error).message, true);
+    }
+    const novos = ids.filter((id) => conhecidos.has(id) && !resolvido(id));
+    const ignorados = ids.filter((id) => !conhecidos.has(id)).length;
+    try {
+      for (const id of novos) if (ID.test(id)) localStorage.setItem(`maismat:${id}`, 'ok');
+    } catch {
+      return avisar(importar, 'Este browser não deixa guardar o progresso.', true);
+    }
+    marcar();
+    filtrar();
+    const partes = [
+      novos.length
+        ? `Juntámos ${plural(novos.length, 'desafio', 'desafios')} ao teu progresso.`
+        : 'Já tinhas todos os desafios deste código.',
+      `Agora tens ${resolvidos.size} resolvidos.`,
+    ];
+    if (ignorados) partes.push(`${plural(ignorados, 'desafio do código não existe', 'desafios do código não existem')} neste site e ${ignorados === 1 ? 'foi ignorado' : 'foram ignorados'}.`);
+    avisar(importar, partes.join(' '));
+  });
+
+  transferir.hidden = false;
 </script>
 
 <style>
@@ -151,4 +258,47 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   .etiquetas span { padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid var(--linha); color: var(--texto-suave); }
   .etiquetas .resolvido { border-color: var(--ok); color: var(--ok); font-weight: 600; }
   [hidden] { display: none !important; }
+
+  .transferir {
+    margin: 1rem 0 0.5rem;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    background: var(--superficie);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    max-width: 48rem;
+  }
+  .transferir summary { cursor: pointer; font-weight: 600; color: var(--destaque); }
+  .transferir > p { color: var(--texto-suave); margin: 0.75rem 0 0; }
+  .passos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1rem 1.5rem; margin-top: 1rem; }
+  .passos form { display: flex; flex-wrap: wrap; align-items: start; align-content: start; gap: 0.6rem; min-width: 0; }
+  .passo { font-weight: 600; margin: 0; width: 100%; }
+  .passos label { display: grid; gap: 0.25rem; width: 100%; }
+  .passos label span { color: var(--texto-suave); }
+  textarea {
+    font: 0.85rem/1.4 ui-monospace, monospace;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--campo);
+    border-radius: 6px;
+    background: var(--fundo);
+    color: var(--texto);
+    width: 100%;
+    resize: vertical;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+  .passos button {
+    font: inherit;
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--azul);
+    color: #fff;
+    cursor: pointer;
+  }
+  .passos button:hover { background: var(--azul-escuro); }
+  .mensagem { margin: 0; width: 100%; min-height: 1.4em; color: var(--ok); font-weight: 600; }
+  .mensagem.erro { color: var(--erro); }
+  .mensagem:empty { min-height: 0; }
 </style>

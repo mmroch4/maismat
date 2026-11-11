@@ -6,6 +6,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { desafio as bloco } from '../public/admin/componentes.js';
+import { codificar, descodificar } from '../src/lib/progresso.mjs';
 import { normalizar } from '../src/lib/respostas.mjs';
 
 const raiz = fileURLToPath(new URL('..', import.meta.url));
@@ -117,5 +118,27 @@ test('as edições em rascunho não aparecem no site', () => {
     assert.ok(!existe(`dist/edicoes/${e}`), `A edição em rascunho ${e} foi publicada.`);
     assert.ok(!sitemap.includes(`/edicoes/${e}/`), `A edição em rascunho ${e} está no sitemap.`);
     assert.ok(!arquivo.includes(`/edicoes/${e}/`), `O arquivo de desafios tem desafios da edição em rascunho ${e}.`);
+  }
+});
+
+test('o código de progresso leva e traz os ids, e recusa códigos estragados', () => {
+  const ids = [...new Set(desafios.map((d) => d.id))].sort();
+  for (const lista of [[], ids.slice(0, 2), ids]) assert.deepEqual(descodificar(codificar(lista)), lista);
+  const codigo = codificar(ids.slice(0, 10));
+  assert.deepEqual(descodificar(` ${codigo.toLowerCase().replace(/.{20}/g, '$&\n')} `), ids.slice(0, 10), 'Minúsculas e quebras de linha deviam ser aceites.');
+
+  for (const vazio of ['', '  \n ']) assert.throws(() => descodificar(vazio), /Cola primeiro/);
+  assert.throws(() => descodificar('MAT2-' + codigo.slice(5)), /versão do \+MAT que este site não conhece/);
+  assert.throws(() => descodificar(codigo.slice(5)), /devia começar por MAT1-/);
+  assert.throws(() => descodificar(codigo + 'U'), /carácter que não pode ter/);
+  assert.throws(() => codificar(['desafio-1234567']), /Id inválido/);
+  assert.throws(() => codificar(['maismat:desafio-12345678']), /Id inválido/);
+  assert.throws(() => codificar(['desafio-1234567G']), /Id inválido/);
+
+  const alfabeto = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  for (let i = 5; i < codigo.length; i++) {
+    assert.throws(() => descodificar(codigo.slice(0, i)), /incompleto/, `O código cortado em ${i} caracteres foi aceite.`);
+    for (const c of alfabeto.replace(codigo[i], ''))
+      assert.throws(() => descodificar(codigo.slice(0, i) + c + codigo.slice(i + 1)), /incompleto/, `A troca do carácter ${i} por ${c} não foi detetada.`);
   }
 });
