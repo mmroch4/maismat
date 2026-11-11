@@ -56,6 +56,20 @@
   - em *Inspeção de URLs*, com um artigo: o canónico escolhido pela Google é o declarado pelo site;
   - uns dias depois, em *Páginas*, ver se há páginas excluídas por engano (só a 404, o painel e as versões para imprimir podem ficar de fora).
 
+## Depois do deploy do redesign «Caderno»
+
+- [ ] Num telemóvel verdadeiro (iPhone e Android), em claro e em escuro:
+  - a barra de baixo não tapa o fim das páginas nem o rodapé, e no iPhone fica acima da barra do sistema (`safe-area-inset-bottom`);
+  - «Mais» abre a folha, que fecha com «Fechar», ao tocar fora dela e ao escolher uma ligação; «Levar o progresso dos desafios» abre o painel em `/desafios/#levar`;
+  - na pesquisa, a linha das secções desliza para o lado e a secção escolhida aparece à vista.
+- [ ] Os cinco estados do desafio, com uma resposta certa verdadeira (no painel de pré-visualização só se viu o «certo» de um desafio já resolvido): fundo verde, pastilha «✓ Desafio N» e a resolução aberta num bloco branco. Com uma resposta errada, «✕ Ainda não…».
+- [ ] A demonstração da ciclóide aparece dentro da moldura nova (o painel de pré-visualização bloqueia iframes, por isso só se viu a moldura vazia).
+- [ ] Só com o teclado, da página inicial até responder a um desafio: o anel de foco de 3 px vê-se sempre, também sobre os botões azuis e na barra em pastilha.
+- [ ] Com «Reduzir movimento» ligado no sistema, o anel de progresso aparece já cheio e os cartões não sobem.
+- [ ] O destaque azul do início no modo escuro (azul claro com texto escuro): ver se fica bem ou se deve passar a superfície escura.
+- [ ] Imprimir uma edição: sem faixa, barras, folha «Mais» nem rodapé.
+- [ ] No PageSpeed Insights, a Playfair já não aparece nos pedidos e as duas fontes pré-carregadas (Inter e Source Serif 4) são usadas.
+
 ## Depois da primeira edição feita no painel
 
 - [ ] No código-fonte do artigo editado (já publicado), procurar `dateModified` com a data da edição. Se não estiver lá, o Cloudflare Pages está a fazer um clone parcial (shallow) do repositório e a data fica de fora; o resto do site não é afetado.
