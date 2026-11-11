@@ -8,4 +8,5 @@ pdf: /pdf/jornal_maisMAT_ano03_2025_n03.pdf
 citacao:
   texto: "A Geometria existe por toda a parte. É preciso, porém, olhos para vê-la, inteligência para compreendê-la e alma para admirá-la."
   autor: Johannes Kepler
+rascunho: false
 ---

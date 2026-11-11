@@ -18,8 +18,11 @@ Se o painel aparecer em inglês, o browser está configurado em inglês: o conte
 
 Cria-se sempre **primeiro a edição** e só depois os artigos.
 
+Uma edição nova começa em **rascunho**: pode trabalhar nela durante semanas sem que nada apareça no site.
+
 1. Em **Edições**, carregue em **Novo**.
 2. Preencha:
+   - **Rascunho (escondida do site)**: deixe ligado enquanto prepara a edição.
    - **Ano do jornal**: o ano do +MAT (1, 2, 3, 4…), não o ano civil.
    - **Número da edição**: 1, 2 ou 3.
    - **Data de publicação**.
@@ -88,9 +91,15 @@ Na edição seguinte, para publicar a resolução de um desafio antigo, abra ess
 
 ## 8. Publicar
 
-Cada vez que carrega em **Guardar**, a alteração fica gravada e o site atualiza-se sozinho **em 2 a 3 minutos**. Não é preciso fazer mais nada.
+Enquanto a edição estiver em rascunho, guarde à vontade: nem a edição nem os artigos aparecem no site. Na lista de **Edições**, as que estão em rascunho dizem “· rascunho”.
 
-Conselho: prepare a edição toda e confira-a na pré-visualização antes de guardar o último artigo. Os artigos guardados ficam logo visíveis no site.
+Quando estiver tudo pronto:
+
+1. Confira cada artigo com o botão do **olho** (pré-visualização).
+2. Abra a ficha da edição, **desligue “Rascunho”** e carregue em **Guardar**.
+3. Em **2 a 3 minutos**, a edição inteira aparece no site e passa a ser a edição da página inicial.
+
+Atenção: nas edições **já publicadas**, cada vez que guarda um artigo a alteração vai logo para o site (também em 2 a 3 minutos).
 
 ## 9. Se algo não parecer bem
 

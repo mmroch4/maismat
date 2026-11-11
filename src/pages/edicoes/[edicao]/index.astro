@@ -1,12 +1,11 @@
 ---
-import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../../../layouts/Base.astro';
-import { artigosDe, mesAno, rotuloEdicao, slugArtigo, type Edicao } from '../../../lib/edicoes';
+import { artigosDe, edicoesPublicadas, mesAno, rotuloEdicao, slugArtigo, type Edicao } from '../../../lib/edicoes';
 import { SECCOES } from '../../../lib/seccoes';
 
 export async function getStaticPaths() {
-  const edicoes = await getCollection('edicoes');
+  const edicoes = await edicoesPublicadas();
   return edicoes.map((edicao) => ({ params: { edicao: edicao.id }, props: { edicao } }));
 }
 

@@ -8,4 +8,5 @@ pdf: /pdf/jornal_maisMAT_ano02_2023_n01.pdf
 citacao:
   texto: Deus criou os números naturais, tudo o resto é trabalho do Homem.
   autor: Leopold Kronecker
+rascunho: false
 ---

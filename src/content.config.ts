@@ -17,6 +17,8 @@ const edicoes = defineCollection({
       pdf: z.string().optional(),
       // Edições ainda só disponíveis em PDF (arquivo por converter)
       convertida: z.boolean().default(true),
+      // Edição em preparação: ela e os seus artigos ficam fora do site
+      rascunho: z.boolean().default(false),
     }),
 });
 

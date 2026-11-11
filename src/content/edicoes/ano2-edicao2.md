@@ -8,4 +8,5 @@ pdf: /pdf/jornal_maisMAT_ano02_2024_n02.pdf
 citacao:
   texto: A Geometria é a arte de raciocinar sobre figuras mal desenhadas.
   autor: Henri Poincaré
+rascunho: false
 ---

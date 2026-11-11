@@ -1,12 +1,12 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import { artigosDe, mesAno, rotuloEdicao, type Edicao } from '../../../lib/edicoes';
+import { artigosDe, edicoesPublicadas, mesAno, rotuloEdicao, type Edicao } from '../../../lib/edicoes';
 import { componentesMdx } from '../../../lib/componentes-mdx';
 import { SECCOES } from '../../../lib/seccoes';
 
 export async function getStaticPaths() {
-  const edicoes = await getCollection('edicoes', (e) => e.data.convertida);
+  const edicoes = (await edicoesPublicadas()).filter((e) => e.data.convertida);
   return edicoes.map((edicao) => ({ params: { edicao: edicao.id }, props: { edicao } }));
 }
 

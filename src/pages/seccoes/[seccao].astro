@@ -1,7 +1,7 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
+import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { mesAno, rotuloEdicao, slugArtigo } from '../../lib/edicoes';
+import { artigosPublicados, mesAno, rotuloEdicao, slugArtigo } from '../../lib/edicoes';
 import { SECCOES, SECCAO_IDS, type Seccao } from '../../lib/seccoes';
 
 export function getStaticPaths() {
@@ -10,7 +10,7 @@ export function getStaticPaths() {
 
 const seccao = Astro.params.seccao as Seccao;
 const artigos = await Promise.all(
-  (await getCollection('artigos', (a) => a.data.seccao === seccao)).map(async (a) => ({
+  (await artigosPublicados((a) => a.data.seccao === seccao)).map(async (a) => ({
     a,
     e: (await getEntry(a.data.edicao))!,
   })),

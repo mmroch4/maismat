@@ -1,9 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { artigosPublicados } from '../../lib/edicoes';
 import { SECCOES, type Seccao } from '../../lib/seccoes';
 
-const artigos = await getCollection('artigos');
+const artigos = await artigosPublicados();
 const contagem = (s: Seccao) => artigos.filter((a) => a.data.seccao === s).length;
 const lista = (Object.keys(SECCOES) as Seccao[]).filter((s) => contagem(s) > 0);
 ---

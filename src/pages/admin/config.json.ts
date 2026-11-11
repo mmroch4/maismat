@@ -45,9 +45,16 @@ const config = {
       create: true,
       slug: 'ano{{ano}}-edicao{{numero}}',
       identifier_field: 'numero',
-      summary: 'Ano {{ano}} · Edição {{numero}}',
+      summary: "Ano {{ano}} · Edição {{numero}}{{rascunho | ternary(' · rascunho', '')}}",
       sortable_fields: { fields: ['data', 'ano', 'numero'], default: { field: 'data', direction: 'descending' } },
       fields: [
+        {
+          name: 'rascunho',
+          label: 'Rascunho (escondida do site)',
+          widget: 'boolean',
+          default: true,
+          hint: 'Enquanto estiver ligado, nem a edição nem os seus artigos aparecem no site. Desliga quando estiver tudo pronto: a edição inteira fica visível de uma vez.',
+        },
         { name: 'ano', label: 'Ano do jornal', widget: 'number', value_type: 'int', min: 1, hint: 'Ano de publicação do +MAT (1, 2, 3, …), não o ano civil.' },
         { name: 'numero', label: 'Número da edição', widget: 'number', value_type: 'int', min: 1, hint: 'Número da edição dentro desse ano (1, 2 ou 3).' },
         { name: 'data', label: 'Data de publicação', widget: 'datetime', time_format: false, format: 'YYYY-MM-DD' },

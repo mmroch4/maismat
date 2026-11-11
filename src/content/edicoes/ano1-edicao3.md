@@ -8,4 +8,5 @@ pdf: /pdf/jornal_maisMAT_ano01_2023_n03.pdf
 citacao:
   texto: Deem-me um ponto de apoio e moverei o mundo.
   autor: Arquimedes
+rascunho: false
 ---
