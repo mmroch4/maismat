@@ -1,0 +1,152 @@
+---
+import Base from '../layouts/Base.astro';
+import { desafiosPublicados } from '../lib/desafios';
+import { mesAno, rotuloEdicao } from '../lib/edicoes';
+
+const desafios = await desafiosPublicados();
+const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
+---
+
+<Base titulo="Arquivo de desafios" descricao="Todos os desafios publicados no +MAT, para voltares a encontrá-los e resolvê-los.">
+  <div class="contentor">
+    <h1>Arquivo de desafios</h1>
+    <p class="ui intro">
+      Os {desafios.length} desafios publicados no +MAT, da edição mais recente para a mais antiga.
+      Cada um leva-te ao artigo onde podes responder e, quando existe, ver a resolução.
+    </p>
+
+    <form class="ui filtros nao-imprimir" hidden>
+      <label>
+        <span>Edição</span>
+        <select name="edicao">
+          <option value="">Todas</option>
+          {porEdicao.map(([e]) => <option value={e.id}>{rotuloEdicao(e)}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>Estado</span>
+        <select name="estado">
+          <option value="">Todos</option>
+          <option value="por-resolver">Por resolver</option>
+          <option value="resolvidos">Resolvidos por ti</option>
+        </select>
+      </label>
+      <p class="contagem" role="status" aria-live="polite"></p>
+    </form>
+
+    {porEdicao.map(([e, lista]) => (
+      <section class="edicao" data-edicao={e.id} aria-labelledby={`ed-${e.id}`}>
+        <h2 id={`ed-${e.id}`}>
+          {rotuloEdicao(e)} <span class="ui">· <span class="cap">{mesAno(e.data.data)}</span></span>
+        </h2>
+        <ul>
+          {lista.map((d) => (
+            <li class="desafio" data-id={d.id}>
+              <p class="ui rotulo">
+                Desafio{d.numero && ` ${d.numero}`} · {rotuloEdicao(e)} · {d.artigo.data.titulo}
+              </p>
+              <h3><a href={d.url}>{d.titulo}</a></h3>
+              {d.excerto.length > 0 && (
+                <p class="excerto">{d.excerto.map((s) => ('html' in s ? <Fragment set:html={s.html} /> : s.texto))}</p>
+              )}
+              <p class="ui etiquetas">
+                <span class="resolvido" hidden>Resolvido por ti ✓</span>
+                {d.temResposta && <span>Com verificação</span>}
+                {d.temResolucao && <span>Com resolução</span>}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('.filtros')!;
+  const contagem = form.querySelector<HTMLElement>('.contagem')!;
+  const seccoes = [...document.querySelectorAll<HTMLElement>('.edicao')];
+  const itens = [...document.querySelectorAll<HTMLElement>('.desafio')];
+
+  // Mesma chave que o Desafio.astro grava quando um aluno acerta.
+  const resolvido = (id: string) => {
+    try {
+      return localStorage.getItem(`maismat:${id}`) === 'ok';
+    } catch {
+      return false;
+    }
+  };
+
+  let resolvidos = 0;
+  for (const li of itens) {
+    if (!resolvido(li.dataset.id!)) continue;
+    li.dataset.resolvido = '';
+    li.querySelector<HTMLElement>('.resolvido')!.hidden = false;
+    resolvidos++;
+  }
+
+  function filtrar() {
+    const edicao = form.edicao.value;
+    const estado = form.estado.value;
+    let visiveis = 0;
+    for (const s of seccoes) {
+      let algum = false;
+      for (const li of s.querySelectorAll<HTMLElement>('.desafio')) {
+        const r = 'resolvido' in li.dataset;
+        li.hidden = (estado === 'resolvidos' && !r) || (estado === 'por-resolver' && r);
+        if (!li.hidden) algum = true;
+        if (!li.hidden && (!edicao || s.dataset.edicao === edicao)) visiveis++;
+      }
+      s.hidden = !algum || (edicao !== '' && s.dataset.edicao !== edicao);
+    }
+    contagem.textContent = `A mostrar ${visiveis} de ${itens.length} desafios · resolveste ${resolvidos}.`;
+  }
+
+  form.addEventListener('change', filtrar);
+  form.addEventListener('submit', (e) => e.preventDefault());
+  form.hidden = false;
+  filtrar();
+</script>
+
+<style>
+  h1 { font-size: 2.5rem; margin-top: 2.5rem; margin-bottom: 0.5rem; }
+  .intro { color: var(--texto-suave); font-size: 0.95rem; max-width: 40rem; }
+
+  .filtros { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem 1.25rem; margin: 1.5rem 0 0.5rem; font-size: 0.9rem; }
+  .filtros label { display: grid; gap: 0.25rem; }
+  .filtros span { color: var(--texto-suave); }
+  select {
+    font: inherit;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--linha);
+    border-radius: 6px;
+    background: var(--superficie);
+    color: var(--texto);
+    max-width: 100%;
+  }
+  .contagem { margin: 0; color: var(--texto-suave); flex-basis: 100%; }
+
+  h2 { font-size: 1.4rem; border-bottom: 3px solid var(--dourado); padding-bottom: 0.3rem; margin-top: 2.5rem; }
+  h2 .ui { font-size: 0.9rem; font-weight: 400; color: var(--texto-suave); }
+  .cap { text-transform: capitalize; }
+
+  ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1rem; }
+  .desafio {
+    background: var(--superficie);
+    border: 1px solid var(--linha);
+    border-top: 4px solid var(--verde);
+    border-radius: var(--raio);
+    padding: 1rem 1.25rem;
+    min-width: 0;
+  }
+  .desafio[data-resolvido] { border-top-color: var(--ok); }
+  .rotulo { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--verde); margin: 0; }
+  h3 { font-size: 1.2rem; margin: 0.25rem 0 0; overflow-wrap: anywhere; }
+  h3 a { color: var(--texto); text-decoration: none; }
+  h3 a:hover { color: var(--destaque); text-decoration: underline; }
+  .excerto { font-size: 0.95rem; color: var(--texto-suave); margin: 0.5rem 0 0; overflow-wrap: anywhere; }
+  .etiquetas { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0 0; font-size: 0.75rem; }
+  .etiquetas span { padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid var(--linha); color: var(--texto-suave); }
+  .etiquetas .resolvido { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+  [hidden] { display: none !important; }
+</style>

@@ -10,6 +10,7 @@
  * (ex.: `resposta="56.54" casas={1}` aceita 56,5 e 56,54).
  */
 import { createHash } from 'node:crypto';
+import { idDesafio } from '../lib/desafios';
 
 interface Props {
   titulo: string;
@@ -31,7 +32,7 @@ const normalizar = (s: string, casas?: number) => {
   return Number.isNaN(n) ? t : n.toFixed(casas);
 };
 
-const id = `desafio-${createHash('sha1').update(titulo).digest('hex').slice(0, 8)}`;
+const id = idDesafio(titulo);
 const hashes = resposta
   ? resposta.split('|').map((r) => createHash('sha256').update(id + normalizar(r, casas)).digest('hex'))
   : [];
