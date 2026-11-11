@@ -31,7 +31,8 @@ const edicoes = await edicoesOrdenadas();
 const edicao = Astro.props.edicao?.data.capa ? Astro.props.edicao : edicoes.find((e) => e.data.capa);
 const atual = await edicaoAtual();
 const mesAtual = atual && mesAno(atual.data.data).replace(/^./, (c) => c.toUpperCase());
-const partilha = edicao && (await getImage({ src: edicao.data.capa!, format: 'jpeg', width: 600, quality: 80 }));
+// O Astro não aumenta imagens: com uma capa mais estreita que 600 px, o og:image:width tem de ser a largura dela.
+const partilha = edicao && (await getImage({ src: edicao.data.capa!, format: 'jpeg', width: Math.min(600, edicao.data.capa!.width), quality: 80 }));
 const imagem = partilha && new URL(partilha.src, Astro.site);
 const nav = [
   { href: '/', texto: 'Início', icone: 'inicio' },
