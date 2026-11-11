@@ -75,8 +75,9 @@ const mes = mesAno(atual.data.data).split(' ')[0];
     align-items: center;
     padding: 1.5rem;
     border-radius: var(--raio);
-    background: var(--primaria);
-    color: var(--primaria-texto);
+    background: var(--destaque-fundo);
+    color: var(--destaque-texto);
+    box-shadow: var(--destaque-sombra);
   }
   @media (min-width: 769px) { .destaque { grid-template-columns: 1fr 13.75rem; gap: 2rem; padding: 2.5rem; } }
   .destaque-texto { display: grid; gap: 0.75rem; justify-items: start; }
@@ -92,18 +93,13 @@ const mes = mesAno(atual.data.data).split(' ')[0];
     min-height: 48px;
     padding: 0 1.375rem;
     border-radius: 24px;
-    background: var(--superficie);
-    color: var(--texto);
+    background: var(--destaque-botao);
+    color: var(--destaque-botao-texto);
     font-weight: 700;
     font-size: 0.9375rem;
     text-decoration: none;
   }
-  .ler:focus-visible { outline-color: var(--primaria-texto); }
-  @media (prefers-color-scheme: dark) {
-    .destaque { background: var(--superficie); color: var(--texto); box-shadow: var(--sombra); }
-    .ler { background: var(--primaria); color: var(--primaria-texto); }
-    .ler:focus-visible { outline-color: var(--texto); }
-  }
+  .ler:focus-visible { outline-color: var(--destaque-texto); }
   .capa-img img { display: block; width: 100%; height: auto; border-radius: var(--raio-p); transform: rotate(3deg); box-shadow: 0 12px 30px rgb(0 0 0 / 0.3); }
 
   .progresso { display: grid; gap: 1rem; align-content: start; padding: 1.5rem; }

@@ -51,6 +51,13 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // O tema escolhido no rodapé, aplicado antes de a página aparecer, para não piscar.
+      try {
+        const tema = localStorage.getItem('maismat:tema');
+        if (tema === 'claro' || tema === 'escuro') document.documentElement.dataset.tema = tema;
+      } catch {}
+    </script>
     <link rel="preload" href={fonteTitulos} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={fonteTexto} as="font" type="font/woff2" crossorigin />
     <title>{tituloCompleto}</title>
@@ -109,7 +116,10 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
           +MAT · Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira · Direção e edição de Rosa Bértolo e Carla Nunes ·
           Versão digital de <a href="https://miguelrocha.dev">Miguel Rocha</a>
         </p>
-        <p class="rodape-ligacoes"><a href="/sobre/">Sobre e créditos</a><a href="/rss.xml">RSS</a></p>
+        <p class="rodape-ligacoes">
+          <a href="/sobre/">Sobre e créditos</a><a href="/rss.xml">RSS</a>
+          <button type="button" class="mudar-tema" hidden>Tema escuro</button>
+        </p>
       </div>
     </footer>
 
@@ -133,6 +143,23 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
     </dialog>
 
     <script>
+      const raiz = document.documentElement;
+      const sistema = matchMedia('(prefers-color-scheme: dark)');
+      const botaoTema = document.querySelector<HTMLButtonElement>('.mudar-tema')!;
+      const escuro = () => (raiz.dataset.tema ? raiz.dataset.tema === 'escuro' : sistema.matches);
+      // O botão diz o tema para onde se vai.
+      const mostrarTema = () => (botaoTema.textContent = escuro() ? 'Tema claro' : 'Tema escuro');
+      botaoTema.addEventListener('click', () => {
+        raiz.dataset.tema = escuro() ? 'claro' : 'escuro';
+        try {
+          localStorage.setItem('maismat:tema', raiz.dataset.tema);
+        } catch {}
+        mostrarTema();
+      });
+      sistema.addEventListener('change', mostrarTema);
+      mostrarTema();
+      botaoTema.hidden = false;
+
       const mais = document.querySelector<HTMLDialogElement>('#mais')!;
       document.querySelector('.abrir-mais')!.addEventListener('click', () => mais.showModal());
       // Tocar fora da folha fecha-a; as ligações para a mesma página (#levar) também.
@@ -204,7 +231,18 @@ const atualDe = (href: string) => (href === '/' ? caminho === '/' : caminho.star
   .rodape p { margin: 0; }
   .rodape a { color: inherit; text-underline-offset: 3px; }
   .rodape-ligacoes { display: flex; gap: 1rem; flex-shrink: 0; }
-  .rodape-ligacoes a { display: flex; align-items: center; min-height: 44px; }
+  .rodape-ligacoes a, .mudar-tema { display: flex; align-items: center; min-height: 44px; }
+  .mudar-tema[hidden] { display: none; }
+  .mudar-tema {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
 
   .nav-baixo { display: none; }
 

@@ -30,6 +30,12 @@
   --erro: #b3261e;
   --erro-fundo: #fbecea;
   --sombra: 0 1px 0 #e3e7ec, 0 4px 12px rgb(27 36 48 / 0.06);
+  /* Destaque da edição atual no início: azul no claro, superfície no escuro */
+  --destaque-fundo: var(--primaria);
+  --destaque-texto: var(--primaria-texto);
+  --destaque-sombra: none;
+  --destaque-botao: var(--superficie);
+  --destaque-botao-texto: var(--texto);
 
   --f-titulo: 'Inter Variable', system-ui, sans-serif;
   --f-texto: 'Source Serif 4', Georgia, serif;
@@ -44,8 +50,10 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+/* O tema escuro segue o sistema, a não ser que se escolha outro no botão do rodapé (data-tema no <html>).
+   Os valores repetem-se nos dois blocos porque o light-dark() ainda não chega a todos os computadores da escola. */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
     --fundo: #111820;
     --superficie: #18212b;
     --texto: #e6ebf0;
@@ -65,6 +73,41 @@
     --erro: #f2867e;
     --erro-fundo: #36201e;
     --sombra: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
+    --destaque-fundo: var(--superficie);
+    --destaque-texto: var(--texto);
+    --destaque-sombra: var(--sombra);
+    --destaque-botao: var(--primaria);
+    --destaque-botao-texto: var(--primaria-texto);
+    color-scheme: dark;
+  }
+}
+/* No papel fica sempre o claro */
+@media screen {
+  :root[data-tema='escuro'] {
+    --fundo: #111820;
+    --superficie: #18212b;
+    --texto: #e6ebf0;
+    --texto-suave: #9fb0c0;
+    --primaria: #8fb0d1;
+    --primaria-forte: #b3cbe3;
+    --primaria-texto: #111820;
+    --marcador: #5c4f2a;
+    --marcador-texto: #e6ebf0;
+    --rotulo: #e2c98a;
+    --campo: #7d8794;
+    --linha: #2a3440;
+    --pastilha: #233040;
+    --faixa: #0c1218;
+    --ok: #6cc47a;
+    --ok-fundo: #1a2e21;
+    --erro: #f2867e;
+    --erro-fundo: #36201e;
+    --sombra: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
+    --destaque-fundo: var(--superficie);
+    --destaque-texto: var(--texto);
+    --destaque-sombra: var(--sombra);
+    --destaque-botao: var(--primaria);
+    --destaque-botao-texto: var(--primaria-texto);
     color-scheme: dark;
   }
 }
