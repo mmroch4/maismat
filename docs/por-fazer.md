@@ -2,11 +2,11 @@
 
 ## Pôr o painel de edição a funcionar
 
-- [ ] Fazer push do ramo `main` (é o ramo de que o painel lê e onde grava).
+- [x] Fazer push do ramo `main` (é o ramo de que o painel lê e onde grava).
 - [ ] Confirmar o `base_url` em `src/pages/admin/config.json.ts` (o endereço do worker). O `repo` (`mmroch4/maismat`) e o `branch` (`main`) já estão certos.
 - [ ] Fazer o deploy do worker [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) no Cloudflare Workers, seguindo o README do projeto.
 - [ ] Criar a OAuth App em GitHub → Settings → Developer settings → OAuth Apps. O “callback URL” é `https://<worker>/callback`. Depois, pôr `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no worker e `ALLOWED_DOMAINS=maismat.miguelrocha.dev`.
-- [ ] No Cloudflare Pages: ligar o repositório, com o comando `npm run build`, a pasta `dist` e `main` como ramo de produção. A versão do Node vem do `.nvmrc` (não é preciso `NODE_VERSION`).
+- [x] No Cloudflare Pages: ligar o repositório, com o comando `npm run build`, a pasta `dist` e `main` como ramo de produção. A versão do Node vem do `.nvmrc` (não é preciso `NODE_VERSION`).
 - [ ] Convidar a Rosa e a Carla como colaboradoras em Settings → Collaborators, depois de criarem conta no GitHub.
 - [ ] Testar com o login real: criar uma edição em rascunho, um artigo nela, confirmar que não aparece no site, desligar o rascunho e confirmar que aparece.
 - [ ] Com o login real, testar as demonstrações e o GeoGebra no painel (a documentação diz que funciona, mas não deu para testar sem login):
@@ -23,25 +23,25 @@
 
 ## Depois do primeiro deploy
 
-- [ ] Um endereço que não existe devolve 404 (e não 200), com a página do +MAT:
+- [x] Um endereço que não existe devolve 404 (e não 200), com a página do +MAT:
   ```bash
   curl -s -o /dev/null -w '%{http_code}\n' https://maismat.miguelrocha.dev/nao-existe/
   ```
-- [ ] Os cabeçalhos de segurança chegam (devem aparecer seis linhas):
+- [x] Os cabeçalhos de segurança chegam (devem aparecer seis linhas):
   ```bash
   curl -sI https://maismat.miguelrocha.dev/ | grep -iE "x-content|referrer|x-frame|content-security|permissions|strict-transport"
   ```
-- [ ] Os ficheiros em `/_astro/` têm cache de um ano (`max-age=31536000, immutable`):
+- [x] Os ficheiros em `/_astro/` têm cache de um ano (`max-age=31536000, immutable`):
   ```bash
   curl -sI "https://maismat.miguelrocha.dev$(curl -s https://maismat.miguelrocha.dev/ | grep -o '/_astro/[^"]*\.css' | head -1)" | grep -i cache-control
   ```
-- [ ] O `robots.txt` indica o sitemap e o `/admin/config.json` tem o `site_url` certo:
+- [x] O `robots.txt` indica o sitemap e o `/admin/config.json` tem o `site_url` certo:
   ```bash
   curl -s https://maismat.miguelrocha.dev/robots.txt
   curl -s https://maismat.miguelrocha.dev/admin/config.json | grep -o '"site_url":"[^"]*"'
   ```
 - [ ] Com os cabeçalhos novos, o painel (`/admin/`) abre, deixa entrar e mostra as fórmulas na pré-visualização; a pesquisa (`/pesquisa/`) dá resultados; nos desafios, o botão de copiar o código de progresso funciona.
-- [ ] As demonstrações estão isoladas também quando abertas fora do artigo (o `astro preview` não aplica o `_headers`, por isso isto só se vê depois do deploy). Deve aparecer a CSP de `/*` e a de `/demonstracoes/*` juntas por uma vírgula, e o `X-Robots-Tag`:
+- [x] As demonstrações estão isoladas também quando abertas fora do artigo (o `astro preview` não aplica o `_headers`, por isso isto só se vê depois do deploy). Deve aparecer a CSP de `/*` e a de `/demonstracoes/*` juntas por uma vírgula, e o `X-Robots-Tag`:
   ```bash
   curl -sI https://maismat.miguelrocha.dev/demonstracoes/cicloide/ | grep -iE "content-security|x-robots"
   ```
