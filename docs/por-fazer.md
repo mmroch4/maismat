@@ -5,7 +5,7 @@
 - [x] Fazer push do ramo `main` (é o ramo de que o painel lê e onde grava).
 - [ ] Confirmar o `base_url` em `src/pages/admin/config.json.ts` (o endereço do worker). O `repo` (`mmroch4/maismat`) e o `branch` (`main`) já estão certos.
 - [ ] Fazer o deploy do worker [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) no Cloudflare Workers, seguindo o README do projeto.
-- [ ] Criar a OAuth App em GitHub → Settings → Developer settings → OAuth Apps. O “callback URL” é `https://<worker>/callback`. Depois, pôr `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no worker e `ALLOWED_DOMAINS=maismat.miguelrocha.dev`.
+- [ ] Registar uma GitHub App (não uma OAuth App: o README do autenticador recomenda-a, porque só tem acesso a este repositório). O «Redirect URI» é `https://<worker>/callback`; permissões: Contents e Pull requests em «Read and write». Instalá-la só em `mmroch4/maismat`. Depois, pôr no worker `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (como segredo) e `ALLOWED_DOMAINS=maismat.miguelrocha.dev`.
 - [x] No Cloudflare Pages: ligar o repositório, com o comando `npm run build`, a pasta `dist` e `main` como ramo de produção. A versão do Node vem do `.nvmrc` (não é preciso `NODE_VERSION`).
 - [ ] Convidar a Rosa e a Carla como colaboradoras em Settings → Collaborators, depois de criarem conta no GitHub.
 - [ ] Testar com o login real: criar uma edição em rascunho, um artigo nela, confirmar que não aparece no site, desligar o rascunho e confirmar que aparece.
