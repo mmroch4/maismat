@@ -15,6 +15,7 @@ const artigos = await artigosDe(edicao.id);
 ---
 
 <Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`}>
+  <div data-pagefind-body data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`}>
   <div class="contentor cabecalho">
     {capa && <Image src={capa} alt="Capa" width={400} class="capa" />}
     <div>
@@ -22,7 +23,7 @@ const artigos = await artigosDe(edicao.id);
       <h1 class="cap">{mesAno(data)}</h1>
       <p class="ui direcao">Direção e edição: {direcao.join(' e ')}</p>
       {citacao && <blockquote>“{citacao.texto}” <footer>— {citacao.autor}</footer></blockquote>}
-      <p class="ui acoes">
+      <p class="ui acoes" data-pagefind-ignore>
         {convertida && artigos.length > 0 && <a class="botao" href={`/edicoes/${edicao.id}/${slugArtigo(artigos[0])}/`}>Começar a ler</a>}
         {convertida && <a class="botao sec" href={`/edicoes/${edicao.id}/imprimir/`}>Versão para imprimir</a>}
         {pdf && <a class="botao sec" href={pdf} download>PDF original</a>}
@@ -37,9 +38,9 @@ const artigos = await artigosDe(edicao.id);
         <ol class="indice">
           {artigos.map((a, i) => (
             <li>
-              <span class="num ui">{String(i + 1).padStart(2, '0')}</span>
+              <span class="num ui" data-pagefind-ignore>{String(i + 1).padStart(2, '0')}</span>
               <div>
-                <span class="etiqueta">{SECCOES[a.data.seccao]}</span>
+                <span class="etiqueta" data-pagefind-ignore>{SECCOES[a.data.seccao]}</span>
                 <a href={`/edicoes/${edicao.id}/${slugArtigo(a)}/`}>{a.data.titulo}</a>
                 {a.data.resumo && <p>{a.data.resumo}</p>}
               </div>
@@ -57,6 +58,7 @@ const artigos = await artigosDe(edicao.id);
         </>
       )
     )}
+  </div>
   </div>
 </Base>
 

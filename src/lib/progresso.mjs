@@ -66,3 +66,20 @@ export function descodificar(codigo) {
     ids.push('desafio-' + dados.slice(i, i + 4).map((b) => b.toString(16).padStart(2, '0')).join(''));
   return ids;
 }
+
+// Ligação do QR: o código vai no fragmento (#progresso=…), que o browser nunca envia ao servidor.
+const FRAGMENTO = /^#?progresso=(.*)$/s;
+
+/** @param {string} origem ex.: "https://maismat.miguelrocha.dev" @param {Iterable<string>} ids */
+export const ligacaoProgresso = (origem, ids) => `${new URL('/desafios/', origem)}#progresso=${codificar(ids)}`;
+
+/** @param {string} hash @returns {string | null} o código por validar (com `descodificar`), ou null se o fragmento não o tiver */
+export function codigoDaLigacao(hash) {
+  const m = hash.match(FRAGMENTO);
+  if (!m) return null;
+  try {
+    return decodeURIComponent(m[1]);
+  } catch {
+    return m[1];
+  }
+}

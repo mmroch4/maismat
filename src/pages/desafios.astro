@@ -51,6 +51,12 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
           </label>
           <button type="button" class="copiar" hidden>Copiar</button>
           <p class="mensagem" role="status" aria-live="polite"></p>
+          <div class="qr" hidden>
+            <p class="passo">Para o telemóvel</p>
+            <div class="qr-imagem"></div>
+            <p>Lê com a câmara do telemóvel.</p>
+            <p class="ligacao">Ou abre esta ligação: <a href=""></a></p>
+          </div>
         </form>
         <form class="importar">
           <p class="passo">No outro computador</p>
@@ -60,6 +66,11 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
           </label>
           <button type="submit">Juntar ao meu progresso</button>
           <p class="mensagem" role="status" aria-live="polite"></p>
+          <div class="confirmar" hidden>
+            <p class="pergunta" tabindex="-1"></p>
+            <button type="button" class="sim">Juntar</button>
+            <button type="button" class="nao">Agora não</button>
+          </div>
         </form>
       </div>
     </details>
@@ -93,7 +104,8 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 </Base>
 
 <script>
-  import { ID, codificar, descodificar } from '../lib/progresso.mjs';
+  import { encode } from 'uqr';
+  import { ID, codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../lib/progresso.mjs';
 
   const form = document.querySelector<HTMLFormElement>('.filtros')!;
   const contagem = form.querySelector<HTMLElement>('.contagem')!;
@@ -148,6 +160,8 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   const exportar = transferir.querySelector<HTMLFormElement>('.exportar')!;
   const importar = transferir.querySelector<HTMLFormElement>('.importar')!;
   const copiar = exportar.querySelector<HTMLButtonElement>('.copiar')!;
+  const qr = exportar.querySelector<HTMLElement>('.qr')!;
+  const confirmar = importar.querySelector<HTMLElement>('.confirmar')!;
   const conhecidos = new Set(itens.map((li) => li.dataset.id!));
   const plural = (n: number, um: string, varios: string) => (n === 1 ? `1 ${um}` : `${n} ${varios}`);
 
@@ -173,6 +187,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     exportar.codigo.value = codificar(ids);
     exportar.codigo.closest('label')!.hidden = false;
     copiar.hidden = false;
+    desenharQr(ligacaoProgresso(location.origin, ids));
     exportar.codigo.select();
     avisar(exportar, `Código criado com ${plural(ids.length, 'desafio resolvido', 'desafios resolvidos')}. Copia-o e guarda-o.`);
   });
@@ -187,15 +202,32 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     }
   });
 
-  importar.addEventListener('submit', (e) => {
-    e.preventDefault();
-    let ids: string[];
-    try {
-      ids = descodificar(importar.codigo.value);
-    } catch (erro) {
-      return avisar(importar, (erro as Error).message, true);
-    }
-    const novos = ids.filter((id) => conhecidos.has(id) && !resolvido(id));
+  // Um caminho por linha de módulos pretos; o fundo branco (com a margem de 4 módulos) é fixo, também no modo escuro.
+  function desenharQr(url: string) {
+    const { data, size } = encode(url, { ecc: 'L', border: 4 });
+    let d = '';
+    data.forEach((linha, y) => {
+      for (let x = 0; x < size; x++) {
+        if (!linha[x]) continue;
+        const inicio = x;
+        while (linha[x + 1]) x++;
+        d += `M${inicio} ${y}h${x - inicio + 1}v1H${inicio}z`;
+      }
+    });
+    qr.querySelector('.qr-imagem')!.innerHTML =
+      `<svg role="img" aria-label="Código QR com a ligação para levar o teu progresso para o telemóvel" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">` +
+      `<rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+    const a = qr.querySelector<HTMLAnchorElement>('.ligacao a')!;
+    a.href = url;
+    a.textContent = url;
+    qr.hidden = false;
+  }
+
+  const novosDe = (ids: string[]) => ids.filter((id) => conhecidos.has(id) && !resolvido(id));
+
+  function juntar(ids: string[]) {
+    confirmar.hidden = true;
+    const novos = novosDe(ids);
     const ignorados = ids.filter((id) => !conhecidos.has(id)).length;
     try {
       for (const id of novos) if (ID.test(id)) localStorage.setItem(`maismat:${id}`, 'ok');
@@ -208,13 +240,58 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       novos.length
         ? `Juntámos ${plural(novos.length, 'desafio', 'desafios')} ao teu progresso.`
         : 'Já tinhas todos os desafios deste código.',
-      `Agora tens ${resolvidos.size} resolvidos.`,
+      `Agora tens ${plural(resolvidos.size, 'resolvido', 'resolvidos')}.`,
     ];
     if (ignorados) partes.push(`${plural(ignorados, 'desafio do código não existe', 'desafios do código não existem')} neste site e ${ignorados === 1 ? 'foi ignorado' : 'foram ignorados'}.`);
     avisar(importar, partes.join(' '));
+  }
+
+  importar.addEventListener('submit', (e) => {
+    e.preventDefault();
+    try {
+      juntar(descodificar(importar.codigo.value));
+    } catch (erro) {
+      confirmar.hidden = true;
+      avisar(importar, (erro as Error).message, true);
+    }
   });
 
   transferir.hidden = false;
+
+  // Ligação do QR (/desafios/#progresso=MAT1-…): preenche o campo e pergunta antes de escrever.
+  // Também com a página já aberta, porque aí o browser só muda o fragmento.
+  const pergunta = confirmar.querySelector<HTMLElement>('.pergunta')!;
+  let aConfirmar: string[] = [];
+  confirmar.querySelector('.sim')!.addEventListener('click', () => juntar(aConfirmar));
+  confirmar.querySelector('.nao')!.addEventListener('click', () => {
+    confirmar.hidden = true;
+    avisar(importar, 'Não juntámos nada. O código ficou no campo, se mudares de ideias.');
+  });
+
+  function lerFragmento() {
+    const codigo = codigoDaLigacao(location.hash);
+    if (codigo === null) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    transferir.open = true;
+    importar.codigo.value = codigo;
+    confirmar.hidden = true;
+    avisar(importar, '');
+    transferir.scrollIntoView({ block: 'start' });
+    let ids: string[];
+    try {
+      ids = descodificar(codigo);
+    } catch (erro) {
+      return avisar(importar, (erro as Error).message, true);
+    }
+    const n = novosDe(ids).length;
+    if (!n) return juntar(ids);
+    aConfirmar = ids;
+    pergunta.textContent = `Juntar ${plural(n, 'desafio', 'desafios')} ao teu progresso?`;
+    confirmar.hidden = false;
+    pergunta.focus();
+  }
+  lerFragmento();
+  addEventListener('hashchange', lerFragmento);
 </script>
 
 <style>
@@ -301,4 +378,13 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   .mensagem { margin: 0; width: 100%; min-height: 1.4em; color: var(--ok); font-weight: 600; }
   .mensagem.erro { color: var(--erro); }
   .mensagem:empty { min-height: 0; }
+
+  .qr, .confirmar { display: flex; flex-wrap: wrap; gap: 0.6rem; width: 100%; }
+  .qr p, .confirmar p { margin: 0; width: 100%; }
+  .qr-imagem { width: 100%; max-width: 16rem; }
+  .qr-imagem :global(svg) { display: block; width: 100%; height: auto; border-radius: 6px; outline: 1px solid var(--linha); }
+  .ligacao { color: var(--texto-suave); font-size: 0.8rem; overflow-wrap: anywhere; word-break: break-all; }
+  .pergunta { font-weight: 600; }
+  .passos .nao { background: none; color: var(--texto); border: 1px solid var(--campo); }
+  .passos .nao:hover { background: var(--fundo); }
 </style>

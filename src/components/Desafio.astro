@@ -44,7 +44,7 @@ const temResolucao = Astro.slots.has('resolucao');
   {fonte && <p class="fonte ui">{fonte}</p>}
 
   {hashes.length > 0 && (
-    <form class="ui resposta nao-imprimir">
+    <form class="ui resposta nao-imprimir" data-pagefind-ignore>
       {opcoes ? (
         <fieldset>
           <legend>Escolhe a tua resposta</legend>
@@ -75,7 +75,7 @@ const temResolucao = Astro.slots.has('resolucao');
       <div><slot name="resolucao" /></div>
     </details>
   ) : (
-    <p class="ui pendente">A resolução será publicada na próxima edição. Envia a tua resposta à equipa do +MAT!</p>
+    <p class="ui pendente" data-pagefind-ignore>A resolução será publicada na próxima edição. Envia a tua resposta à equipa do +MAT!</p>
   )}
 </maismat-desafio>
 

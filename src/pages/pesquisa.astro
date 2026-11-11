@@ -1,0 +1,177 @@
+---
+import Base from '../layouts/Base.astro';
+import { edicoesOrdenadas, mesAno, rotuloEdicao } from '../lib/edicoes';
+
+const edicoes = await edicoesOrdenadas();
+---
+
+<Base titulo="Pesquisar" descricao="Pesquisa nos artigos e nas edições do +MAT.">
+  <div class="contentor">
+    <h1>Pesquisar no +MAT</h1>
+
+    <form class="ui pesquisa" action="/pesquisa/" method="get" role="search" hidden>
+      <label for="q">O que procuras?</label>
+      <div class="linha">
+        <input id="q" type="search" name="q" autocomplete="off" spellcheck="false" />
+        <button type="submit">Pesquisar</button>
+      </div>
+    </form>
+    <p class="ui estado" role="status" aria-live="polite"></p>
+    <ol class="resultados"></ol>
+    <button type="button" class="ui mais" hidden>Mostrar mais resultados</button>
+
+    <section class="ui alternativa" aria-labelledby="alt-titulo">
+      <p id="alt-titulo" class="aviso">A pesquisa precisa de JavaScript. Podes procurar nestas páginas:</p>
+      <ul>
+        <li><a href="/desafios/">Arquivo de desafios</a></li>
+        <li><a href="/seccoes/">Secções</a></li>
+        <li>
+          <a href="/edicoes/">Edições</a>
+          <ul>
+            {edicoes.map((e) => (
+              <li><a href={`/edicoes/${e.id}/`}>{rotuloEdicao(e)} · <span class="cap">{mesAno(e.data.data)}</span></a></li>
+            ))}
+          </ul>
+        </li>
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<script>
+  type Resultado = { url: string; excerpt: string; meta: { title?: string; edicao?: string } };
+  type Pagefind = {
+    options(o: object): Promise<void>;
+    search(q: string): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
+  };
+
+  const POR_PAGINA = 10;
+  const form = document.querySelector<HTMLFormElement>('.pesquisa')!;
+  const campo = form.querySelector<HTMLInputElement>('input')!;
+  const estado = document.querySelector<HTMLElement>('.estado')!;
+  const lista = document.querySelector<HTMLOListElement>('.resultados')!;
+  const mais = document.querySelector<HTMLButtonElement>('.mais')!;
+  const alternativa = document.querySelector<HTMLElement>('.alternativa')!;
+
+  let pagefind: Pagefind;
+  let pendentes: { data(): Promise<Resultado> }[] = [];
+  let pedido = 0;
+
+  async function mostrar(n: number) {
+    const lote = pendentes.splice(0, n);
+    for (const r of await Promise.all(lote.map((r) => r.data()))) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = r.url;
+      a.textContent = r.meta.title ?? r.url;
+      li.append(a);
+      if (r.meta.edicao) {
+        const m = document.createElement('p');
+        m.className = 'ui meta';
+        m.textContent = r.meta.edicao;
+        li.append(m);
+      }
+      const ex = document.createElement('p');
+      ex.className = 'excerto';
+      // O Pagefind devolve o excerto já escapado, só com <mark> à volta das palavras encontradas.
+      ex.innerHTML = r.excerpt;
+      li.append(ex);
+      lista.append(li);
+    }
+    mais.hidden = pendentes.length === 0;
+  }
+
+  async function pesquisar(q: string) {
+    const este = ++pedido;
+    const termo = q.trim();
+    history.replaceState(null, '', termo ? `?q=${encodeURIComponent(termo)}` : location.pathname);
+    if (!termo) {
+      lista.replaceChildren();
+      mais.hidden = true;
+      estado.textContent = '';
+      return;
+    }
+    const r = await pagefind.search(termo);
+    if (!r || este !== pedido) return;
+    lista.replaceChildren();
+    pendentes = r.results;
+    const n = r.results.length;
+    estado.textContent = n === 0 ? `Não encontrei nada para «${termo}».` : `${n === 1 ? '1 resultado' : `${n} resultados`} para «${termo}».`;
+    await mostrar(POR_PAGINA);
+  }
+
+  let espera: number;
+  campo.addEventListener('input', () => {
+    clearTimeout(espera);
+    espera = window.setTimeout(() => pesquisar(campo.value), 300);
+  });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearTimeout(espera);
+    pesquisar(campo.value);
+  });
+  mais.addEventListener('click', () => mostrar(POR_PAGINA));
+
+  try {
+    // O índice só existe depois de `npm run build` (o Pagefind corre sobre dist).
+    const url = '/pagefind/pagefind.js';
+    pagefind = await import(/* @vite-ignore */ url);
+    await pagefind.options({ excerptLength: 24 });
+    form.hidden = false;
+    alternativa.hidden = true;
+    campo.value = new URLSearchParams(location.search).get('q') ?? '';
+    if (campo.value) pesquisar(campo.value);
+    else campo.focus();
+  } catch {
+    alternativa.querySelector('.aviso')!.textContent = 'A pesquisa não está disponível neste momento. Podes procurar nestas páginas:';
+  }
+</script>
+
+<style>
+  h1 { font-size: 2.5rem; margin-top: 2.5rem; margin-bottom: 1rem; }
+  [hidden] { display: none !important; }
+
+  .pesquisa { display: grid; gap: 0.35rem; max-width: 40rem; font-size: 0.95rem; }
+  .pesquisa label { color: var(--texto-suave); }
+  .linha { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    font: inherit;
+    font-size: 1.05rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--campo);
+    border-radius: 6px;
+    background: var(--superficie);
+    color: var(--texto);
+  }
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 0.5rem 1.1rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--azul);
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: var(--azul-escuro); }
+
+  .estado { color: var(--texto-suave); font-size: 0.9rem; margin: 1rem 0 0; }
+  .estado:empty { margin: 0; }
+
+  .resultados { list-style: none; padding: 0; margin: 0.5rem 0 1.5rem; max-width: var(--leitura); }
+  /* Os resultados são criados no browser e não têm o atributo de escopo do Astro: daí o :global. */
+  .resultados :global(li) { padding: 1rem 0; border-bottom: 1px solid var(--linha); min-width: 0; }
+  .resultados :global(a) { font-family: var(--f-titulo); font-size: 1.3rem; font-weight: 600; color: var(--texto); text-decoration: none; overflow-wrap: anywhere; }
+  .resultados :global(a:hover) { color: var(--destaque); text-decoration: underline; }
+  .resultados :global(.meta) { font-size: 0.8rem; color: var(--texto-suave); margin: 0.15rem 0 0; text-transform: capitalize; }
+  .resultados :global(.excerto) { font-size: 1rem; color: var(--texto-suave); margin: 0.4rem 0 0; overflow-wrap: anywhere; }
+  .resultados :global(mark) { background: var(--dourado-claro); color: var(--texto); box-shadow: inset 0 -2px var(--dourado); padding: 0 0.1em; }
+
+  .alternativa { font-size: 0.95rem; }
+  .aviso { color: var(--texto-suave); }
+  .alternativa ul { padding-left: 1.25rem; }
+  .alternativa li { margin: 0.25rem 0; }
+  .cap { text-transform: capitalize; }
+</style>

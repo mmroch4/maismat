@@ -14,6 +14,7 @@ const nav = [
   { href: '/seccoes/', texto: 'Secções' },
   { href: '/desafios/', texto: 'Desafios' },
   { href: '/sobre/', texto: 'Sobre' },
+  { href: '/pesquisa/', texto: 'Pesquisar' },
 ];
 ---
 
@@ -28,6 +29,7 @@ const nav = [
     <meta property="og:description" content={descricao} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="+MAT · Edições" href="/rss.xml" />
   </head>
   <body>
     <a class="saltar ui nao-imprimir" href="#conteudo">Saltar para o conteúdo</a>
@@ -54,7 +56,7 @@ const nav = [
         </p>
         <p>
           Versão digital desenvolvida por <a href="https://miguelrocha.dev">Miguel Rocha</a> e disponibilizada
-          gratuitamente à escola. <a href="/sobre/">Créditos</a>
+          gratuitamente à escola. <a href="/sobre/">Créditos</a> · <a href="/rss.xml">RSS das edições</a>
         </p>
       </div>
     </footer>

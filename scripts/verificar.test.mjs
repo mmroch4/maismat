@@ -5,8 +5,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 import { desafio as bloco } from '../public/admin/componentes.js';
-import { codificar, descodificar } from '../src/lib/progresso.mjs';
+import { codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../src/lib/progresso.mjs';
 import { normalizar } from '../src/lib/respostas.mjs';
 
 const raiz = fileURLToPath(new URL('..', import.meta.url));
@@ -16,11 +17,10 @@ const existe = (caminho) => existsSync(raiz + caminho);
 const frontmatter = (texto) =>
   Object.fromEntries([...(texto.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '').matchAll(/^(\w+):[ \t]*(.*)$/gm)].map(([, k, v]) => [k, v.trim()]));
 
-const rascunhos = new Set(
-  readdirSync(raiz + 'src/content/edicoes')
-    .filter((f) => f.endsWith('.md') && frontmatter(ler(`src/content/edicoes/${f}`)).rascunho === 'true')
-    .map((f) => f.replace(/\.md$/, '')),
-);
+const edicoes = readdirSync(raiz + 'src/content/edicoes')
+  .filter((f) => f.endsWith('.md'))
+  .map((f) => ({ id: f.replace(/\.md$/, ''), ...frontmatter(ler(`src/content/edicoes/${f}`)) }));
+const rascunhos = new Set(edicoes.filter((e) => e.rascunho === 'true').map((e) => e.id));
 
 // Todos os desafios, incluindo os das edições em rascunho (para os enganos aparecerem antes de publicar).
 const padrao = new RegExp(bloco.pattern.source, 'gm');
@@ -141,4 +141,49 @@ test('o código de progresso leva e traz os ids, e recusa códigos estragados', 
     for (const c of alfabeto.replace(codigo[i], ''))
       assert.throws(() => descodificar(codigo.slice(0, i) + c + codigo.slice(i + 1)), /incompleto/, `A troca do carácter ${i} por ${c} não foi detetada.`);
   }
+});
+
+test('o rss.xml tem todas as edições publicadas, da mais recente para a mais antiga, e as ligações existem', () => {
+  assert.ok(existe('dist/rss.xml'), 'Falta o dist/rss.xml.');
+  const itens = [...ler('dist/rss.xml').matchAll(/<item>([\s\S]*?)<\/item>/g)].map(([, x]) => ({
+    link: x.match(/<link>([^<]+)<\/link>/)?.[1] ?? '',
+    data: new Date(x.match(/<pubDate>([^<]+)<\/pubDate>/)?.[1] ?? NaN),
+  }));
+  const ids = itens.map((i) => i.link.match(/\/edicoes\/([^/]+)\/$/)?.[1]);
+  assert.deepEqual(ids.toSorted(), edicoes.filter((e) => !rascunhos.has(e.id)).map((e) => e.id).toSorted());
+  for (const e of rascunhos) assert.ok(!ids.includes(e), `A edição em rascunho ${e} está no rss.xml.`);
+  for (let i = 1; i < itens.length; i++) assert.ok(itens[i - 1].data >= itens[i].data, 'O rss.xml não está da edição mais recente para a mais antiga.');
+  for (const { link } of itens) assert.ok(existe(`dist${new URL(link).pathname}index.html`), `O rss.xml liga para ${link}, que não existe.`);
+});
+
+test('o índice da pesquisa tem os artigos e as edições, e não tem o painel, rascunhos nem fórmulas repetidas', () => {
+  const pasta = 'dist/pagefind/fragment';
+  assert.ok(existe(pasta), 'Falta o índice da pesquisa: o Pagefind não correu sobre dist.');
+  const paginas = readdirSync(raiz + pasta).map((f) => JSON.parse(gunzipSync(readFileSync(`${raiz}${pasta}/${f}`)).toString('utf8').replace(/^pagefind_dcd/, '')));
+  const urls = new Set(paginas.map((p) => p.url));
+  for (const u of urls) {
+    assert.match(u, /^\/edicoes\/[^/]+\/([^/]+\/)?$/, `A pesquisa indexou ${u}, que não é um artigo nem uma edição.`);
+    assert.ok(!/\/imprimir\/$/.test(u), `A pesquisa indexou a versão para imprimir ${u}.`);
+    assert.ok(!rascunhos.has(u.split('/')[2]), `A pesquisa indexou ${u}, de uma edição em rascunho.`);
+  }
+  assert.ok(![...urls].some((u) => u.startsWith('/admin/')), 'A pesquisa indexou o painel.');
+  for (const e of edicoes.filter((e) => !rascunhos.has(e.id))) assert.ok(urls.has(`/edicoes/${e.id}/`), `A edição ${e.id} não está na pesquisa.`);
+  for (const d of publicados) assert.ok(urls.has(d.url), `O artigo ${d.url} não está na pesquisa.`);
+  for (const p of paginas) assert.ok(!/\\(frac|sqrt|cdot|times|pi)\b/.test(p.content), `A pesquisa tem o código TeX das fórmulas em ${p.url}.`);
+});
+
+test('a ligação do QR leva e traz o progresso, e recusa fragmentos estragados', () => {
+  const ids = [...new Set(publicados.map((d) => d.id))].sort();
+  const ligacao = ligacaoProgresso('https://maismat.miguelrocha.dev', ids);
+  assert.match(ligacao, /^https:\/\/maismat\.miguelrocha\.dev\/desafios\/#progresso=MAT1-[0-9A-Z]+$/);
+  const hash = new URL(ligacao).hash;
+  assert.deepEqual(descodificar(codigoDaLigacao(hash)), ids);
+  assert.deepEqual(descodificar(codigoDaLigacao(hash.replace('MAT1-', 'MAT1%2D'))), ids, 'O código com %-codificação devia ser aceite.');
+  assert.ok(new URL(ligacao).pathname === '/desafios/' && existe('dist/desafios/index.html'));
+
+  for (const h of ['', '#', '#desafio-12345678', '#outra=MAT1-']) assert.equal(codigoDaLigacao(h), null, `“${h}” não devia ter código.`);
+  assert.throws(() => descodificar(codigoDaLigacao('#progresso=')), /Cola primeiro/);
+  assert.throws(() => descodificar(codigoDaLigacao(hash.slice(0, -3))), /incompleto/);
+  assert.throws(() => descodificar(codigoDaLigacao(hash + 'U')), /carácter que não pode ter/);
+  assert.throws(() => descodificar(codigoDaLigacao('#progresso=%E0%A4%A')), /devia começar por MAT1-/);
 });

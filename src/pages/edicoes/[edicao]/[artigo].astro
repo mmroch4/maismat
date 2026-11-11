@@ -24,9 +24,9 @@ const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
 ---
 
 <Base titulo={titulo} descricao={resumo}>
-  <article class="contentor">
+  <article class="contentor" data-pagefind-body data-pagefind-meta={`edicao:${rotuloEdicao(edicao)} · ${mesAno(edicao.data.data)}`}>
     <header>
-      <p class="ui migalhas">
+      <p class="ui migalhas" data-pagefind-ignore>
         <a href={`/edicoes/${edicao.id}/`}>{rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span></a>
       </p>
       <a class="etiqueta" href={`/seccoes/${seccao}/`}>+ {SECCOES[seccao]}</a>
@@ -44,7 +44,7 @@ const url = (a: Artigo) => `/edicoes/${edicao.id}/${slugArtigo(a)}/`;
       <Content components={componentesMdx} />
     </div>
 
-    <nav class="ui navegacao nao-imprimir" aria-label="Artigos desta edição">
+    <nav class="ui navegacao nao-imprimir" aria-label="Artigos desta edição" data-pagefind-ignore>
       {anterior ? <a href={url(anterior)}><small>← Anterior</small>{anterior.data.titulo}</a> : <span></span>}
       {seguinte && <a class="seg" href={url(seguinte)}><small>Seguinte →</small>{seguinte.data.titulo}</a>}
     </nav>
