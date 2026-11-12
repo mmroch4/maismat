@@ -1,45 +1,52 @@
 ---
 import { Image } from 'astro:assets';
 import Base from '../../../layouts/Base.astro';
-import { artigosDe, edicoesPublicadas, mesAno, rotuloEdicao, slugArtigo, type Edicao } from '../../../lib/edicoes';
-import { SECCOES } from '../../../lib/seccoes';
-import { editora, numeroEdicao } from '../../../lib/dados-estruturados';
+import {
+  getIssueArticles,
+  getPublishedIssues,
+  monthYear,
+  issueLabel,
+  articleSlug,
+  type Issue,
+} from '../../../lib/issues';
+import { SECTIONS } from '../../../lib/sections';
+import { publisher, publicationIssue } from '../../../lib/structured-data';
 
 export async function getStaticPaths() {
-  const edicoes = await edicoesPublicadas();
+  const edicoes = await getPublishedIssues();
   return edicoes.map((edicao) => ({ params: { edicao: edicao.id }, props: { edicao } }));
 }
 
-const { edicao } = Astro.props as { edicao: Edicao };
+const { edicao } = Astro.props as { edicao: Issue };
 const { data, capa, pdf, direcao, citacao, convertida } = edicao.data;
-const artigos = await artigosDe(edicao.id);
+const artigos = await getIssueArticles(edicao.id);
 const dados = {
-  ...numeroEdicao(edicao, Astro.site!),
+  ...publicationIssue(edicao, Astro.site!),
   inLanguage: 'pt-PT',
-  publisher: editora(Astro.site!),
+  publisher: publisher(Astro.site!),
   hasPart:
     convertida && artigos.length
       ? artigos.map((a) => ({
           '@type': 'Article',
           headline: a.data.titulo,
-          url: new URL(`/edicoes/${edicao.id}/${slugArtigo(a)}/`, Astro.site).href,
+          url: new URL(`/edicoes/${edicao.id}/${articleSlug(a)}/`, Astro.site).href,
         }))
       : undefined,
 };
 ---
 
-<Base titulo={`${rotuloEdicao(edicao)} (${mesAno(data)})`} edicao={edicao} dados={dados}>
+<Base titulo={`${issueLabel(edicao)} (${monthYear(data)})`} edicao={edicao} dados={dados}>
   <div
     data-pagefind-body
-    data-pagefind-meta={`title:${rotuloEdicao(edicao)} (${mesAno(data)})`}
-    data-pagefind-filter={`edicao:${rotuloEdicao(edicao)}`}
+    data-pagefind-meta={`title:${issueLabel(edicao)} (${monthYear(data)})`}
+    data-pagefind-filter={`edicao:${issueLabel(edicao)}`}
     data-pagefind-sort={`data:${data.toISOString().slice(0, 10)}`}
   >
     <div class="contentor cabecalho">
       {capa && (
         <Image
           src={capa}
-          alt={`Capa da edição de ${mesAno(data)}`}
+          alt={`Capa da edição de ${monthYear(data)}`}
           width={400}
           class="capa"
           loading="eager"
@@ -47,12 +54,12 @@ const dados = {
         />
       )}
       <div class="cabecalho-texto">
-        <p class="ui rotulo">{rotuloEdicao(edicao)}</p>
-        <h1 class="cap">{mesAno(data)}</h1>
+        <p class="ui rotulo">{issueLabel(edicao)}</p>
+        <h1 class="cap">{monthYear(data)}</h1>
         <p class="ui direcao">Direção e edição de {direcao.join(' e ')}</p>
         <p class="ui acoes" data-pagefind-ignore>
           {convertida && artigos.length > 0 && (
-            <a class="botao" href={`/edicoes/${edicao.id}/${slugArtigo(artigos[0])}/`}>
+            <a class="botao" href={`/edicoes/${edicao.id}/${articleSlug(artigos[0])}/`}>
               Começar a ler
             </a>
           )}
@@ -84,13 +91,13 @@ const dados = {
           <ol class="indice">
             {artigos.map((a, i) => (
               <li>
-                <a class="cartao" href={`/edicoes/${edicao.id}/${slugArtigo(a)}/`}>
+                <a class="cartao" href={`/edicoes/${edicao.id}/${articleSlug(a)}/`}>
                   <span class="num ui" data-pagefind-ignore>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <span class="texto">
                     <span class="seccao ui" data-pagefind-ignore>
-                      {SECCOES[a.data.seccao]}
+                      {SECTIONS[a.data.seccao]}
                     </span>
                     <strong>{a.data.titulo}</strong>
                     {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}

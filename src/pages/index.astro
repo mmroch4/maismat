@@ -2,12 +2,12 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CartaoEdicao from '../components/CartaoEdicao.astro';
-import { artigosDe, edicaoAtual, edicoesOrdenadas, mesAno, rotuloEdicao, slugArtigo } from '../lib/edicoes';
-import { SECCOES } from '../lib/seccoes';
+import { getIssueArticles, getCurrentIssue, getSortedIssues, monthYear, issueLabel, articleSlug } from '../lib/issues';
+import { SECTIONS } from '../lib/sections';
 
-const edicoes = await edicoesOrdenadas();
-const atual = await edicaoAtual();
-const artigos = await artigosDe(atual.id);
+const edicoes = await getSortedIssues();
+const atual = await getCurrentIssue();
+const artigos = await getIssueArticles(atual.id);
 // A primeira frase da citação da capa serve de título; sem citação, o nome do jornal.
 const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal de Matemática';
 ---
@@ -18,7 +18,7 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
     <div class="destaque">
       <div class="destaque-texto">
         <p class="ui rotulo">
-          {rotuloEdicao(atual)} · <span class="cap">{mesAno(atual.data.data)}</span>
+          {issueLabel(atual)} · <span class="cap">{monthYear(atual.data.data)}</span>
         </p>
         <h2 id="edicao-atual">{frase}</h2>
         {atual.data.citacao && <p class="autor">— {atual.data.citacao.autor}</p>}
@@ -42,8 +42,8 @@ const frase = atual.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal
     <ol class="sumario">
       {artigos.map((a) => (
         <li>
-          <a class="cartao" href={`/edicoes/${atual.id}/${slugArtigo(a)}/`}>
-            <span class="etiqueta">{SECCOES[a.data.seccao]}</span>
+          <a class="cartao" href={`/edicoes/${atual.id}/${articleSlug(a)}/`}>
+            <span class="etiqueta">{SECTIONS[a.data.seccao]}</span>
             <strong>{a.data.titulo}</strong>
             {a.data.resumo && <span class="resumo">{a.data.resumo}</span>}
           </a>

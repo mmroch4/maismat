@@ -12,7 +12,7 @@
  * é criado e não deve mudar depois, nem quando se corrige o título.
  */
 import { createHash } from 'node:crypto';
-import { normalizar } from '../lib/respostas.mjs';
+import { normalizeAnswer } from '../lib/answers';
 
 interface Props {
   id: string;
@@ -32,7 +32,7 @@ if (!id)
 const hashes = resposta
   ? resposta.split('|').map((r) =>
       createHash('sha256')
-        .update(id + normalizar(r, casas))
+        .update(id + normalizeAnswer(r, casas))
         .digest('hex'),
     )
   : [];
@@ -91,7 +91,7 @@ const temResolucao = Astro.slots.has('resolucao');
 </maismat-desafio>
 
 <script>
-  import { normalizar } from '../lib/respostas.mjs';
+  import { normalizeAnswer } from '../lib/answers';
 
   async function sha256(texto: string) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
@@ -118,7 +118,7 @@ const temResolucao = Astro.slots.has('resolucao');
         e.preventDefault();
         const valor = new FormData(form).values().next().value as string | undefined;
         if (!valor?.trim()) return;
-        const certo = hashes.includes(await sha256(this.id + normalizar(valor, casas)));
+        const certo = hashes.includes(await sha256(this.id + normalizeAnswer(valor, casas)));
         this.tentativas++;
         if (certo) {
           this.marcarResolvido(feedback, false);

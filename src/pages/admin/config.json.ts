@@ -1,7 +1,7 @@
 // Configuração do painel de edição (Sveltia CMS), gerada no build para que as secções venham de seccoes.ts.
 // Os campos espelham os schemas de src/content.config.ts: se mudares um, muda o outro.
 import type { APIRoute } from 'astro';
-import { SECCOES } from '../../lib/seccoes';
+import { SECTIONS } from '../../lib/sections';
 
 const citacao = {
   name: 'citacao',
@@ -131,7 +131,7 @@ const config = {
       sortable_fields: { fields: ['edicao', 'ordem', 'titulo'], default: { field: 'ordem' } },
       view_groups: { groups: [{ name: 'edicao', label: 'Edição', field: 'edicao' }], default: 'edicao' },
       view_filters: {
-        filters: Object.entries(SECCOES).map(([id, nome]) => ({
+        filters: Object.entries(SECTIONS).map(([id, nome]) => ({
           name: id,
           label: nome,
           field: 'seccao',
@@ -153,7 +153,7 @@ const config = {
           name: 'seccao',
           label: 'Secção',
           widget: 'select',
-          options: Object.entries(SECCOES).map(([value, label]) => ({ value, label })),
+          options: Object.entries(SECTIONS).map(([value, label]) => ({ value, label })),
         },
         {
           name: 'ordem',

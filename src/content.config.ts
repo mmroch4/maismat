@@ -1,7 +1,7 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { SECCAO_IDS } from './lib/seccoes';
+import { SECTION_IDS } from './lib/sections';
 
 const edicoes = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/edicoes' }),
@@ -28,7 +28,7 @@ const artigos = defineCollection({
   schema: z.object({
     titulo: z.string(),
     edicao: reference('edicoes'),
-    seccao: z.enum(SECCAO_IDS),
+    seccao: z.enum(SECTION_IDS),
     ordem: z.number(),
     autores: z.array(z.string()).optional(),
     resumo: z.string().optional(),

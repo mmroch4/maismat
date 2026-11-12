@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import AnelProgresso from '../components/AnelProgresso.astro';
-import { desafiosPublicados } from '../lib/desafios';
-import { mesAno, rotuloEdicao } from '../lib/edicoes';
+import { getPublishedChallenges } from '../lib/challenges';
+import { monthYear, issueLabel } from '../lib/issues';
 
-const desafios = await desafiosPublicados();
-const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
+const desafios = await getPublishedChallenges();
+const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
 ---
 
 <Base
@@ -45,7 +45,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
         <select name="edicao" class="entrada">
           <option value="">Todas</option>
           {porEdicao.map(([e]) => (
-            <option value={e.id}>{rotuloEdicao(e)}</option>
+            <option value={e.id}>{issueLabel(e)}</option>
           ))}
         </select>
       </label>
@@ -104,29 +104,29 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     {porEdicao.map(([e, lista]) => (
       <section class="edicao" data-edicao={e.id} aria-labelledby={`ed-${e.id}`}>
         <h2 id={`ed-${e.id}`}>
-          <span class="cap">{mesAno(e.data.data)}</span> <span class="ui">· {rotuloEdicao(e)}</span>
+          <span class="cap">{monthYear(e.data.data)}</span> <span class="ui">· {issueLabel(e)}</span>
         </h2>
         <ul>
           {lista.map((d) => (
             <li class="desafio" data-id={d.id}>
               <p class="ui rotulo">
                 <span>
-                  Desafio{d.numero && ` ${d.numero}`} · {d.artigo.data.titulo}
+                  Desafio{d.number && ` ${d.number}`} · {d.article.data.titulo}
                 </span>
                 <span class="resolvido" hidden>
                   <span aria-hidden="true">✓</span> Resolvido
                 </span>
               </p>
               <h3>
-                <a href={d.url}>{d.titulo}</a>
+                <a href={d.url}>{d.title}</a>
               </h3>
-              {d.excerto.length > 0 && (
-                <p class="excerto">{d.excerto.map((s) => ('html' in s ? <Fragment set:html={s.html} /> : s.texto))}</p>
+              {d.excerpt.length > 0 && (
+                <p class="excerto">{d.excerpt.map((s) => ('html' in s ? <Fragment set:html={s.html} /> : s.text))}</p>
               )}
-              {(d.temResposta || d.temResolucao) && (
+              {(d.hasAnswer || d.hasSolution) && (
                 <p class="ui etiquetas">
-                  {d.temResposta && <span>Com verificação</span>}
-                  {d.temResolucao && <span>Com resolução</span>}
+                  {d.hasAnswer && <span>Com verificação</span>}
+                  {d.hasSolution && <span>Com resolução</span>}
                 </p>
               )}
             </li>
@@ -139,7 +139,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
 
 <script>
   import { encode } from 'uqr';
-  import { ID, codificar, codigoDaLigacao, descodificar, ligacaoProgresso } from '../lib/progresso.mjs';
+  import { CHALLENGE_ID, codeFromLink, decodeProgress, encodeProgress, progressLink } from '../lib/progress-code';
 
   const form = document.querySelector<HTMLFormElement>('.filtros')!;
   const contagem = form.querySelector<HTMLElement>('.contagem')!;
@@ -223,16 +223,16 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i) ?? '';
         const id = k.slice('maismat:'.length);
-        if (k.startsWith('maismat:') && ID.test(id) && localStorage.getItem(k) === 'ok') ids.push(id);
+        if (k.startsWith('maismat:') && CHALLENGE_ID.test(id) && localStorage.getItem(k) === 'ok') ids.push(id);
       }
     } catch {
       return avisar(exportar, 'Este browser não deixa ler o progresso guardado.', true);
     }
     if (!ids.length) return avisar(exportar, 'Ainda não resolveste nenhum desafio neste computador.', true);
-    exportar.codigo.value = codificar(ids);
+    exportar.codigo.value = encodeProgress(ids);
     exportar.codigo.closest('label')!.hidden = false;
     copiar.hidden = false;
-    desenharQr(ligacaoProgresso(location.origin, ids));
+    desenharQr(progressLink(location.origin, ids));
     exportar.codigo.select();
     avisar(
       exportar,
@@ -278,7 +278,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     const novos = novosDe(ids);
     const ignorados = ids.filter((id) => !conhecidos.has(id)).length;
     try {
-      for (const id of novos) if (ID.test(id)) localStorage.setItem(`maismat:${id}`, 'ok');
+      for (const id of novos) if (CHALLENGE_ID.test(id)) localStorage.setItem(`maismat:${id}`, 'ok');
     } catch {
       return avisar(importar, 'Este browser não deixa guardar o progresso.', true);
     }
@@ -301,7 +301,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
   importar.addEventListener('submit', (e) => {
     e.preventDefault();
     try {
-      juntar(descodificar(importar.codigo.value));
+      juntar(decodeProgress(importar.codigo.value));
     } catch (erro) {
       confirmar.hidden = true;
       avisar(importar, (erro as Error).message, true);
@@ -326,7 +326,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
       transferir.open = true;
       return transferir.scrollIntoView({ block: 'start' });
     }
-    const codigo = codigoDaLigacao(location.hash);
+    const codigo = codeFromLink(location.hash);
     if (codigo === null) return;
     history.replaceState(null, '', location.pathname + location.search);
     transferir.open = true;
@@ -336,7 +336,7 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.edicao)];
     transferir.scrollIntoView({ block: 'start' });
     let ids: string[];
     try {
-      ids = descodificar(codigo);
+      ids = decodeProgress(codigo);
     } catch (erro) {
       return avisar(importar, (erro as Error).message, true);
     }

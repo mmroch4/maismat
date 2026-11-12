@@ -1,10 +1,10 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { artigosDe, edicoesOrdenadas, mesAno, rotuloEdicao } from '../lib/edicoes';
+import { getIssueArticles, getSortedIssues, monthYear, issueLabel } from '../lib/issues';
 
 // Uma entrada por edição publicada, da mais recente para a mais antiga.
 export async function GET(context: APIContext) {
-  const edicoes = await edicoesOrdenadas();
+  const edicoes = await getSortedIssues();
   return rss({
     title: '+MAT · Jornal de Matemática',
     description: 'Edições do +MAT, jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.',
@@ -12,9 +12,9 @@ export async function GET(context: APIContext) {
     customData: '<language>pt-PT</language>',
     items: await Promise.all(
       edicoes.map(async (e) => {
-        const artigos = await artigosDe(e.id);
+        const artigos = await getIssueArticles(e.id);
         return {
-          title: `${rotuloEdicao(e)} (${mesAno(e.data.data)})`,
+          title: `${issueLabel(e)} (${monthYear(e.data.data)})`,
           pubDate: e.data.data,
           link: `/edicoes/${e.id}/`,
           description: artigos.length

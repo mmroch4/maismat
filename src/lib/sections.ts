@@ -1,5 +1,7 @@
-// Secções fixas do jornal. A ordem aqui é a ordem usada nos filtros.
-export const SECCOES = {
+// The newspaper's fixed sections. The keys are the ids used in the articles and in the URLs
+// (/seccoes/<id>/), so they stay in Portuguese; the values are the labels shown to readers.
+// The order here is the order used in the filters.
+export const SECTIONS = {
   destaque: 'Em destaque',
   curiosidades: 'Curiosidades',
   historia: 'História',
@@ -16,5 +18,5 @@ export const SECCOES = {
   sugestoes: 'Sugestões',
 } as const;
 
-export type Seccao = keyof typeof SECCOES;
-export const SECCAO_IDS = Object.keys(SECCOES) as [Seccao, ...Seccao[]];
+export type SectionId = keyof typeof SECTIONS;
+export const SECTION_IDS = Object.keys(SECTIONS) as [SectionId, ...SectionId[]];

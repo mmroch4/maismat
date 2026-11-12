@@ -1,22 +1,22 @@
 ---
 import { render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import { artigosDe, edicoesPublicadas, mesAno, rotuloEdicao, type Edicao } from '../../../lib/edicoes';
-import { componentesMdx } from '../../../lib/componentes-mdx';
-import { SECCOES } from '../../../lib/seccoes';
+import { getIssueArticles, getPublishedIssues, monthYear, issueLabel, type Issue } from '../../../lib/issues';
+import { mdxComponents } from '../../../lib/mdx-components';
+import { SECTIONS } from '../../../lib/sections';
 
 export async function getStaticPaths() {
-  const edicoes = (await edicoesPublicadas()).filter((e) => e.data.convertida);
+  const edicoes = (await getPublishedIssues()).filter((e) => e.data.convertida);
   return edicoes.map((edicao) => ({ params: { edicao: edicao.id }, props: { edicao } }));
 }
 
-const { edicao } = Astro.props as { edicao: Edicao };
+const { edicao } = Astro.props as { edicao: Issue };
 const artigos = await Promise.all(
-  (await artigosDe(edicao.id)).map(async (a) => ({ a, Content: (await render(a)).Content })),
+  (await getIssueArticles(edicao.id)).map(async (a) => ({ a, Content: (await render(a)).Content })),
 );
 ---
 
-<Base titulo={`${rotuloEdicao(edicao)} — versão para imprimir`} edicao={edicao}>
+<Base titulo={`${issueLabel(edicao)} — versão para imprimir`} edicao={edicao}>
   <div class="contentor impressao">
     <p class="ui nao-imprimir dica">
       Usa <kbd>Ctrl</kbd>+<kbd>P</kbd> (ou <kbd>⌘</kbd>+<kbd>P</kbd>) e escolhe “Guardar como PDF”.
@@ -28,24 +28,24 @@ const artigos = await Promise.all(
       <p class="ui">Agrupamento de Escolas Domingos Sequeira</p>
       <h1>+MAT</h1>
       <p class="sub">
-        Jornal de Matemática · {rotuloEdicao(edicao)} · <span class="cap">{mesAno(edicao.data.data)}</span>
+        Jornal de Matemática · {issueLabel(edicao)} · <span class="cap">{monthYear(edicao.data.data)}</span>
       </p>
       <p class="ui">Direção e edição: {edicao.data.direcao.join(' e ')}</p>
       <ol class="ui">
         {artigos.map(({ a }) => (
           <li>
-            {SECCOES[a.data.seccao]} — {a.data.titulo}
+            {SECTIONS[a.data.seccao]} — {a.data.titulo}
           </li>
         ))}
       </ol>
     </header>
     {artigos.map(({ a, Content }) => (
       <section class="artigo">
-        <span class="etiqueta">+ {SECCOES[a.data.seccao]}</span>
+        <span class="etiqueta">+ {SECTIONS[a.data.seccao]}</span>
         <h2>{a.data.titulo}</h2>
         {a.data.autores && <p class="ui autores">{a.data.autores.join(', ')}</p>}
         <div class="prosa">
-          <Content components={componentesMdx} />
+          <Content components={mdxComponents} />
         </div>
       </section>
     ))}

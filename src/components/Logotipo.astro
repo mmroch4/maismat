@@ -1,10 +1,10 @@
 ---
-// O «+MAT» em contornos (src/lib/logotipo.ts): segue a cor do texto e não precisa da Playfair.
-import { caixa, contorno } from '../lib/logotipo';
+// O «+MAT» em contornos (src/lib/logo.ts): segue a cor do texto e não precisa da Playfair.
+import { viewBox, outline } from '../lib/logo';
 ---
 
-<svg class="logotipo" viewBox={caixa} aria-hidden="true" focusable="false">
-  <path d={contorno} fill="currentColor" />
+<svg class="logotipo" viewBox={viewBox} aria-hidden="true" focusable="false">
+  <path d={outline} fill="currentColor" />
 </svg>
 
 <style>

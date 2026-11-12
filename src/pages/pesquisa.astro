@@ -2,12 +2,12 @@
 import Base from '../layouts/Base.astro';
 import FormPesquisa from '../components/FormPesquisa.astro';
 import PaginasDoJornal from '../components/PaginasDoJornal.astro';
-import { edicoesOrdenadas, rotuloEdicao } from '../lib/edicoes';
-import { SECCOES } from '../lib/seccoes';
+import { getSortedIssues, issueLabel } from '../lib/issues';
+import { SECTIONS } from '../lib/sections';
 
 // No URL vão os ids (?edicao=ano3-edicao2&seccao=geometria); no Pagefind, o texto que está nas páginas.
-const edicoes = (await edicoesOrdenadas()).map((e) => ({ id: e.id, valor: rotuloEdicao(e) }));
-const seccoes = Object.entries(SECCOES).map(([id, nome]) => ({ id, valor: nome }));
+const edicoes = (await getSortedIssues()).map((e) => ({ id: e.id, valor: issueLabel(e) }));
+const seccoes = Object.entries(SECTIONS).map(([id, nome]) => ({ id, valor: nome }));
 ---
 
 <Base titulo="Pesquisar" descricao="Pesquisa nos artigos e nas edições do +MAT.">

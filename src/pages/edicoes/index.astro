@@ -1,9 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
 import CartaoEdicao from '../../components/CartaoEdicao.astro';
-import { edicoesOrdenadas, mesAno } from '../../lib/edicoes';
+import { getSortedIssues, monthYear } from '../../lib/issues';
 
-const edicoes = await edicoesOrdenadas();
+const edicoes = await getSortedIssues();
 const porAno = Map.groupBy(edicoes, (e) => e.data.ano);
 // O ano letivo vai de setembro a agosto: maio de 2025 é 2024/25.
 const anoLetivo = (d: Date) => {
@@ -20,8 +20,8 @@ const primeira = edicoes.at(-1);
         <span class="marcador">Edições</span>
       </h1>
       <p>
-        {edicoes.length} edições{primeira && ` desde ${mesAno(primeira.data.data)}`}, três por ano letivo. As marcadas
-        com <em>PDF</em> ainda estão a ser convertidas para a versão digital.
+        {edicoes.length} edições{primeira && ` desde ${monthYear(primeira.data.data)}`}, três por ano letivo. As
+        marcadas com <em>PDF</em> ainda estão a ser convertidas para a versão digital.
       </p>
     </div>
     {[...porAno].map(([ano, lista]) => (
