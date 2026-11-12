@@ -3,8 +3,14 @@
 import { caixa, contorno } from '../lib/logotipo';
 ---
 
-<svg class="logotipo" viewBox={caixa} aria-hidden="true" focusable="false"><path d={contorno} fill="currentColor" /></svg>
+<svg class="logotipo" viewBox={caixa} aria-hidden="true" focusable="false">
+  <path d={contorno} fill="currentColor" />
+</svg>
 
 <style>
-  .logotipo { display: block; height: 1em; width: auto; }
+  .logotipo {
+    display: block;
+    height: 1em;
+    width: auto;
+  }
 </style>

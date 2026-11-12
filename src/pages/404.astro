@@ -7,25 +7,53 @@ import PaginasDoJornal from '../components/PaginasDoJornal.astro';
 
 <Base titulo="Página não encontrada" descricao="Esta página não existe no +MAT." naoEncontrada>
   <div class="contentor">
-    <p class="numero ui" aria-hidden="true">4<span>≠</span>04</p>
+    <p class="numero ui" aria-hidden="true">
+      4<span>≠</span>04
+    </p>
     <p class="visualmente-oculto">Erro 404</p>
-    <h1>Esta conta não bate <span class="marcador">certo</span></h1>
+    <h1>
+      Esta conta não bate <span class="marcador">certo</span>
+    </h1>
     <p class="texto">
       Procurámos em todas as edições e não encontrámos esta página. Pode ter mudado de sítio, ou o endereço pode ter um
       engano.
     </p>
     <FormPesquisa />
-    <p class="ui voltar"><a href="/">Voltar ao início</a></p>
+    <p class="ui voltar">
+      <a href="/">Voltar ao início</a>
+    </p>
     <p class="ui aviso">Ou procura nestas páginas:</p>
     <PaginasDoJornal />
   </div>
 </Base>
 
 <style>
-  .numero { margin: 2.5rem 0 0.75rem; font-size: 6rem; font-weight: 800; letter-spacing: -0.05em; line-height: 0.9; color: var(--primaria); }
-  .numero span { color: var(--erro); }
-  .voltar { font-weight: 700; margin: 1.25rem 0 0; }
-  h1 { margin: 0.25rem 0 1rem; }
-  .texto { max-width: var(--leitura); margin-bottom: 1.5rem; color: var(--texto-suave); }
-  .aviso { color: var(--texto-suave); font-size: 0.95rem; margin-top: 2rem; }
+  .numero {
+    margin: 2.5rem 0 0.75rem;
+    font-size: 6rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    color: var(--primaria);
+  }
+  .numero span {
+    color: var(--erro);
+  }
+  .voltar {
+    font-weight: 700;
+    margin: 1.25rem 0 0;
+  }
+  h1 {
+    margin: 0.25rem 0 1rem;
+  }
+  .texto {
+    max-width: var(--leitura);
+    margin-bottom: 1.5rem;
+    color: var(--texto-suave);
+  }
+  .aviso {
+    color: var(--texto-suave);
+    font-size: 0.95rem;
+    margin-top: 2rem;
+  }
 </style>

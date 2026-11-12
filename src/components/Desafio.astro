@@ -26,10 +26,15 @@ interface Props {
 }
 
 const { id, titulo, numero, resposta, opcoes, unidade, fonte, casas } = Astro.props;
-if (!id) throw new Error(`O desafio “${titulo}” não tem id. Abre-o no painel e guarda, ou escreve id="desafio-…" no artigo.`);
+if (!id)
+  throw new Error(`O desafio “${titulo}” não tem id. Abre-o no painel e guarda, ou escreve id="desafio-…" no artigo.`);
 
 const hashes = resposta
-  ? resposta.split('|').map((r) => createHash('sha256').update(id + normalizar(r, casas)).digest('hex'))
+  ? resposta.split('|').map((r) =>
+      createHash('sha256')
+        .update(id + normalizar(r, casas))
+        .digest('hex'),
+    )
   : [];
 const temResolucao = Astro.slots.has('resolucao');
 ---
@@ -40,7 +45,9 @@ const temResolucao = Astro.slots.has('resolucao');
     <h3>{titulo}</h3>
   </header>
 
-  <div class="enunciado"><slot /></div>
+  <div class="enunciado">
+    <slot />
+  </div>
   {fonte && <p class="fonte ui">{fonte}</p>}
 
   {hashes.length > 0 && (
@@ -72,10 +79,14 @@ const temResolucao = Astro.slots.has('resolucao');
   {temResolucao ? (
     <details class="resolucao">
       <summary class="ui">{hashes.length ? 'Ver resolução' : 'Resolução'}</summary>
-      <div><slot name="resolucao" /></div>
+      <div>
+        <slot name="resolucao" />
+      </div>
     </details>
   ) : (
-    <p class="ui pendente" data-pagefind-ignore>A resolução será publicada na próxima edição. Envia a tua resposta à equipa do +MAT!</p>
+    <p class="ui pendente" data-pagefind-ignore>
+      A resolução será publicada na próxima edição. Envia a tua resposta à equipa do +MAT!
+    </p>
   )}
 </maismat-desafio>
 
@@ -111,7 +122,9 @@ const temResolucao = Astro.slots.has('resolucao');
         this.tentativas++;
         if (certo) {
           this.marcarResolvido(feedback, false);
-          try { localStorage.setItem(chave(this.id), 'ok'); } catch {}
+          try {
+            localStorage.setItem(chave(this.id), 'ok');
+          } catch {}
         } else {
           this.dataset.estado = 'errado';
           feedback.textContent =
@@ -141,10 +154,18 @@ const temResolucao = Astro.slots.has('resolucao');
     padding: 1.25rem;
     margin: 2rem 0;
   }
-  [data-estado='errado'] { background: var(--erro-fundo); box-shadow: none; }
-  [data-estado='certo'] { background: var(--ok-fundo); box-shadow: none; }
+  [data-estado='errado'] {
+    background: var(--erro-fundo);
+    box-shadow: none;
+  }
+  [data-estado='certo'] {
+    background: var(--ok-fundo);
+    box-shadow: none;
+  }
 
-  header { margin-bottom: 0.75rem; }
+  header {
+    margin-bottom: 0.75rem;
+  }
   .rotulo {
     display: inline-block;
     font-size: 0.75rem;
@@ -155,16 +176,48 @@ const temResolucao = Astro.slots.has('resolucao');
     background: var(--etiqueta);
     color: var(--etiqueta-texto);
   }
-  [data-estado='certo'] .rotulo { background: var(--ok); color: var(--superficie); }
-  [data-estado='certo'] .rotulo::before { content: '✓ ' / ''; }
-  h3 { margin: 0.5rem 0 0; }
-  .enunciado > :global(* + *) { margin-top: 0.8em; }
-  .enunciado :global(p) { margin-bottom: 0; }
-  .fonte { font-size: 0.8125rem; color: var(--texto-suave); text-align: right; font-style: italic; }
+  [data-estado='certo'] .rotulo {
+    background: var(--ok);
+    color: var(--superficie);
+  }
+  [data-estado='certo'] .rotulo::before {
+    content: '✓ ' / '';
+  }
+  h3 {
+    margin: 0.5rem 0 0;
+  }
+  .enunciado > :global(* + *) {
+    margin-top: 0.8em;
+  }
+  .enunciado :global(p) {
+    margin-bottom: 0;
+  }
+  .fonte {
+    font-size: 0.8125rem;
+    color: var(--texto-suave);
+    text-align: right;
+    font-style: italic;
+  }
 
-  .resposta { margin-top: 1.25rem; display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; font-size: 0.9375rem; }
-  .resposta > label { display: grid; gap: 0.25rem; font-weight: 600; }
-  .campo { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; }
+  .resposta {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+  }
+  .resposta > label {
+    display: grid;
+    gap: 0.25rem;
+    font-weight: 600;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 400;
+  }
   input[type='text'] {
     min-height: 44px;
     width: 12rem;
@@ -176,11 +229,26 @@ const temResolucao = Astro.slots.has('resolucao');
     color: var(--texto);
     font: 1rem var(--f-ui);
   }
-  input[type='text']:focus-visible { border-color: var(--primaria); outline-offset: 2px; }
-  [data-estado='errado'] input[type='text'] { border-color: var(--erro); }
+  input[type='text']:focus-visible {
+    border-color: var(--primaria);
+    outline-offset: 2px;
+  }
+  [data-estado='errado'] input[type='text'] {
+    border-color: var(--erro);
+  }
 
-  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 0.5rem; width: 100%; }
-  legend { margin-bottom: 0.5rem; font-weight: 600; }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  legend {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
   .opcao {
     display: flex;
     gap: 0.75rem;
@@ -192,12 +260,33 @@ const temResolucao = Astro.slots.has('resolucao');
     background: var(--superficie);
     cursor: pointer;
   }
-  .opcao:has(:checked) { border-color: var(--primaria); background: var(--pastilha); font-weight: 600; }
-  .opcao:has(:focus-visible) { outline: 3px solid var(--primaria); outline-offset: 3px; }
-  .opcao input { width: 1.125rem; height: 1.125rem; margin: 0; flex-shrink: 0; accent-color: var(--primaria); }
-  .opcao input:focus-visible { outline: none; }
-  [data-estado='certo'] .opcao:has(:checked) { border-color: var(--ok); background: var(--superficie); }
-  [data-estado='errado'] .opcao:has(:checked) { border-color: var(--erro); background: var(--superficie); }
+  .opcao:has(:checked) {
+    border-color: var(--primaria);
+    background: var(--pastilha);
+    font-weight: 600;
+  }
+  .opcao:has(:focus-visible) {
+    outline: 3px solid var(--primaria);
+    outline-offset: 3px;
+  }
+  .opcao input {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--primaria);
+  }
+  .opcao input:focus-visible {
+    outline: none;
+  }
+  [data-estado='certo'] .opcao:has(:checked) {
+    border-color: var(--ok);
+    background: var(--superficie);
+  }
+  [data-estado='errado'] .opcao:has(:checked) {
+    border-color: var(--erro);
+    background: var(--superficie);
+  }
 
   button {
     min-height: 44px;
@@ -209,24 +298,74 @@ const temResolucao = Astro.slots.has('resolucao');
     font: 700 0.9375rem var(--f-ui);
     cursor: pointer;
   }
-  button:hover { background: var(--primaria-forte); }
-  button:focus-visible { outline-color: var(--texto); }
-  .feedback { margin: 0; width: 100%; min-height: 1.4em; font-weight: 700; }
-  .feedback:empty { min-height: 0; }
-  [data-estado='certo'] .feedback { color: var(--ok); }
-  [data-estado='errado'] .feedback { color: var(--erro); }
-  [data-estado='errado'] .feedback::before { content: '✕ ' / ''; }
+  button:hover {
+    background: var(--primaria-forte);
+  }
+  button:focus-visible {
+    outline-color: var(--texto);
+  }
+  .feedback {
+    margin: 0;
+    width: 100%;
+    min-height: 1.4em;
+    font-weight: 700;
+  }
+  .feedback:empty {
+    min-height: 0;
+  }
+  [data-estado='certo'] .feedback {
+    color: var(--ok);
+  }
+  [data-estado='errado'] .feedback {
+    color: var(--erro);
+  }
+  [data-estado='errado'] .feedback::before {
+    content: '✕ ' / '';
+  }
 
-  .resolucao { margin-top: 1rem; }
-  .resolucao summary { display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; color: var(--primaria); font-size: 0.9375rem; }
-  .resolucao > div { margin-top: 0.5rem; padding: 0.875rem 1rem; border-radius: var(--raio-p); background: var(--superficie); }
-  .resolucao[open] > div { animation: abrir 200ms ease-out; }
-  @keyframes abrir { from { opacity: 0; transform: translateY(-4px); } }
-  .resolucao :global(p) { margin-bottom: 0; }
-  .resolucao > div > :global(* + *) { margin-top: 0.8em; }
-  .pendente { font-size: 0.875rem; line-height: 1.5; color: var(--texto-suave); margin: 1rem 0 0; }
+  .resolucao {
+    margin-top: 1rem;
+  }
+  .resolucao summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primaria);
+    font-size: 0.9375rem;
+  }
+  .resolucao > div {
+    margin-top: 0.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--raio-p);
+    background: var(--superficie);
+  }
+  .resolucao[open] > div {
+    animation: abrir 200ms ease-out;
+  }
+  @keyframes abrir {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  .resolucao :global(p) {
+    margin-bottom: 0;
+  }
+  .resolucao > div > :global(* + *) {
+    margin-top: 0.8em;
+  }
+  .pendente {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--texto-suave);
+    margin: 1rem 0 0;
+  }
 
   @media print {
-    .resolucao:not([open]) { display: none; }
+    .resolucao:not([open]) {
+      display: none;
+    }
   }
 </style>

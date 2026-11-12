@@ -20,15 +20,13 @@ const dadas = inicial ? inicial.split('/').map((l) => [...l].map(Number)) : [];
 const pista = (v: number) => (v ? String(v) : '');
 ---
 
-<maismat-arranha-ceus
-  class="arranha"
-  data-n={n}
-  data-pistas={JSON.stringify({ cima, baixo, esquerda, direita })}
->
+<maismat-arranha-ceus class="arranha" data-n={n} data-pistas={JSON.stringify({ cima, baixo, esquerda, direita })}>
   <p class="ui titulo">{titulo}</p>
   <div class="tabuleiro" style={`--n:${n}`}>
     <span></span>
-    {cima.map((v) => <span class="pista">{pista(v)}</span>)}
+    {cima.map((v) => (
+      <span class="pista">{pista(v)}</span>
+    ))}
     <span></span>
     {Array.from({ length: n }, (_, l) => (
       <>
@@ -52,12 +50,16 @@ const pista = (v: number) => (v ? String(v) : '');
       </>
     ))}
     <span></span>
-    {baixo.map((v) => <span class="pista">{pista(v)}</span>)}
+    {baixo.map((v) => (
+      <span class="pista">{pista(v)}</span>
+    ))}
     <span></span>
   </div>
   <p class="ui ajuda">Clica numa casa para mudar a altura (1 → {n} → vazio), ou escreve um número com o teclado.</p>
   <p class="ui estado" role="status" aria-live="polite"></p>
-  <button type="button" class="ui limpar">Recomeçar</button>
+  <button type="button" class="ui limpar">
+    Recomeçar
+  </button>
 </maismat-arranha-ceus>
 
 <script>
@@ -66,7 +68,11 @@ const pista = (v: number) => (v ? String(v) : '');
   const visiveis = (fila: number[]) => {
     let max = 0;
     let vistos = 0;
-    for (const h of fila) if (h > max) { max = h; vistos++; }
+    for (const h of fila)
+      if (h > max) {
+        max = h;
+        vistos++;
+      }
     return vistos;
   };
 
@@ -93,7 +99,11 @@ const pista = (v: number) => (v ? String(v) : '');
           }
         }
         const completo = g.every((l) => l.every(Boolean));
-        if (!completo) { estado.textContent = ''; this.dataset.resolvido = 'nao'; return; }
+        if (!completo) {
+          estado.textContent = '';
+          this.dataset.resolvido = 'nao';
+          return;
+        }
 
         const cols = Array.from({ length: n }, (_, c) => g.map((l) => l[c]));
         const ok =
@@ -103,7 +113,9 @@ const pista = (v: number) => (v ? String(v) : '');
           p.cima.every((v, i) => !v || visiveis(cols[i]) === v) &&
           p.baixo.every((v, i) => !v || visiveis([...cols[i]].reverse()) === v);
         this.dataset.resolvido = ok ? 'sim' : 'nao';
-        estado.textContent = ok ? 'Parabéns, resolveste o puzzle! 🎉' : 'A grelha está cheia, mas alguma pista não é cumprida.';
+        estado.textContent = ok
+          ? 'Parabéns, resolveste o puzzle! 🎉'
+          : 'A grelha está cheia, mas alguma pista não é cumprida.';
       };
 
       const definir = (b: HTMLButtonElement, v: number) => {
@@ -150,7 +162,15 @@ const pista = (v: number) => (v ? String(v) : '');
     overflow: hidden;
   }
   /* A moldura dos jogos é a faixa dourada com o nome */
-  .titulo { margin: 0 -1.25rem 1rem; padding: 0.625rem 1rem; background: var(--etiqueta); color: var(--etiqueta-texto); font-size: 0.875rem; font-weight: 700; text-align: left; }
+  .titulo {
+    margin: 0 -1.25rem 1rem;
+    padding: 0.625rem 1rem;
+    background: var(--etiqueta);
+    color: var(--etiqueta-texto);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: left;
+  }
   .tabuleiro {
     display: inline-grid;
     grid-template-columns: repeat(calc(var(--n) + 2), 2.75rem);
@@ -172,13 +192,36 @@ const pista = (v: number) => (v ? String(v) : '');
     border-radius: var(--raio-p);
     cursor: pointer;
   }
-  .casa:focus-visible { outline: 3px solid var(--primaria); outline-offset: 1px; }
-  .casa[data-fixa] { color: var(--texto); background: var(--pastilha); border-color: var(--pastilha); cursor: default; }
-  .casa.conflito { border-color: var(--erro); color: var(--erro); }
-  [data-resolvido='sim'] .casa { border-color: var(--ok); }
-  .ajuda { font-size: 0.8125rem; color: var(--texto-suave); margin: 0.75rem 0 0; }
-  .estado { min-height: 1.4em; font-weight: 600; margin: 0.5rem 0; }
-  [data-resolvido='sim'] .estado { color: var(--ok); }
+  .casa:focus-visible {
+    outline: 3px solid var(--primaria);
+    outline-offset: 1px;
+  }
+  .casa[data-fixa] {
+    color: var(--texto);
+    background: var(--pastilha);
+    border-color: var(--pastilha);
+    cursor: default;
+  }
+  .casa.conflito {
+    border-color: var(--erro);
+    color: var(--erro);
+  }
+  [data-resolvido='sim'] .casa {
+    border-color: var(--ok);
+  }
+  .ajuda {
+    font-size: 0.8125rem;
+    color: var(--texto-suave);
+    margin: 0.75rem 0 0;
+  }
+  .estado {
+    min-height: 1.4em;
+    font-weight: 600;
+    margin: 0.5rem 0;
+  }
+  [data-resolvido='sim'] .estado {
+    color: var(--ok);
+  }
   .limpar {
     min-height: 44px;
     padding: 0 1rem;
@@ -190,7 +233,16 @@ const pista = (v: number) => (v ? String(v) : '');
     cursor: pointer;
   }
   @media (max-width: 26rem) {
-    .tabuleiro { grid-template-columns: repeat(calc(var(--n) + 2), 2.3rem); grid-auto-rows: 2.3rem; }
+    .tabuleiro {
+      grid-template-columns: repeat(calc(var(--n) + 2), 2.3rem);
+      grid-auto-rows: 2.3rem;
+    }
   }
-  @media print { .ajuda, .estado, .limpar { display: none; } }
+  @media print {
+    .ajuda,
+    .estado,
+    .limpar {
+      display: none;
+    }
+  }
 </style>

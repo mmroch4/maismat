@@ -2,4 +2,5 @@
 import type { APIRoute } from 'astro';
 import fonte from '../../lib/demonstracoes.mjs?raw';
 
-export const GET: APIRoute = () => new Response(fonte, { headers: { 'Content-Type': 'text/javascript; charset=utf-8' } });
+export const GET: APIRoute = () =>
+  new Response(fonte, { headers: { 'Content-Type': 'text/javascript; charset=utf-8' } });

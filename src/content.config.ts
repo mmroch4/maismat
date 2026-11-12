@@ -38,7 +38,11 @@ const artigos = defineCollection({
 });
 
 // Animações e simulações num só ficheiro HTML; cada uma vira a página /demonstracoes/<id>/.
-const obrigatorio = (campo: string) => z.string({ message: `Falta ${campo} da demonstração.` }).trim().min(1, `Falta ${campo} da demonstração.`);
+const obrigatorio = (campo: string) =>
+  z
+    .string({ message: `Falta ${campo} da demonstração.` })
+    .trim()
+    .min(1, `Falta ${campo} da demonstração.`);
 const demonstracoes = defineCollection({
   loader: glob({ pattern: '*.yml', base: './src/content/demonstracoes' }),
   schema: z.object({

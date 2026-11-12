@@ -3,7 +3,9 @@
 ---
 
 <maismat-monty class="monty">
-  <p class="ui instrucao" aria-live="polite">Escolhe uma porta.</p>
+  <p class="ui instrucao" aria-live="polite">
+    Escolhe uma porta.
+  </p>
   <div class="portas">
     {[1, 2, 3].map((n) => (
       <button type="button" class="porta" data-n={n - 1} aria-label={`Porta ${n}`}>
@@ -13,18 +15,43 @@
     ))}
   </div>
   <div class="ui acoes">
-    <button type="button" class="manter" hidden>Manter a escolha</button>
-    <button type="button" class="mudar" hidden>Mudar de porta</button>
-    <button type="button" class="novo" hidden>Jogar outra vez</button>
+    <button type="button" class="manter" hidden>
+      Manter a escolha
+    </button>
+    <button type="button" class="mudar" hidden>
+      Mudar de porta
+    </button>
+    <button type="button" class="novo" hidden>
+      Jogar outra vez
+    </button>
   </div>
   <table class="ui placar">
-    <thead><tr><th></th><th>Jogos</th><th>Ganhos</th><th>% de vitórias</th></tr></thead>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Jogos</th>
+        <th>Ganhos</th>
+        <th>% de vitórias</th>
+      </tr>
+    </thead>
     <tbody>
-      <tr data-e="manter"><th>A manter</th><td>0</td><td>0</td><td>—</td></tr>
-      <tr data-e="mudar"><th>A mudar</th><td>0</td><td>0</td><td>—</td></tr>
+      <tr data-e="manter">
+        <th>A manter</th>
+        <td>0</td>
+        <td>0</td>
+        <td>—</td>
+      </tr>
+      <tr data-e="mudar">
+        <th>A mudar</th>
+        <td>0</td>
+        <td>0</td>
+        <td>—</td>
+      </tr>
     </tbody>
   </table>
-  <button type="button" class="ui simular">Simular 1000 jogos de cada estratégia</button>
+  <button type="button" class="ui simular">
+    Simular 1000 jogos de cada estratégia
+  </button>
 </maismat-monty>
 
 <script>
@@ -39,13 +66,19 @@
     connectedCallback() {
       const portas = [...this.querySelectorAll<HTMLButtonElement>('.porta')];
       const instrucao = this.querySelector('.instrucao')!;
-      const [manter, mudar, novo] = ['.manter', '.mudar', '.novo'].map((s) => this.querySelector<HTMLButtonElement>(s)!);
+      const [manter, mudar, novo] = ['.manter', '.mudar', '.novo'].map((s) =>
+        this.querySelector<HTMLButtonElement>(s)!,
+      );
 
       const premio = (i: number) => (i === this.carro ? '🚗' : '🐐');
       const reiniciar = () => {
         this.carro = Math.floor(Math.random() * 3);
         this.escolha = this.aberta = -1;
-        portas.forEach((p) => { p.dataset.estado = ''; p.disabled = false; p.querySelector('.premio')!.textContent = ''; });
+        portas.forEach((p) => {
+          p.dataset.estado = '';
+          p.disabled = false;
+          p.querySelector('.premio')!.textContent = '';
+        });
         manter.hidden = mudar.hidden = novo.hidden = true;
         instrucao.textContent = 'Escolhe uma porta.';
       };
@@ -114,28 +147,110 @@
 </script>
 
 <style>
-  .monty { display: block; background: var(--superficie); border-radius: var(--raio); box-shadow: var(--sombra); border-top: 6px solid var(--etiqueta); padding: 1.25rem; margin: 2rem 0; text-align: center; }
-  .instrucao { font-weight: 600; min-height: 2.8em; margin: 0 0 0.75rem; }
-  .portas { display: flex; justify-content: center; gap: 0.75rem; }
+  .monty {
+    display: block;
+    background: var(--superficie);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    border-top: 6px solid var(--etiqueta);
+    padding: 1.25rem;
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .instrucao {
+    font-weight: 600;
+    min-height: 2.8em;
+    margin: 0 0 0.75rem;
+  }
+  .portas {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+  }
   .porta {
-    width: 5.5rem; height: 8rem; border-radius: var(--raio-p) var(--raio-p) 0 0; border: 3px solid var(--primaria-forte);
-    background: linear-gradient(#4f7398, #3d5a78); color: #fff; cursor: pointer; display: grid; place-items: center; font: 700 1.6rem var(--f-ui);
+    width: 5.5rem;
+    height: 8rem;
+    border-radius: var(--raio-p) var(--raio-p) 0 0;
+    border: 3px solid var(--primaria-forte);
+    background: linear-gradient(#4f7398, #3d5a78);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font: 700 1.6rem var(--f-ui);
     position: relative;
   }
-  .porta:disabled { cursor: default; }
-  .porta[data-estado='escolhida'] { outline: 4px solid var(--etiqueta); outline-offset: 2px; }
-  .porta[data-estado='aberta'], .porta[data-estado='final'] { background: var(--superficie); color: var(--texto); }
-  .porta[data-estado='final'] { outline: 4px solid var(--ok); outline-offset: 2px; }
-  .premio { font-size: 2.4rem; position: absolute; bottom: 0.6rem; }
-  .porta[data-estado='aberta'] .num, .porta[data-estado='final'] .num { position: absolute; top: 0.3rem; font-size: 1rem; }
-  .acoes { display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0; min-height: 2.4rem; flex-wrap: wrap; }
-  .acoes button, .simular {
-    min-height: 44px; padding: 0 1.125rem; border-radius: var(--raio); border: 2px solid var(--primaria); background: var(--primaria); color: var(--primaria-texto); font: 700 0.875rem var(--f-ui); cursor: pointer;
+  .porta:disabled {
+    cursor: default;
   }
-  .acoes button:focus-visible { outline-color: var(--texto); }
-  .simular { background: var(--superficie); color: var(--primaria); margin-top: 0.75rem; }
-  .placar { margin: 0 auto; border-collapse: collapse; font-size: 0.85rem; }
-  .placar th, .placar td { padding: 0.3rem 0.7rem; border-bottom: 1px solid var(--linha); }
-  .placar thead th { font-weight: 600; color: var(--texto-suave); }
-  @media print { .monty { display: none; } }
+  .porta[data-estado='escolhida'] {
+    outline: 4px solid var(--etiqueta);
+    outline-offset: 2px;
+  }
+  .porta[data-estado='aberta'],
+  .porta[data-estado='final'] {
+    background: var(--superficie);
+    color: var(--texto);
+  }
+  .porta[data-estado='final'] {
+    outline: 4px solid var(--ok);
+    outline-offset: 2px;
+  }
+  .premio {
+    font-size: 2.4rem;
+    position: absolute;
+    bottom: 0.6rem;
+  }
+  .porta[data-estado='aberta'] .num,
+  .porta[data-estado='final'] .num {
+    position: absolute;
+    top: 0.3rem;
+    font-size: 1rem;
+  }
+  .acoes {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    min-height: 2.4rem;
+    flex-wrap: wrap;
+  }
+  .acoes button,
+  .simular {
+    min-height: 44px;
+    padding: 0 1.125rem;
+    border-radius: var(--raio);
+    border: 2px solid var(--primaria);
+    background: var(--primaria);
+    color: var(--primaria-texto);
+    font: 700 0.875rem var(--f-ui);
+    cursor: pointer;
+  }
+  .acoes button:focus-visible {
+    outline-color: var(--texto);
+  }
+  .simular {
+    background: var(--superficie);
+    color: var(--primaria);
+    margin-top: 0.75rem;
+  }
+  .placar {
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .placar th,
+  .placar td {
+    padding: 0.3rem 0.7rem;
+    border-bottom: 1px solid var(--linha);
+  }
+  .placar thead th {
+    font-weight: 600;
+    color: var(--texto-suave);
+  }
+  @media print {
+    .monty {
+      display: none;
+    }
+  }
 </style>

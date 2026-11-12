@@ -4,12 +4,19 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
 const TEXTO = '+MAT';
-const woff = readFileSync(new URL('../node_modules/@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff', import.meta.url));
+const woff = readFileSync(
+  new URL('../node_modules/@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff', import.meta.url),
+);
 
 const tabelas = {};
 for (let i = 0, n = woff.readUInt16BE(12); i < n; i++) {
   const e = 44 + i * 20;
-  const [tag, inicio, comprimido, original] = [woff.toString('latin1', e, e + 4), woff.readUInt32BE(e + 4), woff.readUInt32BE(e + 8), woff.readUInt32BE(e + 12)];
+  const [tag, inicio, comprimido, original] = [
+    woff.toString('latin1', e, e + 4),
+    woff.readUInt32BE(e + 4),
+    woff.readUInt32BE(e + 8),
+    woff.readUInt32BE(e + 12),
+  ];
   const dados = woff.subarray(inicio, inicio + comprimido);
   tabelas[tag] = comprimido < original ? inflateSync(dados) : dados;
 }
@@ -22,11 +29,16 @@ function glifoDe(codigo) {
     const inicio = cmap.readUInt32BE(8 + i * 8);
     if (cmap.readUInt16BE(4 + i * 8) !== 3 || cmap.readUInt16BE(inicio) !== 4) continue;
     const segs = cmap.readUInt16BE(inicio + 6) / 2;
-    const fins = inicio + 14, comecos = fins + segs * 2 + 2, deltas = comecos + segs * 2, desvios = deltas + segs * 2;
+    const fins = inicio + 14,
+      comecos = fins + segs * 2 + 2,
+      deltas = comecos + segs * 2,
+      desvios = deltas + segs * 2;
     for (let s = 0; s < segs; s++) {
       if (codigo > cmap.readUInt16BE(fins + s * 2) || codigo < cmap.readUInt16BE(comecos + s * 2)) continue;
       const desvio = cmap.readUInt16BE(desvios + s * 2);
-      const g = desvio ? cmap.readUInt16BE(desvios + s * 2 + desvio + (codigo - cmap.readUInt16BE(comecos + s * 2)) * 2) : codigo;
+      const g = desvio
+        ? cmap.readUInt16BE(desvios + s * 2 + desvio + (codigo - cmap.readUInt16BE(comecos + s * 2)) * 2)
+        : codigo;
       return (g + cmap.readInt16BE(deltas + s * 2)) & 0xffff;
     }
   }
@@ -55,11 +67,15 @@ function contornos(g) {
     let v = 0;
     return bandeiras.map((b) => {
       if (b & curto) v += b & igual ? glyf[p++] : -glyf[p++];
-      else if (!(b & igual)) { v += glyf.readInt16BE(p); p += 2; }
+      else if (!(b & igual)) {
+        v += glyf.readInt16BE(p);
+        p += 2;
+      }
       return v;
     });
   };
-  const xs = ler(2, 16), ys = ler(4, 32);
+  const xs = ler(2, 16),
+    ys = ler(4, 32);
   let inicio = 0;
   return fins.map((fim) => {
     const c = [];
@@ -84,12 +100,20 @@ function caminho(c, dx) {
   for (let i = 1; i <= ordem.length; i++) {
     const q = ordem[i % ordem.length];
     if (q.dentro) d += `L${f(q)}`;
-    else { d += `Q${f(q)} ${f(ordem[(i + 1) % ordem.length])}`; i++; }
+    else {
+      d += `Q${f(q)} ${f(ordem[(i + 1) % ordem.length])}`;
+      i++;
+    }
   }
   return d + 'Z';
 }
 
-let x = 0, esquerda = Infinity, direita = 0, cima = 0, baixo = 0, d = '';
+let x = 0,
+  esquerda = Infinity,
+  direita = 0,
+  cima = 0,
+  baixo = 0,
+  d = '';
 for (const ch of TEXTO) {
   const g = glifoDe(ch.codePointAt(0));
   const o = posicao(g);
@@ -103,7 +127,9 @@ for (const ch of TEXTO) {
   x += avanco(g);
 }
 
-writeFileSync(new URL('../src/lib/logotipo.ts', import.meta.url),
+writeFileSync(
+  new URL('../src/lib/logotipo.ts', import.meta.url),
   `// Gerado por scripts/logotipo.mjs: «${TEXTO}» em Playfair Display 600.\n` +
-  `export const caixa = '${esquerda} ${-cima} ${direita - esquerda} ${cima - baixo}';\nexport const contorno = '${d}';\n`);
+    `export const caixa = '${esquerda} ${-cima} ${direita - esquerda} ${cima - baixo}';\nexport const contorno = '${d}';\n`,
+);
 console.log(`src/lib/logotipo.ts: ${d.length} caracteres, caixa ${direita - esquerda}×${cima - baixo}`);
