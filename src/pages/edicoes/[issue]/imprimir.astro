@@ -7,7 +7,7 @@ import { SECTIONS } from '../../../lib/sections';
 
 // Print version of a whole issue: a title page followed by every article, one per page.
 export async function getStaticPaths() {
-  const issues = (await getPublishedIssues()).filter((issue) => issue.data.convertida);
+  const issues = (await getPublishedIssues()).filter((issue) => issue.data.converted);
   return issues.map((issue) => ({ params: { issue: issue.id }, props: { issue } }));
 }
 
@@ -29,22 +29,22 @@ const articles = await Promise.all(
       <p class="ui">Agrupamento de Escolas Domingos Sequeira</p>
       <h1>+MAT</h1>
       <p class="subtitle">
-        Jornal de Matemática · {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+        Jornal de Matemática · {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.date)}</span>
       </p>
-      <p class="ui">Direção e edição: {issue.data.direcao.join(' e ')}</p>
+      <p class="ui">Direção e edição: {issue.data.editors.join(' e ')}</p>
       <ol class="ui">
         {articles.map(({ article }) => (
           <li>
-            {SECTIONS[article.data.seccao]} — {article.data.titulo}
+            {SECTIONS[article.data.section]} — {article.data.title}
           </li>
         ))}
       </ol>
     </header>
     {articles.map(({ article, Content }) => (
       <section class="article">
-        <span class="tag">+ {SECTIONS[article.data.seccao]}</span>
-        <h2>{article.data.titulo}</h2>
-        {article.data.autores && <p class="ui authors">{article.data.autores.join(', ')}</p>}
+        <span class="tag">+ {SECTIONS[article.data.section]}</span>
+        <h2>{article.data.title}</h2>
+        {article.data.authors && <p class="ui authors">{article.data.authors.join(', ')}</p>}
         <div class="prose">
           <Content components={mdxComponents} />
         </div>
@@ -114,7 +114,7 @@ const articles = await Promise.all(
     }
     .article :global(figure),
     .article :global(img),
-    .article :global(.desafio) {
+    .article :global(.challenge) {
       break-inside: avoid;
     }
   }

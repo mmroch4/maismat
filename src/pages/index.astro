@@ -9,7 +9,7 @@ const issues = await getSortedIssues();
 const currentIssue = await getCurrentIssue();
 const articles = await getIssueArticles(currentIssue.id);
 // The first sentence of the cover quote is the heading; without a quote, the newspaper's name.
-const headline = currentIssue.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal de Matemática';
+const headline = currentIssue.data.quote?.text.match(/^[^.!?]+/)?.[0].trim() ?? 'Jornal de Matemática';
 ---
 
 <Base>
@@ -18,19 +18,19 @@ const headline = currentIssue.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() 
     <div class="feature">
       <div class="feature-text">
         <p class="ui eyebrow">
-          {issueLabel(currentIssue)} · <span class="capitalize">{monthYear(currentIssue.data.data)}</span>
+          {issueLabel(currentIssue)} · <span class="capitalize">{monthYear(currentIssue.data.date)}</span>
         </p>
         <h2 id="current-issue">{headline}</h2>
-        {currentIssue.data.citacao && <p class="quote-author">— {currentIssue.data.citacao.autor}</p>}
-        <p class="editors">Direção e edição de {currentIssue.data.direcao.join(' e ')}</p>
+        {currentIssue.data.quote && <p class="quote-author">— {currentIssue.data.quote.author}</p>}
+        <p class="editors">Direção e edição de {currentIssue.data.editors.join(' e ')}</p>
         <a class="ui read-issue" href={`/edicoes/${currentIssue.id}/`}>
           Ler a edição
         </a>
       </div>
-      {currentIssue.data.capa && (
+      {currentIssue.data.cover && (
         <a href={`/edicoes/${currentIssue.id}/`} class="cover" tabindex="-1" aria-hidden="true">
           <Image
-            src={currentIssue.data.capa}
+            src={currentIssue.data.cover}
             alt="Capa da edição atual"
             width={480}
             loading="eager"
@@ -49,9 +49,9 @@ const headline = currentIssue.data.citacao?.texto.match(/^[^.!?]+/)?.[0].trim() 
       {articles.map((article) => (
         <li>
           <a class="card" href={`/edicoes/${currentIssue.id}/${articleSlug(article)}/`}>
-            <span class="tag">{SECTIONS[article.data.seccao]}</span>
-            <strong>{article.data.titulo}</strong>
-            {article.data.resumo && <span class="summary">{article.data.resumo}</span>}
+            <span class="tag">{SECTIONS[article.data.section]}</span>
+            <strong>{article.data.title}</strong>
+            {article.data.summary && <span class="summary">{article.data.summary}</span>}
           </a>
         </li>
       ))}

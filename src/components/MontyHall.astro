@@ -1,31 +1,31 @@
 ---
-/** Jogo e simulação do problema de Monty Hall: três portas, um carro e duas cabras. */
+/** Monty Hall problem game and simulation: three doors, one car and two goats. */
 ---
 
-<maismat-monty class="monty">
-  <p class="ui instrucao" aria-live="polite">
+<maismat-monty-hall class="monty">
+  <p class="ui instructions" aria-live="polite">
     Escolhe uma porta.
   </p>
-  <div class="portas">
-    {[1, 2, 3].map((n) => (
-      <button type="button" class="porta" data-n={n - 1} aria-label={`Porta ${n}`}>
-        <span class="num">{n}</span>
-        <span class="premio" aria-hidden="true"></span>
+  <div class="doors">
+    {[1, 2, 3].map((number) => (
+      <button type="button" class="door" aria-label={`Porta ${number}`}>
+        <span class="number">{number}</span>
+        <span class="prize" aria-hidden="true"></span>
       </button>
     ))}
   </div>
-  <div class="ui acoes">
-    <button type="button" class="manter" hidden>
+  <div class="ui actions">
+    <button type="button" class="stay" hidden>
       Manter a escolha
     </button>
-    <button type="button" class="mudar" hidden>
+    <button type="button" class="switch" hidden>
       Mudar de porta
     </button>
-    <button type="button" class="novo" hidden>
+    <button type="button" class="play-again" hidden>
       Jogar outra vez
     </button>
   </div>
-  <table class="ui placar">
+  <table class="ui scoreboard">
     <thead>
       <tr>
         <th></th>
@@ -35,13 +35,13 @@
       </tr>
     </thead>
     <tbody>
-      <tr data-e="manter">
+      <tr data-strategy="stay">
         <th>A manter</th>
         <td>0</td>
         <td>0</td>
         <td>—</td>
       </tr>
-      <tr data-e="mudar">
+      <tr data-strategy="switch">
         <th>A mudar</th>
         <td>0</td>
         <td>0</td>
@@ -49,101 +49,107 @@
       </tr>
     </tbody>
   </table>
-  <button type="button" class="ui simular">
+  <button type="button" class="ui simulate">
     Simular 1000 jogos de cada estratégia
   </button>
-</maismat-monty>
+</maismat-monty-hall>
 
 <script>
-  type Estrategia = 'manter' | 'mudar';
+  type Strategy = 'stay' | 'switch';
+
+  const DOORS = [0, 1, 2];
+  const SIMULATED_GAMES = 1000;
+  const randomDoor = () => Math.floor(Math.random() * DOORS.length);
 
   class MontyHall extends HTMLElement {
-    carro = 0;
-    escolha = -1;
-    aberta = -1;
-    placar = { manter: [0, 0], mudar: [0, 0] };
+    carDoor = 0;
+    chosenDoor = -1;
+    openedDoor = -1;
+    // [games, wins] per strategy
+    score: Record<Strategy, [number, number]> = { stay: [0, 0], switch: [0, 0] };
 
     connectedCallback() {
-      const portas = [...this.querySelectorAll<HTMLButtonElement>('.porta')];
-      const instrucao = this.querySelector('.instrucao')!;
-      const [manter, mudar, novo] = ['.manter', '.mudar', '.novo'].map((s) =>
-        this.querySelector<HTMLButtonElement>(s)!,
+      const doors = [...this.querySelectorAll<HTMLButtonElement>('.door')];
+      const instructions = this.querySelector('.instructions')!;
+      const [stayButton, switchButton, playAgainButton] = ['.stay', '.switch', '.play-again'].map((selector) =>
+        this.querySelector<HTMLButtonElement>(selector)!,
       );
 
-      const premio = (i: number) => (i === this.carro ? '🚗' : '🐐');
-      const reiniciar = () => {
-        this.carro = Math.floor(Math.random() * 3);
-        this.escolha = this.aberta = -1;
-        portas.forEach((p) => {
-          p.dataset.estado = '';
-          p.disabled = false;
-          p.querySelector('.premio')!.textContent = '';
+      const prizeBehind = (door: number) => (door === this.carDoor ? '🚗' : '🐐');
+      const reset = () => {
+        this.carDoor = randomDoor();
+        this.chosenDoor = this.openedDoor = -1;
+        doors.forEach((door) => {
+          door.dataset.state = '';
+          door.disabled = false;
+          door.querySelector('.prize')!.textContent = '';
         });
-        manter.hidden = mudar.hidden = novo.hidden = true;
-        instrucao.textContent = 'Escolhe uma porta.';
+        stayButton.hidden = switchButton.hidden = playAgainButton.hidden = true;
+        instructions.textContent = 'Escolhe uma porta.';
       };
 
-      const abrir = (i: number) => {
-        portas[i].dataset.estado = 'aberta';
-        portas[i].querySelector('.premio')!.textContent = premio(i);
+      const openDoor = (door: number) => {
+        doors[door].dataset.state = 'open';
+        doors[door].querySelector('.prize')!.textContent = prizeBehind(door);
       };
 
-      portas.forEach((p, i) =>
-        p.addEventListener('click', () => {
-          if (this.escolha !== -1) return;
-          this.escolha = i;
-          p.dataset.estado = 'escolhida';
-          const cabras = [0, 1, 2].filter((k) => k !== i && k !== this.carro);
-          this.aberta = cabras[Math.floor(Math.random() * cabras.length)];
-          abrir(this.aberta);
-          portas.forEach((q) => (q.disabled = true));
-          instrucao.textContent = `O apresentador abriu a porta ${this.aberta + 1}: tem uma cabra! Queres mudar de porta?`;
-          manter.hidden = mudar.hidden = false;
+      doors.forEach((button, door) =>
+        button.addEventListener('click', () => {
+          if (this.chosenDoor !== -1) return;
+          this.chosenDoor = door;
+          button.dataset.state = 'chosen';
+          const goatDoors = DOORS.filter((other) => other !== door && other !== this.carDoor);
+          this.openedDoor = goatDoors[Math.floor(Math.random() * goatDoors.length)];
+          openDoor(this.openedDoor);
+          doors.forEach((other) => (other.disabled = true));
+          instructions.textContent = `O apresentador abriu a porta ${this.openedDoor + 1}: tem uma cabra! Queres mudar de porta?`;
+          stayButton.hidden = switchButton.hidden = false;
         }),
       );
 
-      const decidir = (e: Estrategia) => {
-        if (e === 'mudar') this.escolha = [0, 1, 2].find((k) => k !== this.escolha && k !== this.aberta)!;
-        [0, 1, 2].forEach(abrir);
-        portas[this.escolha].dataset.estado = 'final';
-        const ganhou = this.escolha === this.carro;
-        this.registar(e, ganhou, 1);
-        instrucao.textContent = ganhou ? 'Ganhaste o carro! 🎉' : 'Calhou-te uma cabra…';
-        manter.hidden = mudar.hidden = true;
-        novo.hidden = false;
+      const decide = (strategy: Strategy) => {
+        if (strategy === 'switch')
+          this.chosenDoor = DOORS.find((door) => door !== this.chosenDoor && door !== this.openedDoor)!;
+        DOORS.forEach(openDoor);
+        doors[this.chosenDoor].dataset.state = 'final';
+        const won = this.chosenDoor === this.carDoor;
+        this.record(strategy, won ? 1 : 0, 1);
+        instructions.textContent = won ? 'Ganhaste o carro! 🎉' : 'Calhou-te uma cabra…';
+        stayButton.hidden = switchButton.hidden = true;
+        playAgainButton.hidden = false;
       };
-      manter.addEventListener('click', () => decidir('manter'));
-      mudar.addEventListener('click', () => decidir('mudar'));
-      novo.addEventListener('click', reiniciar);
+      stayButton.addEventListener('click', () => decide('stay'));
+      switchButton.addEventListener('click', () => decide('switch'));
+      playAgainButton.addEventListener('click', reset);
 
-      this.querySelector('.simular')!.addEventListener('click', () => {
-        for (const e of ['manter', 'mudar'] as Estrategia[]) {
-          let ganhos = 0;
-          for (let j = 0; j < 1000; j++) {
-            const carro = Math.floor(Math.random() * 3);
-            const escolha = Math.floor(Math.random() * 3);
-            // Mudar ganha exatamente quando a primeira escolha estava errada
-            if ((e === 'manter') === (escolha === carro)) ganhos++;
+      this.querySelector('.simulate')!.addEventListener('click', () => {
+        for (const strategy of ['stay', 'switch'] as Strategy[]) {
+          let wins = 0;
+          for (let game = 0; game < SIMULATED_GAMES; game++) {
+            const car = randomDoor();
+            const firstChoice = randomDoor();
+            // Switching wins exactly when the first choice was wrong
+            if ((strategy === 'stay') === (firstChoice === car)) wins++;
           }
-          this.registar(e, ganhos, 1000, true);
+          this.record(strategy, wins, SIMULATED_GAMES);
         }
       });
 
-      reiniciar();
+      reset();
     }
 
-    registar(e: Estrategia, ganhos: number | boolean, jogos: number, lote = false) {
-      const p = this.placar[e];
-      p[0] += jogos;
-      p[1] += lote ? (ganhos as number) : ganhos ? 1 : 0;
-      const celulas = this.querySelectorAll(`tr[data-e="${e}"] td`);
-      celulas[0].textContent = p[0].toLocaleString('pt-PT');
-      celulas[1].textContent = p[1].toLocaleString('pt-PT');
-      celulas[2].textContent = `${((100 * p[1]) / p[0]).toLocaleString('pt-PT', { maximumFractionDigits: 1 })} %`;
+    record(strategy: Strategy, wins: number, games: number) {
+      const score = this.score[strategy];
+      score[0] += games;
+      score[1] += wins;
+      const cells = this.querySelectorAll(`tr[data-strategy="${strategy}"] td`);
+      cells[0].textContent = score[0].toLocaleString('pt-PT');
+      cells[1].textContent = score[1].toLocaleString('pt-PT');
+      cells[2].textContent = `${((100 * score[1]) / score[0]).toLocaleString('pt-PT', { maximumFractionDigits: 1 })} %`;
     }
   }
 
-  customElements.define('maismat-monty', MontyHall);
+  customElements.define('maismat-monty-hall', MontyHall);
 </script>
 
 <style>
@@ -157,17 +163,17 @@
     margin: 2rem 0;
     text-align: center;
   }
-  .instrucao {
+  .instructions {
     font-weight: 600;
     min-height: 2.8em;
     margin: 0 0 0.75rem;
   }
-  .portas {
+  .doors {
     display: flex;
     justify-content: center;
     gap: 0.75rem;
   }
-  .porta {
+  .door {
     width: 5.5rem;
     height: 8rem;
     border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -180,34 +186,34 @@
     font: 700 1.6rem var(--font-ui);
     position: relative;
   }
-  .porta:disabled {
+  .door:disabled {
     cursor: default;
   }
-  .porta[data-estado='escolhida'] {
+  .door[data-state='chosen'] {
     outline: 4px solid var(--tag);
     outline-offset: 2px;
   }
-  .porta[data-estado='aberta'],
-  .porta[data-estado='final'] {
+  .door[data-state='open'],
+  .door[data-state='final'] {
     background: var(--surface);
     color: var(--text);
   }
-  .porta[data-estado='final'] {
+  .door[data-state='final'] {
     outline: 4px solid var(--ok);
     outline-offset: 2px;
   }
-  .premio {
+  .prize {
     font-size: 2.4rem;
     position: absolute;
     bottom: 0.6rem;
   }
-  .porta[data-estado='aberta'] .num,
-  .porta[data-estado='final'] .num {
+  .door[data-state='open'] .number,
+  .door[data-state='final'] .number {
     position: absolute;
     top: 0.3rem;
     font-size: 1rem;
   }
-  .acoes {
+  .actions {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
@@ -215,8 +221,8 @@
     min-height: 2.4rem;
     flex-wrap: wrap;
   }
-  .acoes button,
-  .simular {
+  .actions button,
+  .simulate {
     min-height: 44px;
     padding: 0 1.125rem;
     border-radius: var(--radius);
@@ -226,25 +232,25 @@
     font: 700 0.875rem var(--font-ui);
     cursor: pointer;
   }
-  .acoes button:focus-visible {
+  .actions button:focus-visible {
     outline-color: var(--text);
   }
-  .simular {
+  .simulate {
     background: var(--surface);
     color: var(--primary);
     margin-top: 0.75rem;
   }
-  .placar {
+  .scoreboard {
     margin: 0 auto;
     border-collapse: collapse;
     font-size: 0.85rem;
   }
-  .placar th,
-  .placar td {
+  .scoreboard th,
+  .scoreboard td {
     padding: 0.3rem 0.7rem;
     border-bottom: 1px solid var(--border);
   }
-  .placar thead th {
+  .scoreboard thead th {
     font-weight: 600;
     color: var(--text-muted);
   }

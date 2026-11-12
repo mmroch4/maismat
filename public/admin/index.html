@@ -12,7 +12,7 @@
       integrity="sha384-WwGtaC6ywCHxA5cstpj/3+xIZvTez8dq2IcBQaXRkenHZ7FVVq1ZROtURwfbtTlG"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="/admin/pre-visualizacao.css" />
+    <link rel="stylesheet" href="/admin/preview.css" />
     <script
       src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"
       integrity="sha384-a1WQdjRj162i159OYq041X6I4K8NenkrI09LlPmiHg0YOb7CR+wJOraXwK9abpnE"
@@ -21,22 +21,22 @@
   </head>
   <body>
     <script type="module">
-      // Versão fixa: atualizar de propósito, depois de testar.
+      // Pinned version: update on purpose, after testing.
       import CMS from 'https://unpkg.com/@sveltia/cms@0.255.1/dist/sveltia-cms.mjs';
-      import { componentes } from '/admin/componentes.js';
+      import { editorComponents } from '/admin/components.js';
       import { demoPage } from '/admin/demos.js';
 
       window.CMS = CMS;
-      componentes.forEach((c) => CMS.registerEditorComponent(c));
+      editorComponents.forEach((c) => CMS.registerEditorComponent(c));
       CMS.registerPreviewStyle('https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css');
-      CMS.registerPreviewStyle('/admin/pre-visualizacao.css');
-      // A demonstração corre como no site: isolada (sem allow-same-origin), longe da sessão do painel.
-      CMS.registerPreviewTemplate('demonstracoes', ({ entry }) =>
+      CMS.registerPreviewStyle('/admin/preview.css');
+      // The demo runs as on the site: sandboxed (no allow-same-origin), away from the panel session.
+      CMS.registerPreviewTemplate('demos', ({ entry }) =>
         h('iframe', {
-          srcDoc: demoPage(entry.getIn(['data', 'codigo']) ?? ''),
+          srcDoc: demoPage(entry.getIn(['data', 'code']) ?? ''),
           sandbox: 'allow-scripts',
-          title: entry.getIn(['data', 'titulo']) ?? 'Demonstração',
-          style: { width: '100%', height: `${entry.getIn(['data', 'altura']) ?? 400}px`, border: 0 },
+          title: entry.getIn(['data', 'title']) ?? 'Demonstração',
+          style: { width: '100%', height: `${entry.getIn(['data', 'height']) ?? 400}px`, border: 0 },
         }),
       );
 

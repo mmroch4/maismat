@@ -104,14 +104,14 @@ const challengesByIssue = [...Map.groupBy(challenges, (challenge) => challenge.i
     {challengesByIssue.map(([issue, issueChallenges]) => (
       <section class="issue" data-issue={issue.id} aria-labelledby={`issue-${issue.id}`}>
         <h2 id={`issue-${issue.id}`}>
-          <span class="capitalize">{monthYear(issue.data.data)}</span> <span class="ui">· {issueLabel(issue)}</span>
+          <span class="capitalize">{monthYear(issue.data.date)}</span> <span class="ui">· {issueLabel(issue)}</span>
         </h2>
         <ul>
           {issueChallenges.map((challenge) => (
             <li class="challenge" data-id={challenge.id}>
               <p class="ui eyebrow">
                 <span>
-                  Desafio{challenge.number && ` ${challenge.number}`} · {challenge.article.data.titulo}
+                  Desafio{challenge.number && ` ${challenge.number}`} · {challenge.article.data.title}
                 </span>
                 <span class="solved-badge" hidden>
                   <span aria-hidden="true">✓</span> Resolvido

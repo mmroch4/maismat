@@ -1,0 +1,129 @@
+---
+/**
+ * Pascal's triangle coloured by the remainder of each entry divided by a chosen divisor.
+ * With divisor 2 the Sierpiński triangle appears.
+ */
+interface Props {
+  rows?: number;
+  divisors?: number[];
+}
+
+const { rows = 32, divisors = [2, 3, 4, 5, 7] } = Astro.props;
+---
+
+<maismat-pascal-triangle class="pascal" data-rows={rows}>
+  <div class="ui controls" role="group" aria-label="Divisor">
+    <span>Colorir pelo resto da divisão por</span>
+    {divisors.map((divisor, i) => (
+      <button type="button" data-divisor={divisor} aria-pressed={i === 0 ? 'true' : 'false'}>
+        {divisor}
+      </button>
+    ))}
+  </div>
+  <svg role="img" aria-label="Triângulo de Pascal colorido pelos restos"></svg>
+  <p class="ui caption"></p>
+</maismat-pascal-triangle>
+
+<script>
+  const COLORS = ['#f3ecdc', '#e5481b', '#4f6f8f', '#5b8a35', '#d4a017', '#8e5ba8', '#2a9d8f'];
+
+  class PascalTriangle extends HTMLElement {
+    connectedCallback() {
+      const rowCount = Number(this.dataset.rows);
+      const svg = this.querySelector('svg')!;
+      const caption = this.querySelector('.caption')!;
+      const buttons = [...this.querySelectorAll<HTMLButtonElement>('button')];
+      // BigInt, because the entries grow very fast
+      const triangle: bigint[][] = [[1n]];
+      for (let row = 1; row < rowCount; row++) {
+        const previous = triangle[row - 1];
+        triangle.push(
+          Array.from({ length: row + 1 }, (_, k) => (k === 0 || k === row ? 1n : previous[k - 1] + previous[k])),
+        );
+      }
+      const radius = 10;
+      const rowHeight = radius * Math.sqrt(3);
+      svg.setAttribute(
+        'viewBox',
+        `${-rowCount * radius - radius} ${-radius} ${2 * rowCount * radius + 2 * radius} ${rowCount * rowHeight + radius}`,
+      );
+
+      const draw = (divisor: number) => {
+        const bigDivisor = BigInt(divisor);
+        svg.innerHTML = triangle
+          .flatMap((entries, row) =>
+            entries.map((value, k) => {
+              const remainder = Number(value % bigDivisor);
+              const x = (2 * k - row) * radius;
+              const y = row * rowHeight;
+              return `<circle cx="${x}" cy="${y}" r="${radius * 0.92}" fill="${COLORS[remainder % COLORS.length]}"><title>${value} (resto ${remainder})</title></circle>`;
+            }),
+          )
+          .join('');
+        caption.textContent =
+          divisor === 2
+            ? 'Pares a bege, ímpares a laranja. Reconheces o triângulo de Sierpiński?'
+            : `Cada cor corresponde a um resto: 0, 1, …, ${divisor - 1}. Passa o rato por cima de um círculo para veres o número.`;
+        buttons.forEach((button) =>
+          button.setAttribute('aria-pressed', String(Number(button.dataset.divisor) === divisor)),
+        );
+      };
+
+      buttons.forEach((button) => button.addEventListener('click', () => draw(Number(button.dataset.divisor))));
+      draw(Number(buttons[0].dataset.divisor));
+    }
+  }
+
+  customElements.define('maismat-pascal-triangle', PascalTriangle);
+</script>
+
+<style>
+  .pascal {
+    display: block;
+    margin: 2rem 0;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border-top: 6px solid var(--tag);
+    padding: 1rem 1.25rem 1.25rem;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+  .controls span {
+    margin-right: 0.3rem;
+  }
+  button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 0.75rem;
+    border: 0;
+    border-radius: 20px;
+    background: var(--pill);
+    color: var(--text);
+    font: 600 0.875rem var(--font-ui);
+    cursor: pointer;
+  }
+  button[aria-pressed='true'] {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+  button[aria-pressed='true']:focus-visible {
+    outline-color: var(--text);
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .caption {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0.75rem 0 0;
+  }
+</style>

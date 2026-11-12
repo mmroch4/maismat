@@ -1,0 +1,96 @@
+---
+title: Resoluções dos desafios da edição anterior
+issue: ano2-edicao1
+section: resolucoes
+order: 9
+summary: Os números amigos de Paganini, as bodas de rubi, as retas no plano e o saco com uma moeda a menos.
+---
+
+## Curiosidades numéricas
+
+**Desafio — números amigos:** encontra os divisores deste par (1184 e 1210) e comprova que são números amigos (a soma dos divisores de cada um deles, diferentes do próprio número, é igual ao outro número). De facto:
+
+- os divisores de 1184 são: 1, 2, 4, 8, 16, 32, 37, 74, 148, 296, 592 e 1184;
+- os divisores de 1210 são: 1, 2, 5, 11, 121, 10, 22, 242, 55, 605, 110 e 1210.
+
+$$
+1 + 2 + 4 + 8 + 16 + 32 + 37 + 74 + 148 + 296 + 592 = 1210
+$$
+
+$$
+1 + 2 + 5 + 11 + 121 + 10 + 22 + 242 + 55 + 605 + 110 = 1184
+$$
+
+## Desafios
+
+### 1) As bodas de rubi
+
+*Atividades matemáticas, Brian Bolt*
+
+Guilherme deu-se conta que a diferença entre o quadrado da sua idade e o quadrado da idade da sua esposa Rute era exatamente igual ao quadrado do número dos seus filhos. Que idade tinham Guilherme e Rute quando se casaram e quantos filhos tiveram?
+
+Guilherme e Rute conheceram-se jovens, portanto teriam idades muito próximas. Iguais as idades não poderiam ser, dado que a diferença entre os quadrados seria 0.
+
+Comecemos por supor que as idades diferem em 1 ano e que a Rute é a mais nova, sendo $x$ a sua idade atual. Tomemos como dado que a Rute tem, atualmente, pelo menos, 58 anos (teria casado aos 18).
+
+$(x + 1)^2 - x^2 = 2x + 1$, logo $2x + 1$ tem de ser um quadrado perfeito (quadrado do número dos seus filhos):
+
+- se $x = 58$: $2x + 1 = 117$, não serve;
+- se $x = 59$: $2x + 1 = 119$, não serve;
+- se $x = 60$: $2x + 1 = 121 = 11^2$;
+- …
+- se $x = 71{,}5$: $2x + 1 = 144$ (as idades não são números inteiros e teriam casado aos 31,5 e 32,5…).
+
+A situação possível é terem casado com 20 e 21 anos e terem tido 11 filhos.\*
+
+Haverá mais situações possíveis? Vamos supor que a diferença entre as idades é 2 anos: $(x + 2)^2 - x^2 = 4x + 4 = 4(x + 1)$ é múltiplo de 4, o que nos facilita o estudo… exclui o quadrado de números ímpares. $14^2 = 196$, $16^2 = 256$:
+
+- se $x = 58$: $4x + 4 = 236$;
+- se $x = 60$: $4x + 4 = 244$;
+- se $x = 61$: $4x + 4 = 248$;
+- se $x = 63$: $4x + 4 = 256 = 16^2$. Teriam 63 e 65 anos e casado aos 23 e 25 anos, tendo tido 16 filhos.
+
+Optamos pela primeira resposta. Haverá mais alguma possibilidade? Deixamos essa investigação a teu cargo!
+
+<small>\* Na versão em papel lia-se “40 e 41 anos”; corrigimos para 20 e 21 na versão digital.</small>
+
+### 2) Em quantas partes (n.º máximo) dividem o plano várias retas?
+
+| Número de retas ($n$) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 10 | 100 | $n$ |
+| --- | - | - | - | - | - | - | - | - | - | - | - |
+| Número de regiões ($r$) | 1 | 2 | 4 | 7 | 11 | 16 | 22 | 29 | 56 | 5051 | $(n+1)\frac{n}{2} + 1$ |
+
+Observa que, por exemplo, para $n = 7$, a solução é 29 (o que já não é fácil ver numa figura):
+
+$$
+29 = 2 + 2 + 3 + 4 + 5 + 6 + 7 = 1 + 1 + 2 + 3 + 4 + 5 + 6 + 7 = 1 + \text{soma dos 7 primeiros números naturais}
+$$
+
+Para saberes mais, procura a fórmula que te dá a soma de $n$ números naturais consecutivos.
+
+*Atividades matemáticas, Brian Bolt*
+
+### 3) Uma moeda a menos
+
+*José Paulo Viana, Desafios*
+
+Temos nove sacos com moedas. O primeiro tem 100 moedas, o segundo tem 200, o terceiro tem 300, e assim sucessivamente até ao último que tem 900 moedas. As moedas são todas iguais e os sacos (vazios) pesam todos o mesmo. Um brincalhão tirou uma moeda de um dos sacos. Como descobrir o saco onde falta a moeda, apenas com duas pesagens?
+
+**Proposta de resolução**
+
+- Os sacos vazios também pesam, logo o número de sacos a colocar nos dois pratos da balança tem de ser igual (ou não saberíamos se a diferença de peso seria do saco ou da moeda a menos);
+- fazer 3 grupos de 3 sacos (todos com um total de 1200 moedas); por exemplo: 1.º grupo: sacos 1, 2 e 9; 2.º grupo: sacos 3, 4 e 5; 3.º grupo: sacos 6, 7 e 8.
+
+**1.ª pesagem:** coloca-se num dos pratos da balança os 3 sacos de um dos grupos e no outro os 3 sacos de outro grupo (supostamente teriam o mesmo peso). Optamos pelos grupos 1 e 2, por exemplo:
+
+- a balança equilibra — estes 6 sacos são “bons” e o problema está no outro grupo;
+- a balança não equilibra — então o problema está num dos sacos que está no prato que subiu (mais leve). Temos o grupo que tem o saco já identificado.
+
+Nesta 1.ª pesagem temos o grupo identificado!
+
+**2.ª pesagem:** pesam-se dois dos sacos deste grupo, um em cada prato da balança. Naturalmente que a balança não vai equilibrar, visto terem número de moedas muito diferentes. Mas conhecemos 6 sacos bons e vamos aí escolher 2 deles para equilibrar os pesos dos sacos que temos na balança. Por exemplo, se o saco estiver no 3.º grupo, podemos usar os sacos 6 e 7, bastando juntar-lhes os sacos 1 e 2 ($7 + 1$ e $6 + 2$):
+
+- a balança equilibra — estes sacos são bons e o saco procurado ficou de fora;
+- a balança não equilibra — o prato que fica em cima tem a carga mais leve, que será o saco com menos uma moeda!
+
+<p class="note"><strong>Esperamos pelas tuas resoluções e sugestões!</strong></p>

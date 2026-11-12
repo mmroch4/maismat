@@ -1,6 +1,6 @@
 import katex from 'katex';
-// The same <Desafio> reader the editing panel uses, tested against every article.
-import { desafio as challengeBlock } from '../../public/admin/componentes.js';
+// The same <Challenge> reader the editing panel uses, tested against every article.
+import { challenge as challengeBlock } from '../../public/admin/components.js';
 import { articleSlug, getIssueArticles, getSortedIssues, type Article, type Issue } from './issues.ts';
 
 export type Segment = { text: string } | { html: string };
@@ -76,24 +76,24 @@ export async function getPublishedChallenges(): Promise<ArchivedChallenge[]> {
         const id = challenge.id;
         if (!id)
           throw new Error(
-            `The challenge “${challenge.titulo}” (${article.id}) has no id. Open it in the panel and save it, or write id="desafio-…" in the article.`,
+            `The challenge “${challenge.title}” (${article.id}) has no id. Open it in the panel and save it, or write id="desafio-…" in the article.`,
           );
         // The same id may only repeat when it is the same problem published again (for example, in the solutions).
-        if (titles.has(id) && titles.get(id) !== challenge.titulo)
+        if (titles.has(id) && titles.get(id) !== challenge.title)
           throw new Error(
-            `The challenges “${titles.get(id)}” and “${challenge.titulo}” (${article.id}) share the id ${id}. If they are different problems, clear the «Identificador» of one of them in the panel to generate a new one.`,
+            `The challenges “${titles.get(id)}” and “${challenge.title}” (${article.id}) share the id ${id}. If they are different problems, clear the «Identificador» of one of them in the panel to generate a new one.`,
           );
-        titles.set(id, challenge.titulo);
+        titles.set(id, challenge.title);
         challenges.push({
           id,
-          title: challenge.titulo,
-          number: challenge.numero,
+          title: challenge.title,
+          number: challenge.number,
           issue,
           article,
           url: `/edicoes/${issue.id}/${articleSlug(article)}/#${id}`,
-          hasAnswer: Boolean(challenge.resposta),
-          hasSolution: Boolean(challenge.resolucao),
-          excerpt: excerpt(challenge.enunciado),
+          hasAnswer: Boolean(challenge.answer),
+          hasSolution: Boolean(challenge.solution),
+          excerpt: excerpt(challenge.statement),
         });
       }
     }

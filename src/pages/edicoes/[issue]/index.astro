@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 }
 
 const { issue } = Astro.props as { issue: Issue };
-const { data: date, capa: cover, pdf, direcao: editors, citacao: quote, convertida: converted } = issue.data;
+const { date, cover, pdf, editors, quote, converted } = issue.data;
 const articles = await getIssueArticles(issue.id);
 const articleUrl = (article: (typeof articles)[number]) => `/edicoes/${issue.id}/${articleSlug(article)}/`;
 const structuredData = {
@@ -29,7 +29,7 @@ const structuredData = {
     converted && articles.length
       ? articles.map((article) => ({
           '@type': 'Article',
-          headline: article.data.titulo,
+          headline: article.data.title,
           url: new URL(articleUrl(article), Astro.site).href,
         }))
       : undefined,
@@ -77,7 +77,7 @@ const structuredData = {
         </p>
         {quote && (
           <blockquote>
-            “{quote.texto}” <footer>— {quote.autor}</footer>
+            “{quote.text}” <footer>— {quote.author}</footer>
           </blockquote>
         )}
       </div>
@@ -98,10 +98,10 @@ const structuredData = {
                   </span>
                   <span class="text">
                     <span class="section ui" data-pagefind-ignore>
-                      {SECTIONS[article.data.seccao]}
+                      {SECTIONS[article.data.section]}
                     </span>
-                    <strong>{article.data.titulo}</strong>
-                    {article.data.resumo && <span class="summary">{article.data.resumo}</span>}
+                    <strong>{article.data.title}</strong>
+                    {article.data.summary && <span class="summary">{article.data.summary}</span>}
                   </span>
                 </a>
               </li>

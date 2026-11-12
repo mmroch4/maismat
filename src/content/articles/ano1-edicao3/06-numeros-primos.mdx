@@ -1,0 +1,54 @@
+---
+title: Os números primos são em número infinito
+issue: ano1-edicao3
+section: curiosidades
+order: 6
+summary: A demonstração de Euclides, com mais de 2000 anos, de que nunca se acaba de encontrar números primos.
+---
+
+Como sabes, **um número primo é um número natural, diferente de 1, que é divisível apenas por 1 e por si próprio.** Podemos desde logo concluir que:
+
+- o único número par que é primo é o 2 (todos os outros números pares são divisíveis por 2);
+- para além do 2 e do 3, dois números consecutivos nunca são primos, dado que um deles é par.
+
+Prova-se que **há um número infinito de números primos**, tal como afirmou e provou Euclides (300 a. C.). Na sua obra *Elementos*, Livro 9, Proposição 20, pode ler-se:
+
+> Os números primos são mais do que qualquer número grande atribuído aos números primos.
+
+Façamos uma breve demonstração desta propriedade.
+
+Comecemos por supor que é falsa, ou seja, que há um número finito de números primos. Designemos, então, o maior número deste conjunto por $N$. Isto é, $N$ será o maior número primo que existe.
+
+Consideremos o número natural $P$, que se obtém multiplicando todos os números primos existentes (em número finito, pela nossa hipótese) e adicionando uma unidade a esse valor:
+
+$$
+P = 2 \times 3 \times 5 \times 7 \times \cdots \times N + 1
+$$
+
+Continuando o nosso raciocínio, o número $P$ não poderá ser primo, visto ser maior do que $N$. Ora, não sendo primo, o número $P$ terá de ser divisível por algum número primo ($2, 3, 5, \ldots, N$). Consideremos que $P$ é divisível pelo número primo $k$.
+
+Consideremos, ainda, o número $Q$ que se obtém multiplicando os $N$ números primos:
+
+$$
+Q = 2 \times 3 \times 5 \times 7 \times \cdots \times N
+$$
+
+Este número também é divisível por $k$, logicamente. E se fizermos a diferença entre $P$ e $Q$, obtemos um número igualmente divisível por $k$. Mas esta diferença, $P - Q$, é igual a 1, o que nos leva à afirmação de que 1 é divisível por $k$, e portanto $k = 1$. No entanto, 1 não é um número primo, pelo que chegamos a uma impossibilidade, uma contradição, o que nos permite concluir que $P$ terá de ser primo!
+
+Encontrámos, assim, um número primo maior do que $N$, o que nos mostra que a nossa suposição inicial, de que existia o maior número primo, é falsa.
+
+Conclusão, a propriedade é verdadeira: há uma infinidade de números primos.
+
+**Portanto: o número de números primos é infinito!**
+
+<div class="note">
+
+**Curiosidade**
+
+- O maior número primo que se conhecia à data desta edição era $2^{82\,589\,933} - 1$, descoberto em dezembro de 2018. Este número tem 24 862 048 algarismos. *(Em outubro de 2024 foi descoberto um ainda maior: $2^{136\,279\,841} - 1$, com 41 024 320 algarismos.)*
+- Pelo facto de este número ser da forma $2^n - 1$, diz-se um número de Mersenne.
+- Historicamente, diz-se que foi o sacerdote e matemático inglês John Wallis (1616–1703) quem usou o símbolo do infinito, $\infty$, pela primeira vez na Matemática, em 1655.
+
+Falaremos novamente destes números em próximas edições do jornal.
+
+</div>

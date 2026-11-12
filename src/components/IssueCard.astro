@@ -6,7 +6,7 @@ interface Props {
   issue: Issue;
 }
 const { issue } = Astro.props;
-const { capa: cover, data: date, convertida: converted, numero: number } = issue.data;
+const { cover, date, converted, number } = issue.data;
 const articleCount = converted ? (await getIssueArticles(issue.id)).length : 0;
 ---
 

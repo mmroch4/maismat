@@ -1,52 +1,56 @@
 ---
-/** Calculadora da sequência de Collatz: escreve um número e vê o caminho até ao ciclo 4 → 2 → 1. */
+/** Collatz sequence calculator: type a number and see its path down to the 4 → 2 → 1 cycle. */
 interface Props {
-  inicial?: number;
+  start?: number;
 }
-const { inicial = 17 } = Astro.props;
+const { start = 17 } = Astro.props;
 ---
 
 <maismat-collatz class="collatz">
   <label class="ui">
     <span>Escolhe um número natural</span>
-    <input type="number" min="1" max="1000000000" value={inicial} inputmode="numeric" />
+    <input type="number" min="1" max="1000000000" value={start} inputmode="numeric" />
   </label>
-  <p class="ui resumo" aria-live="polite"></p>
-  <svg class="grafico" preserveAspectRatio="none" aria-hidden="true"></svg>
-  <p class="sequencia"></p>
+  <p class="ui summary" aria-live="polite"></p>
+  <svg class="chart" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <p class="sequence"></p>
 </maismat-collatz>
 
 <script>
+  const MAX_START = 1e9;
+
   class Collatz extends HTMLElement {
     connectedCallback() {
       const input = this.querySelector('input')!;
-      const resumo = this.querySelector('.resumo')!;
-      const seq = this.querySelector('.sequencia')!;
+      const summary = this.querySelector('.summary')!;
+      const sequenceText = this.querySelector('.sequence')!;
       const svg = this.querySelector('svg')!;
 
-      const atualizar = () => {
-        const n0 = Math.floor(Number(input.value));
-        if (!(n0 >= 1 && n0 <= 1e9)) {
-          resumo.textContent = 'Escreve um número entre 1 e 1 000 000 000.';
+      const update = () => {
+        const start = Math.floor(Number(input.value));
+        if (!(start >= 1 && start <= MAX_START)) {
+          summary.textContent = 'Escreve um número entre 1 e 1 000 000 000.';
           return;
         }
-        const s = [n0];
-        while (s[s.length - 1] !== 1) {
-          const n = s[s.length - 1];
-          s.push(n % 2 === 0 ? n / 2 : 3 * n + 1);
+        const sequence = [start];
+        while (sequence.at(-1) !== 1) {
+          const n = sequence.at(-1)!;
+          sequence.push(n % 2 === 0 ? n / 2 : 3 * n + 1);
         }
-        const max = Math.max(...s);
-        resumo.textContent = `Chegou a 1 em ${s.length - 1} passos. O maior valor atingido foi ${max.toLocaleString('pt-PT')}.`;
-        seq.textContent = s.join(' → ');
-        const w = 100,
-          h = 40;
-        const pts = s.map((v, i) => `${(i / Math.max(1, s.length - 1)) * w},${h - (v / max) * h}`).join(' ');
-        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        svg.innerHTML = `<polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="0.6" vector-effect="non-scaling-stroke" />`;
+        const max = Math.max(...sequence);
+        summary.textContent = `Chegou a 1 em ${sequence.length - 1} passos. O maior valor atingido foi ${max.toLocaleString('pt-PT')}.`;
+        sequenceText.textContent = sequence.join(' → ');
+        const width = 100;
+        const height = 40;
+        const points = sequence
+          .map((value, i) => `${(i / Math.max(1, sequence.length - 1)) * width},${height - (value / max) * height}`)
+          .join(' ');
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.innerHTML = `<polyline points="${points}" fill="none" stroke="currentColor" stroke-width="0.6" vector-effect="non-scaling-stroke" />`;
       };
 
-      input.addEventListener('input', atualizar);
-      atualizar();
+      input.addEventListener('input', update);
+      update();
     }
   }
   customElements.define('maismat-collatz', Collatz);
@@ -84,18 +88,18 @@ const { inicial = 17 } = Astro.props;
     border-color: var(--primary);
     outline-offset: 2px;
   }
-  .resumo {
+  .summary {
     font-size: 0.9rem;
     margin: 0.75rem 0;
   }
-  .grafico {
+  .chart {
     width: 100%;
     height: 7rem;
     color: var(--primary);
     background: var(--bg);
     border-radius: var(--radius-sm);
   }
-  .sequencia {
+  .sequence {
     font-size: 0.85rem;
     line-height: 1.6;
     word-break: break-word;

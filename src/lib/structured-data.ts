@@ -17,12 +17,12 @@ export const publisher = (site: URL) => ({
 export const publicationIssue = (issue: Issue, site: URL) => ({
   '@type': 'PublicationIssue',
   name: issueLabel(issue),
-  issueNumber: issue.data.numero,
-  datePublished: isoDay(issue.data.data),
+  issueNumber: issue.data.number,
+  datePublished: isoDay(issue.data.date),
   url: new URL(`/edicoes/${issue.id}/`, site).href,
   isPartOf: {
     '@type': 'PublicationVolume',
-    volumeNumber: issue.data.ano,
+    volumeNumber: issue.data.year,
     isPartOf: { '@type': 'Periodical', name: NEWSPAPER, url: site.href },
   },
 });

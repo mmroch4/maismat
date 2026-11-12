@@ -1,0 +1,133 @@
+title: "Ciclóide: a roda que desenha a curva"
+description: Uma roda rola sobre uma reta e um ponto da roda desenha a ciclóide. Muda a posição do ponto para ver a ciclóide alongada do paradoxo do comboio.
+height: 330
+code: |
+  <!doctype html>
+  <html lang="pt-PT">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ciclóide: a roda que desenha a curva</title>
+  <style>
+    :root { color-scheme: light dark; --fundo: #fbfaf7; --texto: #1f2328; --roda: #344b63; --curva: #c2410c; --carril: #5b6168; }
+    @media (prefers-color-scheme: dark) {
+      :root { --fundo: #15181c; --texto: #e8e6e1; --roda: #8fb0d1; --curva: #ff9466; --carril: #a5abb2; }
+    }
+    body { margin: 0; padding: 12px; background: var(--fundo); color: var(--texto); font: 16px/1.45 system-ui, sans-serif; }
+    canvas { display: block; width: 100%; }
+    .controlos { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 10px; }
+    button { font: inherit; min-height: 44px; padding: 0 16px; border: 2px solid var(--roda); border-radius: 8px; background: transparent; color: var(--texto); cursor: pointer; }
+    label { display: flex; align-items: center; gap: 10px; flex: 1 1 240px; }
+    input[type=range] { flex: 1; min-height: 44px; accent-color: var(--curva); }
+    #estado { margin: 8px 0 0; }
+  </style>
+  </head>
+  <body>
+  <canvas id="tela" role="img" aria-label="Uma roda rola sobre uma reta e um ponto da roda vai desenhando uma curva."></canvas>
+  <div class="controlos">
+    <button id="pausa" type="button">Pausa</button>
+    <button id="recomecar" type="button">Recomeçar</button>
+    <label>Onde está o ponto <input id="distancia" type="range" min="0.4" max="1.6" step="0.2" value="1"></label>
+  </div>
+  <p id="estado" aria-live="polite"></p>
+  <script>
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const botaoPausa = document.getElementById('pausa');
+    const distancia = document.getElementById('distancia');
+    const estado = document.getElementById('estado');
+    const VELOCIDADE = Math.PI / 2; // um quarto de volta por segundo
+    let angulo = 0;
+    let parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let voltas = 2;
+    let instante = null;
+
+    const cor = (nome) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+
+    function ajustar() {
+      const largura = tela.clientWidth;
+      voltas = largura < 520 ? 1 : 2;
+      const altura = Math.round((largura * 3.6) / (2 * Math.PI * voltas + 3.6));
+      tela.style.height = altura + 'px';
+      tela.width = Math.round(largura * devicePixelRatio);
+      tela.height = Math.round(altura * devicePixelRatio);
+      desenhar();
+    }
+
+    function descrever() {
+      const k = Number(distancia.value);
+      if (k < 1) estado.textContent = 'O ponto está dentro da roda: a curva fica suave, sem bicos (ciclóide encurtada).';
+      else if (k > 1) estado.textContent = 'O ponto está fora da roda, como o rebordo das rodas de um comboio: a curva faz laços, e nesses laços o ponto anda para trás (ciclóide alongada).';
+      else estado.textContent = 'O ponto está na borda da roda: desenha a ciclóide. Nos bicos, quando toca na reta, o ponto está parado por um instante.';
+    }
+
+    function desenhar() {
+      const k = Number(distancia.value);
+      const r = tela.width / (2 * Math.PI * voltas + 3.6);
+      const d = k * r;
+      const x0 = 1.8 * r;
+      const carril = tela.height - 0.8 * r;
+      const ponto = (t) => [x0 + r * t - d * Math.sin(t), carril - r + d * Math.cos(t)];
+
+      ctx.clearRect(0, 0, tela.width, tela.height);
+      ctx.lineCap = 'round';
+
+      ctx.strokeStyle = cor('--carril');
+      ctx.lineWidth = Math.max(1, r / 25);
+      ctx.beginPath();
+      ctx.moveTo(0, carril);
+      ctx.lineTo(tela.width, carril);
+      ctx.stroke();
+
+      ctx.strokeStyle = cor('--curva');
+      ctx.lineWidth = Math.max(2, r / 12);
+      ctx.beginPath();
+      for (let t = 0; t <= angulo; t += 0.02) ctx.lineTo(...ponto(t));
+      ctx.lineTo(...ponto(angulo));
+      ctx.stroke();
+
+      const [cx, cy] = [x0 + r * angulo, carril - r];
+      const [px, py] = ponto(angulo);
+      ctx.strokeStyle = cor('--roda');
+      ctx.lineWidth = Math.max(2, r / 15);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(px, py);
+      ctx.stroke();
+
+      ctx.fillStyle = cor('--curva');
+      ctx.beginPath();
+      ctx.arc(px, py, Math.max(4, r / 7), 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    function passo(agora) {
+      if (instante !== null && !parado) {
+        angulo += (VELOCIDADE * (agora - instante)) / 1000;
+        if (angulo > 2 * Math.PI * voltas) angulo = 0;
+      }
+      instante = agora;
+      desenhar();
+      requestAnimationFrame(passo);
+    }
+
+    function mudarPausa(valor) {
+      parado = valor;
+      botaoPausa.textContent = parado ? 'Continuar' : 'Pausa';
+    }
+
+    botaoPausa.addEventListener('click', () => mudarPausa(!parado));
+    document.getElementById('recomecar').addEventListener('click', () => { angulo = 0; desenhar(); });
+    distancia.addEventListener('input', () => { angulo = 0; descrever(); });
+    addEventListener('resize', ajustar);
+
+    mudarPausa(parado);
+    descrever();
+    ajustar();
+    requestAnimationFrame(passo);
+  </script>
+  </body>
+  </html>

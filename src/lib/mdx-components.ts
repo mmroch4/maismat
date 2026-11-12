@@ -1,10 +1,10 @@
-// Components available in every article without an `import`: just write <Desafio ...> in the text.
-import ArranhaCeus from '../components/ArranhaCeus.astro';
+// Components available in every article without an `import`: just write <Challenge ...> in the text.
+import Challenge from '../components/Challenge.astro';
 import Collatz from '../components/Collatz.astro';
-import Demonstracao from '../components/Demonstracao.astro';
-import Desafio from '../components/Desafio.astro';
+import Demo from '../components/Demo.astro';
 import GeoGebra from '../components/GeoGebra.astro';
 import MontyHall from '../components/MontyHall.astro';
-import TrianguloPascal from '../components/TrianguloPascal.astro';
+import PascalTriangle from '../components/PascalTriangle.astro';
+import Skyscrapers from '../components/Skyscrapers.astro';
 
-export const mdxComponents = { ArranhaCeus, Collatz, Demonstracao, Desafio, GeoGebra, MontyHall, TrianguloPascal };
+export const mdxComponents = { Challenge, Collatz, Demo, GeoGebra, MontyHall, PascalTriangle, Skyscrapers };

@@ -10,11 +10,11 @@ import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import config from '../astro.config.ts';
 import {
-  appletGeoGebra as geogebraBlock,
-  desafio as challengeBlock,
-  demonstracao as demoBlock,
-  geogebra as geogebraUrls,
-} from '../public/admin/componentes.js';
+  challenge as challengeBlock,
+  demo as demoBlock,
+  geogebra as geogebraBlock,
+  geogebraUrls,
+} from '../public/admin/components.js';
 import { normalizeAnswer } from '../src/lib/answers.ts';
 import { ALLOWED_LIBRARIES, CSP, MAX_SIZE } from '../src/lib/demos.js';
 import { LAUNCH_DATE, lastUpdated } from '../src/lib/git.ts';
@@ -36,10 +36,10 @@ const frontmatter = (text: string): Frontmatter =>
     ]),
   );
 
-const issues: (Frontmatter & { id: string })[] = readdirSync(root + 'src/content/edicoes')
+const issues: (Frontmatter & { id: string })[] = readdirSync(root + 'src/content/issues')
   .filter((file) => file.endsWith('.md'))
-  .map((file) => ({ id: file.replace(/\.md$/, ''), ...frontmatter(read(`src/content/edicoes/${file}`)) }));
-const drafts = new Set(issues.filter((issue) => issue.rascunho === 'true').map((issue) => issue.id));
+  .map((file) => ({ id: file.replace(/\.md$/, ''), ...frontmatter(read(`src/content/issues/${file}`)) }));
+const drafts = new Set(issues.filter((issue) => issue.draft === 'true').map((issue) => issue.id));
 
 // Every challenge, including those of draft issues (so that mistakes show up before publishing).
 type Challenge = ReturnType<typeof challengeBlock.fromBlock> & {
@@ -49,23 +49,23 @@ type Challenge = ReturnType<typeof challengeBlock.fromBlock> & {
   published: boolean;
 };
 const challengePattern = new RegExp(challengeBlock.pattern.source, 'gm');
-const challenges: Challenge[] = listFiles('src/content/artigos')
+const challenges: Challenge[] = listFiles('src/content/articles')
   .filter((file) => /\.mdx?$/.test(file))
   .flatMap((file) => {
-    const text = read(`src/content/artigos/${file}`);
-    const { edicao: issueId } = frontmatter(text);
+    const text = read(`src/content/articles/${file}`);
+    const { issue: issueId } = frontmatter(text);
     const url = `/edicoes/${issueId}/${file
       .split('/')
       .pop()!
       .replace(/\.mdx?$/, '')}/`;
     return [...text.matchAll(challengePattern)].map((match) => {
       const challenge = challengeBlock.fromBlock(match);
-      const answers = challenge.resposta ? challenge.resposta.split('|') : [];
+      const answers = challenge.answer ? challenge.answer.split('|') : [];
       return { ...challenge, answers, file, url, published: !drafts.has(issueId) };
     });
   });
 const publishedChallenges = challenges.filter((challenge) => challenge.published);
-const describe = (challenge: Challenge) => `“${challenge.titulo}” (${challenge.file})`;
+const describe = (challenge: Challenge) => `“${challenge.title}” (${challenge.file})`;
 
 const ENTITIES: Record<string, string> = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ' };
 const decodeEntities = (html: string) =>
@@ -127,7 +127,7 @@ test('every challenge has an id, and only republished ones share it', () => {
     );
     const other = byId.get(challenge.id);
     assert.ok(
-      !other || other.titulo === challenge.titulo,
+      !other || other.title === challenge.title,
       `${describe(other ?? challenge)} and ${describe(challenge)} share the same id. If they are different problems, clear the «Identificador» of one of them in the panel.`,
     );
     byId.set(challenge.id, challenge);
@@ -136,14 +136,14 @@ test('every challenge has an id, and only republished ones share it', () => {
 
 test('the answers can be given on the site', () => {
   for (const challenge of challenges) {
-    if (challenge.opcoes.length && challenge.answers.length) {
-      const options = challenge.opcoes.map((option: string) => normalizeAnswer(option, challenge.casas));
+    if (challenge.options.length && challenge.answers.length) {
+      const options = challenge.options.map((option: string) => normalizeAnswer(option, challenge.decimals));
       assert.ok(
-        challenge.answers.some((answer) => options.includes(normalizeAnswer(answer, challenge.casas))),
-        `${describe(challenge)}: the answer “${challenge.resposta}” is none of the options (${challenge.opcoes.join(' / ')}).`,
+        challenge.answers.some((answer) => options.includes(normalizeAnswer(answer, challenge.decimals))),
+        `${describe(challenge)}: the answer “${challenge.answer}” is none of the options (${challenge.options.join(' / ')}).`,
       );
     }
-    if (challenge.casas !== undefined)
+    if (challenge.decimals !== undefined)
       for (const answer of challenge.answers)
         assert.ok(
           !Number.isNaN(parseFloat(normalizeAnswer(answer))),
@@ -159,7 +159,7 @@ test('every published challenge accepts its answers in the article', () => {
     assert.ok(hashes, `${describe(challenge)}: the challenge was not found in dist${challenge.url}.`);
     for (const answer of challenge.answers) {
       const hash = createHash('sha256')
-        .update(challenge.id + normalizeAnswer(answer, challenge.casas))
+        .update(challenge.id + normalizeAnswer(answer, challenge.decimals))
         .digest('hex');
       assert.ok(hashes.includes(hash), `${describe(challenge)}: the site would not accept the answer “${answer}”.`);
     }
@@ -182,10 +182,13 @@ test('the archive lists every published challenge and links to each one', () => 
 });
 
 test('the archive does not reveal answers', () => {
-  assert.ok(!/data-hashes|type="radio"|class="[^"]*resposta/.test(archive), 'The archive has hashes or answer forms.');
+  assert.ok(
+    !/data-hashes|type="radio"|class="[^"]*answer-form/.test(archive),
+    'The archive has hashes or answer forms.',
+  );
   const cards = [...archive.matchAll(/<li class="challenge"[^>]*data-id="([^"]+)"[^>]*>([\s\S]*?)<\/li>/g)];
   for (const challenge of publishedChallenges) {
-    const source = simplify(`${challenge.titulo} ${challenge.enunciado}`);
+    const source = simplify(`${challenge.title} ${challenge.statement}`);
     for (const [, , html] of cards.filter(([, id]) => id === challenge.id)) {
       // Only the title and the excerpt come from the article; an answer shown there must come from the statement itself.
       const visible = simplify(
@@ -324,15 +327,15 @@ const articleOf = (file: string) =>
 const demoOf = (file: string) => file.match(/^demonstracoes\/([^/]+)\/index\.html$/)?.[1];
 function sourceOf(file: string) {
   const demo = demoOf(file);
-  if (demo) return `In the demo src/content/demonstracoes/${demo}.yml`;
+  if (demo) return `In the demo src/content/demos/${demo}.yml`;
   const article = articleOf(file);
   if (article && article.split('/')[1] !== 'imprimir') {
-    const markdown = ['md', 'mdx'].map((ext) => `src/content/artigos/${article}.${ext}`).find(exists);
+    const markdown = ['md', 'mdx'].map((ext) => `src/content/articles/${article}.${ext}`).find(exists);
     if (markdown) return `In the article ${markdown}`;
   }
   const issue = file.match(/^edicoes\/([^/]+)\//)?.[1];
-  if (issue && exists(`src/content/edicoes/${issue}.md`))
-    return `In the issue src/content/edicoes/${issue}.md or one of its articles`;
+  if (issue && exists(`src/content/issues/${issue}.md`))
+    return `In the issue src/content/issues/${issue}.md or one of its articles`;
   return `In the site code (src/pages, src/components or src/layouts), page dist/${file}`;
 }
 
@@ -436,7 +439,7 @@ test('the PDFs referenced by the issues exist', () => {
     if (!pdf) continue;
     assert.ok(
       pdf.startsWith('/') && exists(`public${pdf}`),
-      `The issue src/content/edicoes/${issue.id}.md has the file ${pdf} in the «PDF original» field, which does not exist in public/. Upload the PDF in the panel or fix the field.`,
+      `The issue src/content/issues/${issue.id}.md has the file ${pdf} in the «PDF original» field, which does not exist in public/. Upload the PDF in the panel or fix the field.`,
     );
   }
 });
@@ -562,7 +565,7 @@ test('every article and issue has valid structured data, with the issue cover', 
     }
     const missing = (field: string) =>
       errors.push(`${sourceOf(file)}: «${field}» is missing from the structured data.`);
-    const issueDate = issues.find((issue) => issue.id === file.split('/')[1])?.data;
+    const issueDate = issues.find((issue) => issue.id === file.split('/')[1])?.date;
     const type = isArticle ? 'Article' : 'PublicationIssue';
     if (data['@context'] !== 'https://schema.org' || data['@type'] !== type)
       errors.push(`${sourceOf(file)}: the structured data should be of the schema.org type ${type}.`);
@@ -610,7 +613,7 @@ test('article update dates come from git, only after the launch, and the newspap
     const json = jsonLdBlocks(read(`dist/${file}`))[0];
     if (!json) continue; // a missing block is already caught by the structured data check
     const data = JSON.parse(json);
-    const markdown = ['md', 'mdx'].map((ext) => `src/content/artigos/${articleOf(file)}.${ext}`).find(exists);
+    const markdown = ['md', 'mdx'].map((ext) => `src/content/articles/${articleOf(file)}.${ext}`).find(exists);
     const expected = markdown && lastUpdated(markdown);
     if (data.dateModified !== expected)
       errors.push(
@@ -776,10 +779,10 @@ test('preloaded fonts are the ones the CSS uses, and the main cover of the home 
   assert.ok(!errors.length, errors.join('\n'));
 });
 
-// ---- Demos (src/content/demonstracoes): they run isolated, without network access and out of search engines.
+// ---- Demos (src/content/demos): they run isolated, without network access and out of search engines.
 
-const articleFiles = listFiles('src/content/artigos').filter((file) => /\.mdx?$/.test(file));
-const demoSources = readdirSync(root + 'src/content/demonstracoes')
+const articleFiles = listFiles('src/content/articles').filter((file) => /\.mdx?$/.test(file));
+const demoSources = readdirSync(root + 'src/content/demos')
   .filter((file) => file.endsWith('.yml'))
   .map((file) => file.replace(/\.yml$/, ''));
 const demoPages = pages.filter(demoOf);
@@ -794,17 +797,17 @@ test('every «Demonstração» block in the articles uses a demo that exists', (
   const errors: string[] = [];
   const pattern = new RegExp(demoBlock.pattern.source, 'gm');
   for (const file of articleFiles) {
-    const text = read(`src/content/artigos/${file}`);
+    const text = read(`src/content/articles/${file}`);
     const blocks = [...text.matchAll(pattern)];
-    if ((text.match(/<Demonstracao\b/g) ?? []).length !== blocks.length)
+    if ((text.match(/<Demo\b/g) ?? []).length !== blocks.length)
       errors.push(
-        `In the article src/content/artigos/${file}: there is a hand-written <Demonstracao> that the panel does not recognise. Delete it and insert it again with Inserir → Demonstração.`,
+        `In the article src/content/articles/${file}: there is a hand-written <Demo> that the panel does not recognise. Delete it and insert it again with Inserir → Demonstração.`,
       );
     for (const block of blocks) {
       const id = block.groups!.id;
       if (!demoSources.includes(id))
         errors.push(
-          `In the article src/content/artigos/${file}: the «Demonstração» block uses «${id}», which does not exist. Pick another one in the block, or create it under «Demonstrações» in the panel.`,
+          `In the article src/content/articles/${file}: the «Demonstração» block uses «${id}», which does not exist. Pick another one in the block, or create it under «Demonstrações» in the panel.`,
         );
     }
   }
@@ -815,7 +818,7 @@ test('every demo is small, only loads approved libraries and uses nothing that i
   assert.deepEqual(
     demoPages.map(demoOf).toSorted(),
     demoSources.toSorted(),
-    'There are demos in src/content/demonstracoes without a page in dist, or the other way round.',
+    'There are demos in src/content/demos without a page in dist, or the other way round.',
   );
   const blocked: [RegExp, (match: string) => string][] = [
     [
@@ -878,7 +881,7 @@ test('the site iframes have a title, and the demo iframes are isolated (sandbox 
         );
       else if (attribute('sandbox') !== 'allow-scripts')
         errors.push(
-          `In the site code (src/components/Demonstracao.astro), page dist/${file}: the iframe ${src} has sandbox="${attribute('sandbox') ?? ''}" instead of sandbox="allow-scripts". Without a sandbox, or with allow-same-origin, the demo could read the panel session and the students' progress.`,
+          `In the site code (src/components/Demo.astro), page dist/${file}: the iframe ${src} has sandbox="${attribute('sandbox') ?? ''}" instead of sandbox="allow-scripts". Without a sandbox, or with allow-same-origin, the demo could read the panel session and the students' progress.`,
         );
       else if (!exists(`dist${src}index.html`))
         errors.push(`${sourceOf(file)}: the iframe leads to the demo «${id}», which does not exist in dist.`);
@@ -921,25 +924,25 @@ test('every GeoGebra applet has a valid link, a title and a height, and only con
   const errors: string[] = [];
   const pattern = new RegExp(geogebraBlock.pattern.source, 'gm');
   for (const file of articleFiles) {
-    const text = read(`src/content/artigos/${file}`);
+    const text = read(`src/content/articles/${file}`);
     const blocks = [...text.matchAll(pattern)];
     if ((text.match(/<GeoGebra\b/g) ?? []).length !== blocks.length)
       errors.push(
-        `In the article src/content/artigos/${file}: there is a hand-written <GeoGebra> that the panel does not recognise. Delete it and insert it again with Inserir → Applet GeoGebra.`,
+        `In the article src/content/articles/${file}: there is a hand-written <GeoGebra> that the panel does not recognise. Delete it and insert it again with Inserir → Applet GeoGebra.`,
       );
     for (const block of blocks) {
-      const { ligacao: link, titulo: title, altura: height } = geogebraBlock.fromBlock(block);
+      const { url: link, title, height } = geogebraBlock.fromBlock(block);
       if (!geogebraUrls(link, height))
         errors.push(
-          `In the article src/content/artigos/${file}: the link «${link}» of the «Applet GeoGebra» block is not an applet link. In GeoGebra, open the applet, press «Partilhar» (Share) and copy the link (https://www.geogebra.org/m/…).`,
+          `In the article src/content/articles/${file}: the link «${link}» of the «Applet GeoGebra» block is not an applet link. In GeoGebra, open the applet, press «Partilhar» (Share) and copy the link (https://www.geogebra.org/m/…).`,
         );
       if (!title.trim())
         errors.push(
-          `In the article src/content/artigos/${file}: the GeoGebra applet ${link} has no title. Write in the block what the applet shows; it is what screen readers announce.`,
+          `In the article src/content/articles/${file}: the GeoGebra applet ${link} has no title. Write in the block what the applet shows; it is what screen readers announce.`,
         );
       if (!(Number.isInteger(height) && height >= 250 && height <= 900))
         errors.push(
-          `In the article src/content/artigos/${file}: the height of the GeoGebra applet ${link} is ${height}; it must be a whole number between 250 and 900.`,
+          `In the article src/content/articles/${file}: the height of the GeoGebra applet ${link} is ${height}; it must be a whole number between 250 and 900.`,
         );
     }
   }
@@ -950,7 +953,7 @@ test('every GeoGebra applet has a valid link, a title and a height, and only con
         errors.push(
           `In the site code (src/components/GeoGebra.astro), page dist/${file}: the applet button would open ${src || '(nothing)'}, which is not a GeoGebra applet.`,
         );
-      if (!element.match(/\sdata-titulo="([^"]*)"/)?.[1].trim())
+      if (!element.match(/\sdata-title="([^"]*)"/)?.[1].trim())
         errors.push(`${sourceOf(file)}: the GeoGebra applet ${src} has no title.`);
     }
   assert.ok(!errors.length, errors.join('\n'));

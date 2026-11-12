@@ -34,16 +34,16 @@ const pageUrl = new URL(path, Astro.site);
 
 // Sharing (WhatsApp, Teams…): the whole cover as a JPEG, which every app reads.
 const issues = await getSortedIssues();
-const shareIssue = Astro.props.issue?.data.capa ? Astro.props.issue : issues.find((issue) => issue.data.capa);
+const shareIssue = Astro.props.issue?.data.cover ? Astro.props.issue : issues.find((issue) => issue.data.cover);
 const currentIssue = await getCurrentIssue();
-const currentMonth = currentIssue && monthYear(currentIssue.data.data).replace(/^./, (c) => c.toUpperCase());
+const currentMonth = currentIssue && monthYear(currentIssue.data.date).replace(/^./, (c) => c.toUpperCase());
 // Astro never upscales images: with a cover narrower than 600 px, og:image:width must be its width.
 const shareImage =
   shareIssue &&
   (await getImage({
-    src: shareIssue.data.capa!,
+    src: shareIssue.data.cover!,
     format: 'jpeg',
-    width: Math.min(600, shareIssue.data.capa!.width),
+    width: Math.min(600, shareIssue.data.cover!.width),
     quality: 80,
   }));
 const shareImageUrl = shareImage && new URL(shareImage.src, Astro.site);
@@ -90,7 +90,7 @@ const ariaCurrent = (href: string) => ((href === '/' ? path === '/' : path.start
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content={String(shareImage.attributes.width)} />
         <meta property="og:image:height" content={String(shareImage.attributes.height)} />
-        <meta property="og:image:alt" content={`Capa da edição de ${monthYear(shareIssue.data.data)} do +MAT`} />
+        <meta property="og:image:alt" content={`Capa da edição de ${monthYear(shareIssue.data.date)} do +MAT`} />
       </>
     )}
     <meta name="twitter:card" content="summary" />

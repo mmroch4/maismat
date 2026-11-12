@@ -4,7 +4,7 @@ import { getPublishedArticles } from '../../lib/issues';
 import { SECTIONS, type SectionId } from '../../lib/sections';
 
 const articles = await getPublishedArticles();
-const articleCount = (section: SectionId) => articles.filter((article) => article.data.seccao === section).length;
+const articleCount = (section: SectionId) => articles.filter((article) => article.data.section === section).length;
 const sections = (Object.keys(SECTIONS) as SectionId[]).filter((section) => articleCount(section) > 0);
 ---
 
