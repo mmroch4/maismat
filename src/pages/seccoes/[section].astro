@@ -1,0 +1,83 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getPublishedArticles, monthYear, issueLabel, articleSlug } from '../../lib/issues';
+import { SECTIONS, SECTION_IDS, type SectionId } from '../../lib/sections';
+
+export function getStaticPaths() {
+  return SECTION_IDS.map((section) => ({ params: { section } }));
+}
+
+const section = Astro.params.section as SectionId;
+const entries = await Promise.all(
+  (await getPublishedArticles((article) => article.data.seccao === section)).map(async (article) => ({
+    article,
+    issue: (await getEntry(article.data.edicao))!,
+  })),
+);
+// Newest issue first, then in reading order.
+entries.sort(
+  (a, b) => b.issue.data.data.getTime() - a.issue.data.data.getTime() || a.article.data.ordem - b.article.data.ordem,
+);
+---
+
+<Base title={SECTIONS[section]}>
+  <div class="container">
+    <div class="page-header">
+      <p class="ui">
+        <a href="/seccoes/">← Todas as secções</a>
+      </p>
+      <h1>{SECTIONS[section]}</h1>
+    </div>
+    {entries.length === 0 && <p>Ainda não há artigos nesta secção na versão digital.</p>}
+    <ul>
+      {entries.map(({ article, issue }) => (
+        <li>
+          <a class="card" href={`/edicoes/${issue.id}/${articleSlug(article)}/`}>
+            <span class="ui when">
+              {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+            </span>
+            <strong class="ui">{article.data.titulo}</strong>
+            {article.data.resumo && <span class="summary">{article.data.resumo}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .page-header p {
+    margin: 0 0 0.75rem;
+  }
+  .page-header a {
+    color: var(--text-muted);
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+    max-width: var(--reading-width);
+  }
+  .card {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+  }
+  .when {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+  strong {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .summary {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+</style>

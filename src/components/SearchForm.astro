@@ -1,14 +1,14 @@
 ---
-// Campo de pesquisa da /pesquisa/ e da página 404. O que vier no slot fica por baixo do campo (os filtros).
+// Search field of /pesquisa/ and of the 404 page. Whatever comes in the slot goes below the field (the filters).
 interface Props {
-  escondido?: boolean;
+  hidden?: boolean;
 }
-const { escondido = false } = Astro.props;
+const { hidden = false } = Astro.props;
 ---
 
-<form class="ui pesquisa" action="/pesquisa/" method="get" role="search" hidden={escondido}>
+<form class="ui search-form" action="/pesquisa/" method="get" role="search" hidden={hidden}>
   <label for="q">O que procuras?</label>
-  <div class="linha">
+  <div class="row">
     <input id="q" type="search" name="q" autocomplete="off" spellcheck="false" />
     <button type="submit">Pesquisar</button>
   </div>
@@ -16,19 +16,19 @@ const { escondido = false } = Astro.props;
 </form>
 
 <style>
-  .pesquisa {
+  .search-form {
     display: grid;
     gap: 0.375rem;
     max-width: 40rem;
     font-size: 0.9375rem;
   }
-  .pesquisa[hidden] {
+  .search-form[hidden] {
     display: none;
   }
   label {
     font-weight: 600;
   }
-  .linha {
+  .row {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
@@ -38,14 +38,14 @@ const { escondido = false } = Astro.props;
     min-width: 0;
     min-height: 52px;
     padding: 0 0.875rem;
-    border: 2px solid var(--campo);
-    border-radius: var(--raio);
-    background: var(--superficie);
-    color: var(--texto);
-    font: 1rem var(--f-ui);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font: 1rem var(--font-ui);
   }
   input:focus-visible {
-    border-color: var(--primaria);
+    border-color: var(--primary);
     outline-offset: 2px;
   }
   button {
@@ -54,10 +54,10 @@ const { escondido = false } = Astro.props;
     min-height: 52px;
     padding: 0 1.375rem;
     border: 0;
-    border-radius: var(--raio);
-    background: var(--primaria);
-    color: var(--primaria-texto);
-    font: 700 0.9375rem var(--f-ui);
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: 700 0.9375rem var(--font-ui);
     cursor: pointer;
   }
   @media (min-width: 769px) {
@@ -66,9 +66,9 @@ const { escondido = false } = Astro.props;
     }
   }
   button:hover {
-    background: var(--primaria-forte);
+    background: var(--primary-strong);
   }
   button:focus-visible {
-    outline-color: var(--texto);
+    outline-color: var(--text);
   }
 </style>

@@ -1,37 +1,37 @@
 ---
 import Base from '../../layouts/Base.astro';
-import CartaoEdicao from '../../components/CartaoEdicao.astro';
+import IssueCard from '../../components/IssueCard.astro';
 import { getSortedIssues, monthYear } from '../../lib/issues';
 
-const edicoes = await getSortedIssues();
-const porAno = Map.groupBy(edicoes, (e) => e.data.ano);
-// O ano letivo vai de setembro a agosto: maio de 2025 é 2024/25.
-const anoLetivo = (d: Date) => {
-  const inicio = d.getUTCFullYear() - (d.getUTCMonth() < 8 ? 1 : 0);
-  return `${inicio}/${String(inicio + 1).slice(2)}`;
+const issues = await getSortedIssues();
+const issuesByYear = Map.groupBy(issues, (issue) => issue.data.ano);
+// The school year runs from September to August: May 2025 is 2024/25.
+const schoolYear = (date: Date) => {
+  const start = date.getUTCFullYear() - (date.getUTCMonth() < 8 ? 1 : 0);
+  return `${start}/${String(start + 1).slice(2)}`;
 };
-const primeira = edicoes.at(-1);
+const firstIssue = issues.at(-1);
 ---
 
-<Base titulo="Edições" descricao="Todas as edições do +MAT, Jornal de Matemática.">
-  <div class="contentor">
-    <div class="cabeca">
+<Base title="Edições" description="Todas as edições do +MAT, Jornal de Matemática.">
+  <div class="container">
+    <div class="page-header">
       <h1>
-        <span class="marcador">Edições</span>
+        <span class="highlight">Edições</span>
       </h1>
       <p>
-        {edicoes.length} edições{primeira && ` desde ${monthYear(primeira.data.data)}`}, três por ano letivo. As
+        {issues.length} edições{firstIssue && ` desde ${monthYear(firstIssue.data.data)}`}, três por ano letivo. As
         marcadas com <em>PDF</em> ainda estão a ser convertidas para a versão digital.
       </p>
     </div>
-    {[...porAno].map(([ano, lista]) => (
-      <section aria-labelledby={`ano-${ano}`}>
-        <h2 id={`ano-${ano}`}>
-          Ano {ano} <span class="ui">{anoLetivo(lista[0].data.data)}</span>
+    {[...issuesByYear].map(([year, yearIssues]) => (
+      <section aria-labelledby={`ano-${year}`}>
+        <h2 id={`ano-${year}`}>
+          Ano {year} <span class="ui">{schoolYear(yearIssues[0].data.data)}</span>
         </h2>
-        <div class="grelha">
-          {lista.map((e) => (
-            <CartaoEdicao edicao={e} />
+        <div class="issue-grid">
+          {yearIssues.map((issue) => (
+            <IssueCard issue={issue} />
           ))}
         </div>
       </section>
@@ -46,15 +46,15 @@ const primeira = edicoes.at(-1);
     gap: 0.75rem;
     margin: 2.5rem 0 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--linha);
+    border-bottom: 1px solid var(--border);
   }
   h2 .ui {
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
-  .grelha {
+  .issue-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
     gap: 1.5rem;

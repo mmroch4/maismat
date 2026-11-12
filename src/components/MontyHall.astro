@@ -149,10 +149,10 @@
 <style>
   .monty {
     display: block;
-    background: var(--superficie);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    border-top: 6px solid var(--etiqueta);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border-top: 6px solid var(--tag);
     padding: 1.25rem;
     margin: 2rem 0;
     text-align: center;
@@ -170,27 +170,27 @@
   .porta {
     width: 5.5rem;
     height: 8rem;
-    border-radius: var(--raio-p) var(--raio-p) 0 0;
-    border: 3px solid var(--primaria-forte);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border: 3px solid var(--primary-strong);
     background: linear-gradient(#4f7398, #3d5a78);
     color: #fff;
     cursor: pointer;
     display: grid;
     place-items: center;
-    font: 700 1.6rem var(--f-ui);
+    font: 700 1.6rem var(--font-ui);
     position: relative;
   }
   .porta:disabled {
     cursor: default;
   }
   .porta[data-estado='escolhida'] {
-    outline: 4px solid var(--etiqueta);
+    outline: 4px solid var(--tag);
     outline-offset: 2px;
   }
   .porta[data-estado='aberta'],
   .porta[data-estado='final'] {
-    background: var(--superficie);
-    color: var(--texto);
+    background: var(--surface);
+    color: var(--text);
   }
   .porta[data-estado='final'] {
     outline: 4px solid var(--ok);
@@ -219,19 +219,19 @@
   .simular {
     min-height: 44px;
     padding: 0 1.125rem;
-    border-radius: var(--raio);
-    border: 2px solid var(--primaria);
-    background: var(--primaria);
-    color: var(--primaria-texto);
-    font: 700 0.875rem var(--f-ui);
+    border-radius: var(--radius);
+    border: 2px solid var(--primary);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: 700 0.875rem var(--font-ui);
     cursor: pointer;
   }
   .acoes button:focus-visible {
-    outline-color: var(--texto);
+    outline-color: var(--text);
   }
   .simular {
-    background: var(--superficie);
-    color: var(--primaria);
+    background: var(--surface);
+    color: var(--primary);
     margin-top: 0.75rem;
   }
   .placar {
@@ -242,11 +242,11 @@
   .placar th,
   .placar td {
     padding: 0.3rem 0.7rem;
-    border-bottom: 1px solid var(--linha);
+    border-bottom: 1px solid var(--border);
   }
   .placar thead th {
     font-weight: 600;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
   @media print {
     .monty {

@@ -4,110 +4,110 @@
 @import '@fontsource-variable/inter';
 @import 'katex/dist/katex.min.css';
 
-/* Caderno: ardósia e dourado das edições em PDF, sobre fundo liso */
+/* Notebook palette: the slate and gold of the PDF issues, on a plain background */
 :root {
-  --fundo: #f7f8fa;
-  --superficie: #ffffff;
-  --texto: #1b2430;
-  --texto-suave: #556170;
-  --primaria: #3d5a78;
-  --primaria-forte: #2b3e52;
-  --primaria-texto: #ffffff;
-  /* Marcador dourado: no máximo uma palavra por título; o texto por cima é sempre --marcador-texto */
-  --marcador: #e2c98a;
-  --marcador-texto: #2b3e52;
-  /* Pastilhas douradas (secções, edição atual): iguais no claro e no escuro */
-  --etiqueta: #e2c98a;
-  --etiqueta-texto: #2b3e52;
-  --rotulo: #7a5c12;
-  /* Contorno de caixas de texto e listas de escolha: 3:1 sobre todos os fundos (WCAG 1.4.11) */
-  --campo: #808996;
-  --linha: #e3e7ec;
-  --pastilha: #e8ecf1;
-  --faixa: #eef1f5;
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --text: #1b2430;
+  --text-muted: #556170;
+  --primary: #3d5a78;
+  --primary-strong: #2b3e52;
+  --on-primary: #ffffff;
+  /* Gold highlighter: at most one word per heading; the text on top is always --on-highlight */
+  --highlight: #e2c98a;
+  --on-highlight: #2b3e52;
+  /* Gold tags (sections, current issue): the same in light and dark */
+  --tag: #e2c98a;
+  --on-tag: #2b3e52;
+  --eyebrow: #7a5c12;
+  /* Border of text inputs and select lists: 3:1 against every background (WCAG 1.4.11) */
+  --field-border: #808996;
+  --border: #e3e7ec;
+  --pill: #e8ecf1;
+  --band: #eef1f5;
   --ok: #2f7a3a;
-  --ok-fundo: #e8f1e9;
-  --erro: #b3261e;
-  --erro-fundo: #fbecea;
-  --sombra: 0 1px 0 #e3e7ec, 0 4px 12px rgb(27 36 48 / 0.06);
-  /* Destaque da edição atual no início: azul no claro, superfície no escuro */
-  --destaque-fundo: var(--primaria);
-  --destaque-texto: var(--primaria-texto);
-  --destaque-sombra: none;
-  --destaque-botao: var(--superficie);
-  --destaque-botao-texto: var(--texto);
+  --ok-bg: #e8f1e9;
+  --error: #b3261e;
+  --error-bg: #fbecea;
+  --shadow: 0 1px 0 #e3e7ec, 0 4px 12px rgb(27 36 48 / 0.06);
+  /* Current issue feature on the home page: blue in light mode, surface in dark mode */
+  --feature-bg: var(--primary);
+  --on-feature: var(--on-primary);
+  --feature-shadow: none;
+  --feature-button: var(--surface);
+  --on-feature-button: var(--text);
 
-  --f-titulo: 'Inter Variable', system-ui, sans-serif;
-  --f-texto: 'Source Serif 4', Georgia, serif;
-  --f-ui: 'Inter Variable', system-ui, sans-serif;
+  --font-heading: 'Inter Variable', system-ui, sans-serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-ui: 'Inter Variable', system-ui, sans-serif;
 
-  --largura: 72rem;
-  --leitura: 42rem;
-  --raio-p: 8px;
-  --raio: 14px;
-  --raio-g: 22px;
+  --max-width: 72rem;
+  --reading-width: 42rem;
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
 
   color-scheme: light;
 }
 
-/* O tema escuro segue o sistema, a não ser que se escolha outro no botão do rodapé (data-tema no <html>).
-   Os valores repetem-se nos dois blocos porque o light-dark() ainda não chega a todos os computadores da escola. */
+/* The dark theme follows the system unless another one is picked with the footer button (data-theme on <html>).
+   The values are repeated in both blocks because light-dark() is not yet supported on every school computer. */
 @media screen and (prefers-color-scheme: dark) {
-  :root:not([data-tema='claro']) {
-    --fundo: #111820;
-    --superficie: #18212b;
-    --texto: #e6ebf0;
-    --texto-suave: #9fb0c0;
-    --primaria: #8fb0d1;
-    --primaria-forte: #b3cbe3;
-    --primaria-texto: #111820;
-    --marcador: #5c4f2a;
-    --marcador-texto: #e6ebf0;
-    --rotulo: #e2c98a;
-    --campo: #7d8794;
-    --linha: #2a3440;
-    --pastilha: #233040;
-    --faixa: #0c1218;
+  :root:not([data-theme='light']) {
+    --bg: #111820;
+    --surface: #18212b;
+    --text: #e6ebf0;
+    --text-muted: #9fb0c0;
+    --primary: #8fb0d1;
+    --primary-strong: #b3cbe3;
+    --on-primary: #111820;
+    --highlight: #5c4f2a;
+    --on-highlight: #e6ebf0;
+    --eyebrow: #e2c98a;
+    --field-border: #7d8794;
+    --border: #2a3440;
+    --pill: #233040;
+    --band: #0c1218;
     --ok: #6cc47a;
-    --ok-fundo: #1a2e21;
-    --erro: #f2867e;
-    --erro-fundo: #36201e;
-    --sombra: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
-    --destaque-fundo: var(--superficie);
-    --destaque-texto: var(--texto);
-    --destaque-sombra: var(--sombra);
-    --destaque-botao: var(--primaria);
-    --destaque-botao-texto: var(--primaria-texto);
+    --ok-bg: #1a2e21;
+    --error: #f2867e;
+    --error-bg: #36201e;
+    --shadow: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
+    --feature-bg: var(--surface);
+    --on-feature: var(--text);
+    --feature-shadow: var(--shadow);
+    --feature-button: var(--primary);
+    --on-feature-button: var(--on-primary);
     color-scheme: dark;
   }
 }
-/* No papel fica sempre o claro */
+/* Paper always gets the light theme */
 @media screen {
-  :root[data-tema='escuro'] {
-    --fundo: #111820;
-    --superficie: #18212b;
-    --texto: #e6ebf0;
-    --texto-suave: #9fb0c0;
-    --primaria: #8fb0d1;
-    --primaria-forte: #b3cbe3;
-    --primaria-texto: #111820;
-    --marcador: #5c4f2a;
-    --marcador-texto: #e6ebf0;
-    --rotulo: #e2c98a;
-    --campo: #7d8794;
-    --linha: #2a3440;
-    --pastilha: #233040;
-    --faixa: #0c1218;
+  :root[data-theme='dark'] {
+    --bg: #111820;
+    --surface: #18212b;
+    --text: #e6ebf0;
+    --text-muted: #9fb0c0;
+    --primary: #8fb0d1;
+    --primary-strong: #b3cbe3;
+    --on-primary: #111820;
+    --highlight: #5c4f2a;
+    --on-highlight: #e6ebf0;
+    --eyebrow: #e2c98a;
+    --field-border: #7d8794;
+    --border: #2a3440;
+    --pill: #233040;
+    --band: #0c1218;
     --ok: #6cc47a;
-    --ok-fundo: #1a2e21;
-    --erro: #f2867e;
-    --erro-fundo: #36201e;
-    --sombra: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
-    --destaque-fundo: var(--superficie);
-    --destaque-texto: var(--texto);
-    --destaque-sombra: var(--sombra);
-    --destaque-botao: var(--primaria);
-    --destaque-botao-texto: var(--primaria-texto);
+    --ok-bg: #1a2e21;
+    --error: #f2867e;
+    --error-bg: #36201e;
+    --shadow: 0 1px 0 #2a3440, 0 4px 12px rgb(0 0 0 / 0.3);
+    --feature-bg: var(--surface);
+    --on-feature: var(--text);
+    --feature-shadow: var(--shadow);
+    --feature-button: var(--primary);
+    --on-feature-button: var(--on-primary);
     color-scheme: dark;
   }
 }
@@ -124,9 +124,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--fundo);
-  color: var(--texto);
-  font-family: var(--f-texto);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
   font-size: 1.125rem;
   line-height: 1.667;
 }
@@ -137,14 +137,14 @@ img {
 }
 
 a {
-  color: var(--primaria);
+  color: var(--primary);
   text-underline-offset: 0.15em;
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--f-titulo);
+  font-family: var(--font-heading);
   font-weight: 800;
   line-height: 1.15;
   text-wrap: balance;
@@ -174,38 +174,38 @@ h3 {
   }
 }
 
-/* Realce de uma palavra-chave: o dourado só na metade de baixo */
-.marcador {
-  background: linear-gradient(transparent 55%, var(--marcador) 55%);
+/* Keyword highlight: gold on the bottom half only */
+.highlight {
+  background: linear-gradient(transparent 55%, var(--highlight) 55%);
   color: inherit;
 }
 
-.contentor {
-  max-width: var(--largura);
+.container {
+  max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 1rem;
 }
 
-.etiqueta {
+.tag {
   display: inline-block;
-  font-family: var(--f-ui);
+  font-family: var(--font-ui);
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.5;
-  color: var(--etiqueta-texto);
-  background: var(--etiqueta);
+  color: var(--on-tag);
+  background: var(--tag);
   padding: 0.25rem 0.625rem;
-  border-radius: var(--raio-g);
+  border-radius: var(--radius-lg);
   text-decoration: none;
 }
 
 .ui {
-  font-family: var(--f-ui);
+  font-family: var(--font-ui);
 }
-.cap {
+.capitalize {
   text-transform: capitalize;
 }
-.visualmente-oculto {
+.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -214,81 +214,81 @@ h3 {
   white-space: nowrap;
 }
 
-/* Título de página: espaço por cima e uma frase suave por baixo */
-.cabeca {
+/* Page title: space above and a muted sentence below */
+.page-header {
   padding-top: 2rem;
   margin-bottom: 1.5rem;
 }
-.cabeca h1 {
+.page-header h1 {
   margin: 0;
 }
-.cabeca p {
-  font-family: var(--f-ui);
+.page-header p {
+  font-family: var(--font-ui);
   font-size: 0.9375rem;
-  color: var(--texto-suave);
+  color: var(--text-muted);
   margin: 0.5rem 0 0;
   max-width: 40rem;
 }
 @media (min-width: 769px) {
-  .cabeca {
+  .page-header {
     padding-top: 2.5rem;
   }
 }
 
-.botao {
+.button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   min-height: 48px;
   padding: 0 1.375rem;
-  border: 2px solid var(--primaria);
-  border-radius: var(--raio);
-  background: var(--primaria);
-  color: var(--primaria-texto);
-  font: 700 0.9375rem/1.2 var(--f-ui);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--on-primary);
+  font: 700 0.9375rem/1.2 var(--font-ui);
   text-decoration: none;
   cursor: pointer;
 }
-.botao:hover {
-  background: var(--primaria-forte);
-  border-color: var(--primaria-forte);
+.button:hover {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
 }
-.botao:focus-visible {
-  outline-color: var(--texto);
+.button:focus-visible {
+  outline-color: var(--text);
 }
-.botao.secundario {
-  background: var(--superficie);
-  color: var(--primaria);
+.button.secondary {
+  background: var(--surface);
+  color: var(--primary);
 }
-.botao.secundario:hover {
-  background: var(--pastilha);
+.button.secondary:hover {
+  background: var(--pill);
 }
 
-/* Cartão branco: o raio, a sombra e, ao passar o rato, uma subida de 2 px */
-.cartao {
+/* White card: radius, shadow and a 2 px lift on hover */
+.card {
   display: block;
-  background: var(--superficie);
-  border-radius: var(--raio);
-  box-shadow: var(--sombra);
-  color: var(--texto);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: var(--text);
   text-decoration: none;
   transition: transform 150ms ease;
 }
-a.cartao:hover {
+a.card:hover {
   transform: translateY(-2px);
 }
 
-/* Grupo de pastilhas que se escolhem (filtros) */
-.pastilhas {
+/* Group of selectable pills (filters) */
+.pills {
   display: inline-flex;
   gap: 4px;
   padding: 4px;
   max-width: 100%;
-  background: var(--pastilha);
+  background: var(--pill);
   border-radius: 24px;
 }
-.pastilhas button {
+.pills button {
   flex: 1 1 auto;
   min-height: 44px;
   padding: 0 clamp(0.625rem, 3vw, 1rem);
@@ -296,34 +296,34 @@ a.cartao:hover {
   border: 0;
   border-radius: 20px;
   background: transparent;
-  color: var(--texto);
-  font: 500 clamp(0.8125rem, 3.4vw, 0.875rem) var(--f-ui);
+  color: var(--text);
+  font: 500 clamp(0.8125rem, 3.4vw, 0.875rem) var(--font-ui);
   cursor: pointer;
 }
-.pastilhas button[aria-pressed='true'] {
-  background: var(--superficie);
+.pills button[aria-pressed='true'] {
+  background: var(--surface);
   font-weight: 700;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 
-/* Listas de escolha e caixas de texto */
-.entrada {
+/* Select lists and text inputs */
+.field {
   min-height: 44px;
   padding: 0 0.625rem;
-  border: 2px solid var(--campo);
-  border-radius: var(--raio-p);
-  background: var(--superficie);
-  color: var(--texto);
-  font: 0.9375rem var(--f-ui);
+  border: 2px solid var(--field-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: 0.9375rem var(--font-ui);
   max-width: 100%;
 }
-.entrada:focus-visible {
-  border-color: var(--primaria);
+.field:focus-visible {
+  border-color: var(--primary);
   outline-offset: 2px;
 }
 
 :focus-visible {
-  outline: 3px solid var(--primaria);
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
 
@@ -338,90 +338,90 @@ a.cartao:hover {
   }
 }
 
-.saltar {
+.skip-link {
   position: absolute;
   left: 1rem;
   top: -10rem;
   z-index: 10;
-  background: var(--superficie);
-  color: var(--texto);
+  background: var(--surface);
+  color: var(--text);
   padding: 0.5rem 0.9rem;
-  border-radius: var(--raio-p);
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
-.saltar:focus {
+.skip-link:focus {
   top: 0.5rem;
 }
 
-/* ---------- Corpo dos artigos ---------- */
-.prosa {
-  max-width: var(--leitura);
+/* ---------- Article body ---------- */
+.prose {
+  max-width: var(--reading-width);
 }
-.prosa > * + * {
+.prose > * + * {
   margin-top: 1em;
 }
-.prosa h2 {
+.prose h2 {
   margin-top: 2em;
 }
-.prosa h3 {
+.prose h3 {
   margin-top: 1.6em;
 }
-.prosa p,
-.prosa ul,
-.prosa ol {
+.prose p,
+.prose ul,
+.prose ol {
   margin-bottom: 0;
 }
-.prosa li + li {
+.prose li + li {
   margin-top: 0.3em;
 }
-.prosa figure {
+.prose figure {
   margin: 1.75em 0;
 }
-.prosa figure img,
-.prosa > p > img {
-  border-radius: var(--raio-p);
+.prose figure img,
+.prose > p > img {
+  border-radius: var(--radius-sm);
   display: block;
 }
-.prosa figcaption {
-  font-family: var(--f-ui);
+.prose figcaption {
+  font-family: var(--font-ui);
   font-size: 0.8125rem;
   line-height: 1.5;
-  color: var(--texto-suave);
+  color: var(--text-muted);
   margin-top: 0.5em;
 }
-.prosa blockquote {
+.prose blockquote {
   margin: 1.5em 0;
   padding: 0.25em 0 0.25em 1em;
-  border-left: 4px solid var(--marcador);
+  border-left: 4px solid var(--highlight);
   font-style: italic;
 }
-.prosa table {
+.prose table {
   border-collapse: collapse;
-  font-family: var(--f-ui);
+  font-family: var(--font-ui);
   font-size: 0.9rem;
   margin: 1.5em 0;
 }
-.prosa th,
-.prosa td {
-  border: 1px solid var(--linha);
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
   padding: 0.3em 0.7em;
   text-align: left;
 }
-.prosa th {
-  background: var(--pastilha);
+.prose th {
+  background: var(--pill);
 }
-.prosa .katex-display {
+.prose .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.25em 0;
 }
-.prosa hr {
+.prose hr {
   border: 0;
-  border-top: 1px solid var(--linha);
+  border-top: 1px solid var(--border);
   margin: 2.5em 0;
 }
 
-/* Grelha de imagens com legenda (ex.: Geometria na Arquitetura) */
+/* Grid of captioned images (e.g. Geometria na Arquitetura) */
 .galeria {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -437,26 +437,26 @@ a.cartao:hover {
   width: 100%;
 }
 
-/* Texto que só aparece no papel, no lugar do que é interativo (demonstrações, applets) */
-.so-imprimir {
+/* Text that only appears on paper, in place of interactive content (demos, applets) */
+.print-only {
   display: none;
 }
 
 .nota {
-  background: var(--pastilha);
-  border-radius: var(--raio-p);
+  background: var(--pill);
+  border-radius: var(--radius-sm);
   padding: 1rem 1.25rem;
 }
 
 @media print {
   :root {
-    --fundo: #fff;
-    --texto: #000;
+    --bg: #fff;
+    --text: #000;
   }
-  .nao-imprimir {
+  .no-print {
     display: none !important;
   }
-  .so-imprimir {
+  .print-only {
     display: block;
   }
   body {

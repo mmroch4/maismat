@@ -1,0 +1,248 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../../layouts/Base.astro';
+import {
+  getIssueArticles,
+  getPublishedIssues,
+  monthYear,
+  issueLabel,
+  articleSlug,
+  type Issue,
+} from '../../../lib/issues';
+import { SECTIONS } from '../../../lib/sections';
+import { publisher, publicationIssue } from '../../../lib/structured-data';
+
+export async function getStaticPaths() {
+  const issues = await getPublishedIssues();
+  return issues.map((issue) => ({ params: { issue: issue.id }, props: { issue } }));
+}
+
+const { issue } = Astro.props as { issue: Issue };
+const { data: date, capa: cover, pdf, direcao: editors, citacao: quote, convertida: converted } = issue.data;
+const articles = await getIssueArticles(issue.id);
+const articleUrl = (article: (typeof articles)[number]) => `/edicoes/${issue.id}/${articleSlug(article)}/`;
+const structuredData = {
+  ...publicationIssue(issue, Astro.site!),
+  inLanguage: 'pt-PT',
+  publisher: publisher(Astro.site!),
+  hasPart:
+    converted && articles.length
+      ? articles.map((article) => ({
+          '@type': 'Article',
+          headline: article.data.titulo,
+          url: new URL(articleUrl(article), Astro.site).href,
+        }))
+      : undefined,
+};
+---
+
+<Base title={`${issueLabel(issue)} (${monthYear(date)})`} issue={issue} structuredData={structuredData}>
+  <div
+    data-pagefind-body
+    data-pagefind-meta={`title:${issueLabel(issue)} (${monthYear(date)})`}
+    data-pagefind-filter={`issue:${issueLabel(issue)}`}
+    data-pagefind-sort={`date:${date.toISOString().slice(0, 10)}`}
+  >
+    <div class="container issue-header">
+      {cover && (
+        <Image
+          src={cover}
+          alt={`Capa da edição de ${monthYear(date)}`}
+          width={400}
+          class="cover"
+          loading="eager"
+          fetchpriority="high"
+        />
+      )}
+      <div class="issue-header-text">
+        <p class="ui eyebrow">{issueLabel(issue)}</p>
+        <h1 class="capitalize">{monthYear(date)}</h1>
+        <p class="ui editors">Direção e edição de {editors.join(' e ')}</p>
+        <p class="ui actions" data-pagefind-ignore>
+          {converted && articles.length > 0 && (
+            <a class="button" href={articleUrl(articles[0])}>
+              Começar a ler
+            </a>
+          )}
+          {pdf && (
+            <a class="button secondary" href={pdf} download>
+              Ver em PDF
+            </a>
+          )}
+          {converted && (
+            <a class="button secondary" href={`/edicoes/${issue.id}/imprimir/`}>
+              Imprimir tudo
+            </a>
+          )}
+        </p>
+        {quote && (
+          <blockquote>
+            “{quote.texto}” <footer>— {quote.autor}</footer>
+          </blockquote>
+        )}
+      </div>
+    </div>
+
+    <div class="container">
+      {converted ? (
+        <>
+          <h2 class="contents-heading">
+            Sumário <span class="ui">· {articles.length} artigos</span>
+          </h2>
+          <ol class="contents">
+            {articles.map((article, i) => (
+              <li>
+                <a class="card" href={articleUrl(article)}>
+                  <span class="number ui" data-pagefind-ignore>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="text">
+                    <span class="section ui" data-pagefind-ignore>
+                      {SECTIONS[article.data.seccao]}
+                    </span>
+                    <strong>{article.data.titulo}</strong>
+                    {article.data.resumo && <span class="summary">{article.data.resumo}</span>}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </>
+      ) : (
+        pdf && (
+          <>
+            <p class="ui notice">Esta edição ainda só está disponível no formato original.</p>
+            <object data={pdf} type="application/pdf" class="pdf-viewer">
+              <p>
+                <a href={pdf}>Abrir o PDF</a>
+              </p>
+            </object>
+          </>
+        )
+      )}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .issue-header {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    padding-top: 2rem;
+  }
+  @media (min-width: 769px) {
+    .issue-header {
+      grid-template-columns: 14rem 1fr;
+      gap: 2.5rem;
+      padding-top: 2.5rem;
+    }
+  }
+  .cover {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 6px 24px rgb(0 0 0 / 0.12);
+  }
+  .issue-header-text {
+    min-width: 0;
+  }
+  .eyebrow {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  h1 {
+    margin: 0.25rem 0;
+  }
+  .editors {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1.25rem 0 0;
+  }
+  blockquote {
+    grid-column: 1 / -1;
+    font-style: italic;
+    border-left: 4px solid var(--highlight);
+    padding-left: 1rem;
+    margin: 1.5rem 0 0;
+    max-width: 36rem;
+  }
+  blockquote footer {
+    font-family: var(--font-ui);
+    font-style: normal;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .contents-heading {
+    margin: 2.5rem 0 1rem;
+  }
+  .contents-heading .ui {
+    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 0.7em;
+    letter-spacing: 0;
+  }
+  .contents {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 0.75rem 1.25rem;
+  }
+  .contents .card {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1rem 1.25rem;
+  }
+  .number {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--eyebrow);
+    line-height: 1.4;
+  }
+  .text {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .section {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .text strong {
+    font-family: var(--font-ui);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .summary {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-top: 0.15rem;
+  }
+  .notice {
+    margin-top: 2.5rem;
+    color: var(--text-muted);
+  }
+  .pdf-viewer {
+    width: 100%;
+    height: 85vh;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+</style>

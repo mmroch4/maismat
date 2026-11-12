@@ -3,25 +3,25 @@ import Base from '../../layouts/Base.astro';
 import { getPublishedArticles } from '../../lib/issues';
 import { SECTIONS, type SectionId } from '../../lib/sections';
 
-const artigos = await getPublishedArticles();
-const contagem = (s: SectionId) => artigos.filter((a) => a.data.seccao === s).length;
-const lista = (Object.keys(SECTIONS) as SectionId[]).filter((s) => contagem(s) > 0);
+const articles = await getPublishedArticles();
+const articleCount = (section: SectionId) => articles.filter((article) => article.data.seccao === section).length;
+const sections = (Object.keys(SECTIONS) as SectionId[]).filter((section) => articleCount(section) > 0);
 ---
 
-<Base titulo="Secções">
-  <div class="contentor">
-    <div class="cabeca">
+<Base title="Secções">
+  <div class="container">
+    <div class="page-header">
       <h1>
-        <span class="marcador">Secções</span>
+        <span class="highlight">Secções</span>
       </h1>
       <p>Os artigos do +MAT arrumados pelas secções do jornal.</p>
     </div>
     <ul class="ui">
-      {lista.map((s) => (
+      {sections.map((section) => (
         <li>
-          <a class="cartao" href={`/seccoes/${s}/`}>
-            <span class="nome">{SECTIONS[s]}</span>{' '}
-            <span class="n">{contagem(s) === 1 ? '1 artigo' : `${contagem(s)} artigos`}</span>
+          <a class="card" href={`/seccoes/${section}/`}>
+            <span class="name">{SECTIONS[section]}</span>{' '}
+            <span class="count">{articleCount(section) === 1 ? '1 artigo' : `${articleCount(section)} artigos`}</span>
           </a>
         </li>
       ))}
@@ -38,7 +38,7 @@ const lista = (Object.keys(SECTIONS) as SectionId[]).filter((s) => contagem(s) >
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
     gap: 0.75rem;
   }
-  .cartao {
+  .card {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -46,11 +46,11 @@ const lista = (Object.keys(SECTIONS) as SectionId[]).filter((s) => contagem(s) >
     min-height: 56px;
     padding: 0.75rem 1.25rem;
   }
-  .nome {
+  .name {
     font-weight: 700;
   }
-  .n {
-    color: var(--texto-suave);
+  .count {
+    color: var(--text-muted);
     font-size: 0.875rem;
   }
 </style>

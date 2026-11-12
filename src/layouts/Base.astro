@@ -1,63 +1,63 @@
 ---
 import { getImage } from 'astro:assets';
 import '../styles/global.css';
-import Logotipo from '../components/Logotipo.astro';
-import Icone from '../components/Icone.astro';
-// As duas fontes que quase todas as páginas usam logo no início: títulos e interface, e texto.
-import fonteTitulos from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
-import fonteTexto from '@fontsource/source-serif-4/files/source-serif-4-latin-400-normal.woff2?url';
+import Logo from '../components/Logo.astro';
+import Icon from '../components/Icon.astro';
+// The two fonts almost every page uses right away: headings and interface, and body text.
+import headingFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import bodyFont from '@fontsource/source-serif-4/files/source-serif-4-latin-400-normal.woff2?url';
 import { getCurrentIssue, getSortedIssues, monthYear, type Issue } from '../lib/issues';
 import { jsonLd } from '../lib/structured-data';
 
 interface Props {
-  titulo?: string;
-  descricao?: string;
-  // Edição cuja capa aparece ao partilhar a página; por omissão, a mais recente com capa.
-  edicao?: Issue;
-  artigo?: boolean;
-  // A 404 é servida em qualquer endereço: não tem endereço próprio e não deve ser indexada.
-  naoEncontrada?: boolean;
-  // Dados estruturados (schema.org); o endereço e a imagem são acrescentados aqui.
-  dados?: Record<string, unknown>;
+  title?: string;
+  description?: string;
+  // Issue whose cover is shown when the page is shared; by default, the newest one with a cover.
+  issue?: Issue;
+  isArticle?: boolean;
+  // The 404 page is served at any address: it has no address of its own and must not be indexed.
+  isNotFound?: boolean;
+  // Structured data (schema.org); the URL and the image are added here.
+  structuredData?: Record<string, unknown>;
 }
 
 const {
-  titulo,
-  descricao = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.',
-  artigo = false,
-  naoEncontrada = false,
-  dados,
+  title,
+  description = 'Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira, Leiria.',
+  isArticle = false,
+  isNotFound = false,
+  structuredData,
 } = Astro.props;
-const tituloCompleto = titulo ? `${titulo} · +MAT` : '+MAT · Jornal de Matemática';
-const caminho = Astro.url.pathname;
-const endereco = new URL(caminho, Astro.site);
+const fullTitle = title ? `${title} · +MAT` : '+MAT · Jornal de Matemática';
+const path = Astro.url.pathname;
+const pageUrl = new URL(path, Astro.site);
 
-// Partilha (WhatsApp, Teams…): a capa inteira em JPEG, que todos leem.
-const edicoes = await getSortedIssues();
-const edicao = Astro.props.edicao?.data.capa ? Astro.props.edicao : edicoes.find((e) => e.data.capa);
-const atual = await getCurrentIssue();
-const mesAtual = atual && monthYear(atual.data.data).replace(/^./, (c) => c.toUpperCase());
-// O Astro não aumenta imagens: com uma capa mais estreita que 600 px, o og:image:width tem de ser a largura dela.
-const partilha =
-  edicao &&
+// Sharing (WhatsApp, Teams…): the whole cover as a JPEG, which every app reads.
+const issues = await getSortedIssues();
+const shareIssue = Astro.props.issue?.data.capa ? Astro.props.issue : issues.find((issue) => issue.data.capa);
+const currentIssue = await getCurrentIssue();
+const currentMonth = currentIssue && monthYear(currentIssue.data.data).replace(/^./, (c) => c.toUpperCase());
+// Astro never upscales images: with a cover narrower than 600 px, og:image:width must be its width.
+const shareImage =
+  shareIssue &&
   (await getImage({
-    src: edicao.data.capa!,
+    src: shareIssue.data.capa!,
     format: 'jpeg',
-    width: Math.min(600, edicao.data.capa!.width),
+    width: Math.min(600, shareIssue.data.capa!.width),
     quality: 80,
   }));
-const imagem = partilha && new URL(partilha.src, Astro.site);
-const nav = [
-  { href: '/', texto: 'Início', icone: 'inicio' },
-  { href: '/edicoes/', texto: 'Edições', icone: 'edicoes' },
-  { href: '/seccoes/', texto: 'Secções', icone: 'seccoes' },
-  { href: '/desafios/', texto: 'Desafios', icone: 'desafios' },
-  { href: '/sobre/', texto: 'Sobre', icone: 'sobre' },
-  { href: '/pesquisa/', texto: 'Pesquisar', icone: 'pesquisar' },
+const shareImageUrl = shareImage && new URL(shareImage.src, Astro.site);
+const navLinks = [
+  { href: '/', label: 'Início', icon: 'home' },
+  { href: '/edicoes/', label: 'Edições', icon: 'issues' },
+  { href: '/seccoes/', label: 'Secções', icon: 'sections' },
+  { href: '/desafios/', label: 'Desafios', icon: 'challenges' },
+  { href: '/sobre/', label: 'Sobre', icon: 'about' },
+  { href: '/pesquisa/', label: 'Pesquisar', icon: 'search' },
 ] as const;
-// No telemóvel, Secções e Sobre vão para a folha «Mais».
-const navBaixo = nav.filter((l) => l.href !== '/seccoes/' && l.href !== '/sobre/');
-const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.startsWith(href)) ? 'page' : undefined);
+// On phones, Sections and About move to the "More" sheet.
+const bottomNavLinks = navLinks.filter((link) => link.href !== '/seccoes/' && link.href !== '/sobre/');
+const ariaCurrent = (href: string) => ((href === '/' ? path === '/' : path.startsWith(href)) ? 'page' : undefined);
 ---
 
 <!doctype html>
@@ -66,119 +66,125 @@ const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.sta
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>
-      // O tema escolhido no rodapé, aplicado antes de a página aparecer, para não piscar.
+      // The theme picked in the footer, applied before the page shows up so it does not flash.
+      // Keep the key in sync with THEME_KEY in src/lib/storage.ts.
       try {
-        const tema = localStorage.getItem('maismat:tema');
-        if (tema === 'claro' || tema === 'escuro') document.documentElement.dataset.tema = tema;
+        const theme = localStorage.getItem('maismat:theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
       } catch {}
     </script>
-    <link rel="preload" href={fonteTitulos} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={fonteTexto} as="font" type="font/woff2" crossorigin />
-    <title>{tituloCompleto}</title>
-    <meta name="description" content={descricao} />
-    {naoEncontrada ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={endereco} />}
-    <meta property="og:title" content={tituloCompleto} />
-    <meta property="og:description" content={descricao} />
-    <meta property="og:type" content={artigo ? 'article' : 'website'} />
-    {!naoEncontrada && <meta property="og:url" content={endereco} />}
+    <link rel="preload" href={headingFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {isNotFound ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={pageUrl} />}
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={isArticle ? 'article' : 'website'} />
+    {!isNotFound && <meta property="og:url" content={pageUrl} />}
     <meta property="og:site_name" content="+MAT" />
     <meta property="og:locale" content="pt_PT" />
-    {partilha && (
+    {shareImage && (
       <>
-        <meta property="og:image" content={imagem} />
+        <meta property="og:image" content={shareImageUrl} />
         <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:width" content={String(partilha.attributes.width)} />
-        <meta property="og:image:height" content={String(partilha.attributes.height)} />
-        <meta property="og:image:alt" content={`Capa da edição de ${monthYear(edicao.data.data)} do +MAT`} />
+        <meta property="og:image:width" content={String(shareImage.attributes.width)} />
+        <meta property="og:image:height" content={String(shareImage.attributes.height)} />
+        <meta property="og:image:alt" content={`Capa da edição de ${monthYear(shareIssue.data.data)} do +MAT`} />
       </>
     )}
     <meta name="twitter:card" content="summary" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title="+MAT · Edições" href="/rss.xml" />
-    {dados && (
+    {structuredData && (
       <script
         type="application/ld+json"
-        set:html={jsonLd({ '@context': 'https://schema.org', ...dados, url: endereco.href, image: imagem?.href })}
+        set:html={jsonLd({
+          '@context': 'https://schema.org',
+          ...structuredData,
+          url: pageUrl.href,
+          image: shareImageUrl?.href,
+        })}
       />
     )}
   </head>
   <body>
-    <a class="saltar ui nao-imprimir" href="#conteudo">
+    <a class="skip-link ui no-print" href="#content">
       Saltar para o conteúdo
     </a>
-    <p class="faixa ui nao-imprimir">
-      <span class="so-computador">
+    <p class="band ui no-print">
+      <span class="desktop-only">
         Versão digital do +MAT desenvolvida por <a href="https://miguelrocha.dev">Miguel Rocha</a> · miguelrocha.dev
       </span>
-      <span class="so-telemovel">
+      <span class="mobile-only">
         Versão digital por <a href="https://miguelrocha.dev">Miguel Rocha</a>
       </span>
     </p>
-    <header class="topo ui nao-imprimir">
-      <div class="contentor topo-linha">
-        <a href="/" class="marca" aria-label="+MAT, página inicial">
-          <Logotipo />
+    <header class="site-header ui no-print">
+      <div class="container site-header-row">
+        <a href="/" class="brand" aria-label="+MAT, página inicial">
+          <Logo />
         </a>
-        <nav class="nav-topo" aria-label="Principal">
-          {nav.map((l) => (
-            <a href={l.href} aria-current={atualDe(l.href)}>
-              <Icone nome={l.icone} />
-              {l.texto}
+        <nav class="top-nav" aria-label="Principal">
+          {navLinks.map((link) => (
+            <a href={link.href} aria-current={ariaCurrent(link.href)}>
+              <Icon name={link.icon} />
+              {link.label}
             </a>
           ))}
         </nav>
-        {atual && (
-          <a class="edicao-atual" href={`/edicoes/${atual.id}/`} aria-label={`Edição atual, ${mesAtual}`}>
-            <span class="etiqueta">{mesAtual}</span>
+        {currentIssue && (
+          <a class="current-issue" href={`/edicoes/${currentIssue.id}/`} aria-label={`Edição atual, ${currentMonth}`}>
+            <span class="tag">{currentMonth}</span>
           </a>
         )}
       </div>
     </header>
 
-    <main id="conteudo">
+    <main id="content">
       <slot />
     </main>
 
-    <footer class="rodape ui nao-imprimir">
-      <div class="contentor rodape-linha">
+    <footer class="site-footer ui no-print">
+      <div class="container site-footer-row">
         <p>
           +MAT · Jornal de Matemática do Agrupamento de Escolas Domingos Sequeira · Direção e edição de Rosa Bértolo e
           Carla Nunes · Versão digital de <a href="https://miguelrocha.dev">Miguel Rocha</a>
         </p>
-        <p class="rodape-ligacoes">
+        <p class="site-footer-links">
           <a href="/sobre/">Sobre e créditos</a>
           <a href="/rss.xml">RSS</a>
-          <button type="button" class="mudar-tema" hidden>
+          <button type="button" class="theme-toggle" hidden>
             Tema escuro
           </button>
         </p>
       </div>
     </footer>
 
-    <nav class="nav-baixo ui nao-imprimir" aria-label="Principal">
-      {navBaixo.map((l) => (
-        <a href={l.href} aria-current={atualDe(l.href)}>
-          <Icone nome={l.icone} tamanho={22} />
-          {l.texto}
+    <nav class="bottom-nav ui no-print" aria-label="Principal">
+      {bottomNavLinks.map((link) => (
+        <a href={link.href} aria-current={ariaCurrent(link.href)}>
+          <Icon name={link.icon} size={22} />
+          {link.label}
         </a>
       ))}
-      <button type="button" class="abrir-mais" aria-haspopup="dialog" aria-controls="mais">
-        <Icone nome="mais" tamanho={22} />
+      <button type="button" class="open-more" aria-haspopup="dialog" aria-controls="more">
+        <Icon name="more" size={22} />
         Mais
       </button>
     </nav>
 
-    <dialog id="mais" class="mais ui nao-imprimir" aria-label="Mais">
-      <Logotipo />
+    <dialog id="more" class="more ui no-print" aria-label="Mais">
+      <Logo />
       <ul>
         <li>
-          <a href="/seccoes/" aria-current={atualDe('/seccoes/')}>
+          <a href="/seccoes/" aria-current={ariaCurrent('/seccoes/')}>
             Secções
           </a>
         </li>
         <li>
-          <a href="/sobre/" aria-current={atualDe('/sobre/')}>
+          <a href="/sobre/" aria-current={ariaCurrent('/sobre/')}>
             Sobre o +MAT
           </a>
         </li>
@@ -199,139 +205,142 @@ const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.sta
     </dialog>
 
     <script>
-      const raiz = document.documentElement;
-      const sistema = matchMedia('(prefers-color-scheme: dark)');
-      const botaoTema = document.querySelector<HTMLButtonElement>('.mudar-tema')!;
-      const escuro = () => (raiz.dataset.tema ? raiz.dataset.tema === 'escuro' : sistema.matches);
-      // O botão diz o tema para onde se vai.
-      const mostrarTema = () => (botaoTema.textContent = escuro() ? 'Tema claro' : 'Tema escuro');
-      botaoTema.addEventListener('click', () => {
-        raiz.dataset.tema = escuro() ? 'claro' : 'escuro';
-        try {
-          localStorage.setItem('maismat:tema', raiz.dataset.tema);
-        } catch {}
-        mostrarTema();
-      });
-      sistema.addEventListener('change', mostrarTema);
-      mostrarTema();
-      botaoTema.hidden = false;
+      import { THEME_KEY, type Theme } from '../lib/storage';
 
-      const mais = document.querySelector<HTMLDialogElement>('#mais')!;
-      document.querySelector('.abrir-mais')!.addEventListener('click', () => mais.showModal());
-      // Tocar fora da folha fecha-a; as ligações para a mesma página (#levar) também.
-      mais.addEventListener('click', (e) => {
-        if (e.target === mais || (e.target as Element).closest('a')) mais.close();
+      const root = document.documentElement;
+      const systemDark = matchMedia('(prefers-color-scheme: dark)');
+      const themeToggle = document.querySelector<HTMLButtonElement>('.theme-toggle')!;
+      const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : systemDark.matches);
+      // The button names the theme it switches to.
+      const updateToggle = () => (themeToggle.textContent = isDark() ? 'Tema claro' : 'Tema escuro');
+      themeToggle.addEventListener('click', () => {
+        const theme: Theme = isDark() ? 'light' : 'dark';
+        root.dataset.theme = theme;
+        try {
+          localStorage.setItem(THEME_KEY, theme);
+        } catch {}
+        updateToggle();
+      });
+      systemDark.addEventListener('change', updateToggle);
+      updateToggle();
+      themeToggle.hidden = false;
+
+      const moreSheet = document.querySelector<HTMLDialogElement>('#more')!;
+      document.querySelector('.open-more')!.addEventListener('click', () => moreSheet.showModal());
+      // Tapping outside the sheet closes it, and so do links to the same page (#levar).
+      moreSheet.addEventListener('click', (event) => {
+        if (event.target === moreSheet || (event.target as Element).closest('a')) moreSheet.close();
       });
     </script>
   </body>
 </html>
 
 <style>
-  .faixa {
+  .band {
     margin: 0;
     padding: 0.375rem 1rem;
-    background: var(--faixa);
-    color: var(--texto-suave);
+    background: var(--band);
+    color: var(--text-muted);
     font-size: 0.75rem;
     line-height: 1.4;
     text-align: center;
   }
-  .faixa a {
-    color: var(--texto);
+  .band a {
+    color: var(--text);
     font-weight: 600;
     text-decoration: none;
   }
-  .faixa a:hover {
+  .band a:hover {
     text-decoration: underline;
   }
 
-  .topo-linha {
+  .site-header-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     min-height: 3.5rem;
   }
-  .marca {
+  .brand {
     display: block;
     font-size: 1.625rem;
-    color: var(--texto);
+    color: var(--text);
     padding-block: 0.5rem;
   }
-  .edicao-atual {
+  .current-issue {
     display: flex;
     align-items: center;
     min-height: 44px;
     text-decoration: none;
   }
 
-  .nav-topo {
+  .top-nav {
     display: flex;
     gap: 0.25rem;
     padding: 0.25rem;
-    background: var(--superficie);
+    background: var(--surface);
     border-radius: 26px;
-    box-shadow: var(--sombra);
+    box-shadow: var(--shadow);
   }
-  .nav-topo a {
+  .top-nav a {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     min-height: 44px;
     padding: 0 1rem;
-    border-radius: var(--raio-g);
-    color: var(--texto);
+    border-radius: var(--radius-lg);
+    color: var(--text);
     font-size: 0.875rem;
     text-decoration: none;
   }
-  .nav-topo a:hover {
-    background: var(--pastilha);
+  .top-nav a:hover {
+    background: var(--pill);
   }
-  .nav-topo a[aria-current] {
-    background: var(--primaria);
-    color: var(--primaria-texto);
+  .top-nav a[aria-current] {
+    background: var(--primary);
+    color: var(--on-primary);
     font-weight: 600;
   }
-  .nav-topo a:focus-visible {
-    outline-color: var(--texto);
+  .top-nav a:focus-visible {
+    outline-color: var(--text);
   }
 
   main {
     padding-bottom: 4rem;
   }
 
-  .rodape-linha {
+  .site-footer-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem 1.5rem;
-    border-top: 1px solid var(--linha);
+    border-top: 1px solid var(--border);
     font-size: 0.75rem;
     line-height: 1.5;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
-  .rodape p {
+  .site-footer p {
     margin: 0;
   }
-  .rodape a {
+  .site-footer a {
     color: inherit;
     text-underline-offset: 3px;
   }
-  .rodape-ligacoes {
+  .site-footer-links {
     display: flex;
     gap: 1rem;
     flex-shrink: 0;
   }
-  .rodape-ligacoes a,
-  .mudar-tema {
+  .site-footer-links a,
+  .theme-toggle {
     display: flex;
     align-items: center;
     min-height: 44px;
   }
-  .mudar-tema[hidden] {
+  .theme-toggle[hidden] {
     display: none;
   }
-  .mudar-tema {
+  .theme-toggle {
     padding: 0;
     border: 0;
     background: none;
@@ -342,117 +351,117 @@ const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.sta
     cursor: pointer;
   }
 
-  .nav-baixo {
+  .bottom-nav {
     display: none;
   }
 
-  .mais {
+  .more {
     width: 100%;
     max-width: 30rem;
     margin: auto auto 0;
     padding: 1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
     border: 0;
     border-radius: 24px 24px 0 0;
-    background: var(--superficie);
-    color: var(--texto);
+    background: var(--surface);
+    color: var(--text);
   }
-  .mais::backdrop {
+  .more::backdrop {
     background: rgb(27 36 48 / 0.45);
   }
-  .mais > :global(.logotipo) {
+  .more > :global(.logo) {
     font-size: 1.625rem;
     margin: 0 0.25rem 0.75rem;
   }
-  .mais ul {
+  .more ul {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     gap: 0.25rem;
   }
-  .mais li a {
+  .more li a {
     display: flex;
     align-items: center;
     min-height: 52px;
     padding: 0 0.75rem;
-    border-radius: var(--raio);
-    color: var(--texto);
+    border-radius: var(--radius);
+    color: var(--text);
     font-weight: 600;
     text-decoration: none;
   }
-  .mais li a:hover,
-  .mais li a[aria-current] {
-    background: var(--fundo);
+  .more li a:hover,
+  .more li a[aria-current] {
+    background: var(--bg);
   }
-  .mais p {
+  .more p {
     margin: 0.75rem 0.25rem 0;
     font-size: 0.75rem;
     line-height: 1.5;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
-  .mais form button {
+  .more form button {
     width: 100%;
     min-height: 48px;
     margin-top: 0.75rem;
     border: 0;
-    border-radius: var(--raio);
-    background: var(--pastilha);
-    color: var(--texto);
-    font: 700 0.9375rem var(--f-ui);
+    border-radius: var(--radius);
+    background: var(--pill);
+    color: var(--text);
+    font: 700 0.9375rem var(--font-ui);
     cursor: pointer;
   }
 
   @media (min-width: 769px) {
-    .so-telemovel,
-    .edicao-atual {
+    .mobile-only,
+    .current-issue {
       display: none;
     }
-    .topo-linha {
+    .site-header-row {
       padding-block: 1rem;
     }
-    .marca {
+    .brand {
       font-size: 1.875rem;
     }
-    .rodape-linha {
+    .site-footer-row {
       padding-block: 1.25rem 2rem;
     }
   }
 
   @media (max-width: 768px) {
-    .so-computador,
-    .nav-topo {
+    .desktop-only,
+    .top-nav {
       display: none;
     }
-    .topo {
-      background: var(--superficie);
-      border-bottom: 1px solid var(--linha);
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
     }
     main {
       padding-bottom: 2.5rem;
     }
-    .rodape {
+    .site-footer {
       padding-bottom: calc(57px + env(safe-area-inset-bottom));
     }
-    .rodape-linha {
+    .site-footer-row {
       display: block;
       padding-block: 1rem 0.5rem;
     }
-    .rodape .rodape-ligacoes {
+    .site-footer .site-footer-links {
       margin-top: 0.25rem;
     }
 
-    .nav-baixo {
+    .bottom-nav {
       position: fixed;
       inset: auto 0 0;
       z-index: 5;
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       padding-bottom: env(safe-area-inset-bottom);
-      background: var(--superficie);
-      border-top: 1px solid var(--linha);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
     }
-    .nav-baixo a,
-    .nav-baixo button {
+    .bottom-nav a,
+    .bottom-nav button {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -462,16 +471,16 @@ const atualDe = (href: string) => ((href === '/' ? caminho === '/' : caminho.sta
       padding: 0;
       border: 0;
       background: none;
-      color: var(--texto-suave);
-      font: 500 0.6875rem var(--f-ui);
+      color: var(--text-muted);
+      font: 500 0.6875rem var(--font-ui);
       text-decoration: none;
       cursor: pointer;
     }
-    .nav-baixo [aria-current] {
-      color: var(--primaria);
+    .bottom-nav [aria-current] {
+      color: var(--primary);
       font-weight: 700;
     }
-    .nav-baixo :focus-visible {
+    .bottom-nav :focus-visible {
       outline-offset: -3px;
     }
   }

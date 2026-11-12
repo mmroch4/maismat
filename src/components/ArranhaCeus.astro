@@ -153,9 +153,9 @@ const pista = (v: number) => (v ? String(v) : '');
 <style>
   .arranha {
     display: block;
-    background: var(--superficie);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     padding: 0 1.25rem 1.25rem;
     margin: 2rem 0;
     text-align: center;
@@ -165,8 +165,8 @@ const pista = (v: number) => (v ? String(v) : '');
   .titulo {
     margin: 0 -1.25rem 1rem;
     padding: 0.625rem 1rem;
-    background: var(--etiqueta);
-    color: var(--etiqueta-texto);
+    background: var(--tag);
+    color: var(--on-tag);
     font-size: 0.875rem;
     font-weight: 700;
     text-align: left;
@@ -180,38 +180,38 @@ const pista = (v: number) => (v ? String(v) : '');
   .pista {
     display: grid;
     place-items: center;
-    font-family: var(--f-ui);
+    font-family: var(--font-ui);
     font-weight: 700;
-    color: var(--rotulo);
+    color: var(--eyebrow);
   }
   .casa {
-    font: 600 1.35rem var(--f-ui);
-    color: var(--primaria);
-    background: var(--superficie);
-    border: 2px solid var(--campo);
-    border-radius: var(--raio-p);
+    font: 600 1.35rem var(--font-ui);
+    color: var(--primary);
+    background: var(--surface);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
     cursor: pointer;
   }
   .casa:focus-visible {
-    outline: 3px solid var(--primaria);
+    outline: 3px solid var(--primary);
     outline-offset: 1px;
   }
   .casa[data-fixa] {
-    color: var(--texto);
-    background: var(--pastilha);
-    border-color: var(--pastilha);
+    color: var(--text);
+    background: var(--pill);
+    border-color: var(--pill);
     cursor: default;
   }
   .casa.conflito {
-    border-color: var(--erro);
-    color: var(--erro);
+    border-color: var(--error);
+    color: var(--error);
   }
   [data-resolvido='sim'] .casa {
     border-color: var(--ok);
   }
   .ajuda {
     font-size: 0.8125rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0.75rem 0 0;
   }
   .estado {
@@ -225,11 +225,11 @@ const pista = (v: number) => (v ? String(v) : '');
   .limpar {
     min-height: 44px;
     padding: 0 1rem;
-    border: 2px solid var(--primaria);
-    border-radius: var(--raio);
-    background: var(--superficie);
-    color: var(--primaria);
-    font: 700 0.875rem var(--f-ui);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--primary);
+    font: 700 0.875rem var(--font-ui);
     cursor: pointer;
   }
   @media (max-width: 26rem) {

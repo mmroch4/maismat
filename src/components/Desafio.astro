@@ -41,7 +41,7 @@ const temResolucao = Astro.slots.has('resolucao');
 
 <maismat-desafio class="desafio" id={id} data-hashes={hashes.join(',')} data-casas={casas}>
   <header>
-    <span class="ui rotulo">Desafio{numero !== undefined && ` ${numero}`}</span>
+    <span class="ui eyebrow">Desafio{numero !== undefined && ` ${numero}`}</span>
     <h3>{titulo}</h3>
   </header>
 
@@ -51,7 +51,7 @@ const temResolucao = Astro.slots.has('resolucao');
   {fonte && <p class="fonte ui">{fonte}</p>}
 
   {hashes.length > 0 && (
-    <form class="ui resposta nao-imprimir" data-pagefind-ignore>
+    <form class="ui resposta no-print" data-pagefind-ignore>
       {opcoes ? (
         <fieldset>
           <legend>Escolhe a tua resposta</legend>
@@ -92,13 +92,12 @@ const temResolucao = Astro.slots.has('resolucao');
 
 <script>
   import { normalizeAnswer } from '../lib/answers';
+  import { isSolved, markSolved } from '../lib/storage';
 
   async function sha256(texto: string) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
     return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
   }
-
-  const chave = (id: string) => `maismat:${id}`;
 
   class Desafio extends HTMLElement {
     tentativas = 0;
@@ -110,9 +109,7 @@ const temResolucao = Astro.slots.has('resolucao');
       const casas = this.dataset.casas ? Number(this.dataset.casas) : undefined;
       const feedback = form.querySelector<HTMLElement>('.feedback')!;
 
-      try {
-        if (localStorage.getItem(chave(this.id)) === 'ok') this.marcarResolvido(feedback, true);
-      } catch {}
+      if (isSolved(this.id)) this.marcarResolvido(feedback, true);
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -122,9 +119,7 @@ const temResolucao = Astro.slots.has('resolucao');
         this.tentativas++;
         if (certo) {
           this.marcarResolvido(feedback, false);
-          try {
-            localStorage.setItem(chave(this.id), 'ok');
-          } catch {}
+          markSolved(this.id);
         } else {
           this.dataset.estado = 'errado';
           feedback.textContent =
@@ -148,39 +143,39 @@ const temResolucao = Astro.slots.has('resolucao');
   /* Os estados vêm de data-estado (errado, certo), postos pelo script; o resto é CSS. */
   .desafio {
     display: block;
-    background: var(--fundo);
-    border-radius: var(--raio);
-    box-shadow: inset 0 0 0 1px var(--linha);
+    background: var(--bg);
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 0 1px var(--border);
     padding: 1.25rem;
     margin: 2rem 0;
   }
   [data-estado='errado'] {
-    background: var(--erro-fundo);
+    background: var(--error-bg);
     box-shadow: none;
   }
   [data-estado='certo'] {
-    background: var(--ok-fundo);
+    background: var(--ok-bg);
     box-shadow: none;
   }
 
   header {
     margin-bottom: 0.75rem;
   }
-  .rotulo {
+  .eyebrow {
     display: inline-block;
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.5;
     padding: 0.2rem 0.625rem;
-    border-radius: var(--raio-g);
-    background: var(--etiqueta);
-    color: var(--etiqueta-texto);
+    border-radius: var(--radius-lg);
+    background: var(--tag);
+    color: var(--on-tag);
   }
-  [data-estado='certo'] .rotulo {
+  [data-estado='certo'] .eyebrow {
     background: var(--ok);
-    color: var(--superficie);
+    color: var(--surface);
   }
-  [data-estado='certo'] .rotulo::before {
+  [data-estado='certo'] .eyebrow::before {
     content: '✓ ' / '';
   }
   h3 {
@@ -194,7 +189,7 @@ const temResolucao = Astro.slots.has('resolucao');
   }
   .fonte {
     font-size: 0.8125rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     text-align: right;
     font-style: italic;
   }
@@ -223,18 +218,18 @@ const temResolucao = Astro.slots.has('resolucao');
     width: 12rem;
     max-width: 100%;
     padding: 0 0.625rem;
-    border: 2px solid var(--campo);
-    border-radius: var(--raio-p);
-    background: var(--superficie);
-    color: var(--texto);
-    font: 1rem var(--f-ui);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font: 1rem var(--font-ui);
   }
   input[type='text']:focus-visible {
-    border-color: var(--primaria);
+    border-color: var(--primary);
     outline-offset: 2px;
   }
   [data-estado='errado'] input[type='text'] {
-    border-color: var(--erro);
+    border-color: var(--error);
   }
 
   fieldset {
@@ -255,18 +250,18 @@ const temResolucao = Astro.slots.has('resolucao');
     align-items: center;
     min-height: 52px;
     padding: 0.5rem 1rem;
-    border: 2px solid var(--campo);
-    border-radius: var(--raio);
-    background: var(--superficie);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius);
+    background: var(--surface);
     cursor: pointer;
   }
   .opcao:has(:checked) {
-    border-color: var(--primaria);
-    background: var(--pastilha);
+    border-color: var(--primary);
+    background: var(--pill);
     font-weight: 600;
   }
   .opcao:has(:focus-visible) {
-    outline: 3px solid var(--primaria);
+    outline: 3px solid var(--primary);
     outline-offset: 3px;
   }
   .opcao input {
@@ -274,35 +269,35 @@ const temResolucao = Astro.slots.has('resolucao');
     height: 1.125rem;
     margin: 0;
     flex-shrink: 0;
-    accent-color: var(--primaria);
+    accent-color: var(--primary);
   }
   .opcao input:focus-visible {
     outline: none;
   }
   [data-estado='certo'] .opcao:has(:checked) {
     border-color: var(--ok);
-    background: var(--superficie);
+    background: var(--surface);
   }
   [data-estado='errado'] .opcao:has(:checked) {
-    border-color: var(--erro);
-    background: var(--superficie);
+    border-color: var(--error);
+    background: var(--surface);
   }
 
   button {
     min-height: 44px;
     padding: 0 1.375rem;
     border: 0;
-    border-radius: var(--raio);
-    background: var(--primaria);
-    color: var(--primaria-texto);
-    font: 700 0.9375rem var(--f-ui);
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: 700 0.9375rem var(--font-ui);
     cursor: pointer;
   }
   button:hover {
-    background: var(--primaria-forte);
+    background: var(--primary-strong);
   }
   button:focus-visible {
-    outline-color: var(--texto);
+    outline-color: var(--text);
   }
   .feedback {
     margin: 0;
@@ -317,7 +312,7 @@ const temResolucao = Astro.slots.has('resolucao');
     color: var(--ok);
   }
   [data-estado='errado'] .feedback {
-    color: var(--erro);
+    color: var(--error);
   }
   [data-estado='errado'] .feedback::before {
     content: '✕ ' / '';
@@ -332,14 +327,14 @@ const temResolucao = Astro.slots.has('resolucao');
     min-height: 44px;
     cursor: pointer;
     font-weight: 600;
-    color: var(--primaria);
+    color: var(--primary);
     font-size: 0.9375rem;
   }
   .resolucao > div {
     margin-top: 0.5rem;
     padding: 0.875rem 1rem;
-    border-radius: var(--raio-p);
-    background: var(--superficie);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
   }
   .resolucao[open] > div {
     animation: abrir 200ms ease-out;
@@ -359,7 +354,7 @@ const temResolucao = Astro.slots.has('resolucao');
   .pendente {
     font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 1rem 0 0;
   }
 

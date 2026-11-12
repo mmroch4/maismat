@@ -16,7 +16,7 @@ const endereco = `/demonstracoes/${id}/`;
 ---
 
 <figure class="demonstracao">
-  <maismat-demonstracao class="nao-imprimir">
+  <maismat-demonstracao class="no-print">
     <p class="ui barra" data-pagefind-ignore>
       <strong>Demonstração · {titulo}</strong> <span>isolada</span>
     </p>
@@ -30,7 +30,7 @@ const endereco = `/demonstracoes/${id}/`;
     ></iframe>
   </maismat-demonstracao>
   <figcaption>{descricao}</figcaption>
-  <p class="ui so-imprimir" data-pagefind-ignore>
+  <p class="ui print-only" data-pagefind-ignore>
     Demonstração interativa «{titulo}»: experimente-a em {new URL(endereco, Astro.site)}
   </p>
 </figure>
@@ -55,9 +55,9 @@ const endereco = `/demonstracoes/${id}/`;
   maismat-demonstracao {
     display: block;
     overflow: hidden;
-    border-radius: var(--raio);
-    border: 1px solid var(--linha);
-    background: var(--superficie);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
   }
   .barra {
     display: flex;
@@ -66,18 +66,18 @@ const endereco = `/demonstracoes/${id}/`;
     gap: 1rem;
     margin: 0;
     padding: 0.625rem 0.875rem;
-    background: var(--fundo);
-    border-bottom: 1px solid var(--linha);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
     font-size: 0.8125rem;
     line-height: 1.4;
   }
   .barra span {
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
   iframe {
     display: block;
     width: 100%;
     border: 0;
-    background: var(--superficie);
+    background: var(--surface);
   }
 </style>

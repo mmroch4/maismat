@@ -183,13 +183,13 @@ test('the archive lists every published challenge and links to each one', () => 
 
 test('the archive does not reveal answers', () => {
   assert.ok(!/data-hashes|type="radio"|class="[^"]*resposta/.test(archive), 'The archive has hashes or answer forms.');
-  const cards = [...archive.matchAll(/<li class="desafio"[^>]*data-id="([^"]+)"[^>]*>([\s\S]*?)<\/li>/g)];
+  const cards = [...archive.matchAll(/<li class="challenge"[^>]*data-id="([^"]+)"[^>]*>([\s\S]*?)<\/li>/g)];
   for (const challenge of publishedChallenges) {
     const source = simplify(`${challenge.titulo} ${challenge.enunciado}`);
     for (const [, , html] of cards.filter(([, id]) => id === challenge.id)) {
       // Only the title and the excerpt come from the article; an answer shown there must come from the statement itself.
       const visible = simplify(
-        textOf([...html.matchAll(/<h3[\s\S]*?<\/h3>|<p class="excerto[\s\S]*?<\/p>/g)].join(' ')),
+        textOf([...html.matchAll(/<h3[\s\S]*?<\/h3>|<p class="excerpt[\s\S]*?<\/p>/g)].join(' ')),
       );
       for (const answer of challenge.answers.map(simplify))
         assert.ok(
@@ -455,15 +455,15 @@ test('no site file is larger than 25 MiB (the Cloudflare Pages limit)', () => {
 test('in the search, every article has the issue and section filters, every issue the issue filter, and all a sort date', () => {
   for (const { url, filters, content, meta } of readPagefindFragments()) {
     const isArticle = url.split('/').length === 5;
-    assert.equal(filters.edicao?.length, 1, `${url} has no issue filter in the search.`);
+    assert.equal(filters.issue?.length, 1, `${url} has no issue filter in the search.`);
     assert.equal(
-      filters.seccao?.length,
+      filters.section?.length,
       isArticle ? 1 : undefined,
       `${url} ${isArticle ? 'has no' : 'should not have a'} section filter in the search.`,
     );
     assert.match(
       read(`dist${url}index.html`),
-      /data-pagefind-sort="data:\d{4}-\d{2}-\d{2}"/,
+      /data-pagefind-sort="date:\d{4}-\d{2}-\d{2}"/,
       `${url} has no date to sort the search results.`,
     );
     if (isArticle)
@@ -769,7 +769,7 @@ test('preloaded fonts are the ones the CSS uses, and the main cover of the home 
       const cover = html.match(/<img\b[^>]*>/)?.[0];
       if (cover && (/loading="lazy"/.test(cover) || !/fetchpriority="high"/.test(cover)))
         errors.push(
-          `The cover at the top of dist/${file} must have loading="eager" and fetchpriority="high" to show up as early as possible. Fix it in src/pages/index.astro or src/pages/edicoes/[edicao]/index.astro.`,
+          `The cover at the top of dist/${file} must have loading="eager" and fetchpriority="high" to show up as early as possible. Fix it in src/pages/index.astro or src/pages/edicoes/[issue]/index.astro.`,
         );
     }
   }
