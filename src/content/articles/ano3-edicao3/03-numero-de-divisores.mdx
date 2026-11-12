@@ -1,0 +1,46 @@
+---
+title: Número de divisores
+issue: ano3-edicao3
+section: combinatoria
+order: 3
+level: 12.º ano
+summary: Como contar os divisores de um número sem os escrever todos, usando a fatorização em primos.
+---
+
+Quantos divisores tem o número 24, por exemplo? Começamos por fatorizar 24 em fatores primos:
+
+$$
+24 = 2^3 \times 3
+$$
+
+Os divisores são:
+
+$$
+1,\; 2,\; 2^2,\; 2^3,\; 1 \times 3,\; 2 \times 3,\; 2^2 \times 3,\; 2^3 \times 3
+$$
+
+O que pode ser visto da seguinte forma:
+
+$$
+2^0 \times 3^0,\; 2^1 \times 3^0,\; 2^2 \times 3^0,\; 2^3 \times 3^0,\quad 2^0 \times 3^1,\; 2^1 \times 3^1,\; 2^2 \times 3^1,\; 2^3 \times 3^1
+$$
+
+Ou seja, os divisores são da forma $2^k \times 3^t$, com $k \in \{0, 1, 2, 3\}$ e $t \in \{0, 1\}$. Há 4 escolhas para $k$ e 2 escolhas para $t$; **assim, 24 tem $4 \times 2 = 8$ divisores.**
+
+E o número 720?
+
+$$
+720 = 2^4 \times 3^2 \times 5, \quad\text{logo 720 tem } 5 \times 3 \times 2 = 30 \text{ divisores.}
+$$
+
+De um modo geral, se
+
+$$
+n = a^r \times b^s \times c^t, \quad\text{com } a, b, c \text{ números primos,}
+$$
+
+podendo ter mais fatores primos na sua fatorização além destes três, o número de divisores de $n$ é dado por
+
+$$
+(r + 1) \times (s + 1) \times (t + 1).
+$$

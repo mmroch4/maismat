@@ -1,5 +1,5 @@
 // @ts-check
-// Rules for the demos the teachers make (src/content/demonstracoes): used by each demo's page, by the
+// Rules for the demos the teachers make (src/content/demos): used by each demo's page, by the
 // panel's preview (served as-is at /admin/demos.js, so this file stays plain JavaScript) and by the
 // post-build checks. The other half of the protection is in public/_headers.
 
@@ -10,6 +10,13 @@ export const ALLOWED_LIBRARIES = [
 ];
 
 export const MAX_SIZE = 100_000;
+
+/** Bounds of a demo's height in px, both for the panel field and for the height the demo asks for. */
+export const MIN_DEMO_HEIGHT = 150;
+export const MAX_DEMO_HEIGHT = 1200;
+
+/** `maismat` value of the message a demo sends with its content height. */
+export const DEMO_HEIGHT_MESSAGE = 'height';
 
 export const CSP = [
   "default-src 'none'",
@@ -22,7 +29,7 @@ export const CSP = [
 ].join('; ');
 
 // Tells the article page the content height, so the iframe has no scroll bar.
-const HEIGHT_REPORTER = `<script>new ResizeObserver(() => parent.postMessage({ maismat: 'altura', altura: Math.ceil(document.documentElement.getBoundingClientRect().height) }, '*')).observe(document.documentElement);</script>`;
+const HEIGHT_REPORTER = `<script>new ResizeObserver(() => parent.postMessage({ maismat: '${DEMO_HEIGHT_MESSAGE}', height: Math.ceil(document.documentElement.getBoundingClientRect().height) }, '*')).observe(document.documentElement);</script>`;
 
 /**
  * The teacher's HTML file, with the CSP at the start of <head> (before any script) and the height reporter at the end.

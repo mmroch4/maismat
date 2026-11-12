@@ -4,7 +4,7 @@ import IssueCard from '../../components/IssueCard.astro';
 import { getSortedIssues, monthYear } from '../../lib/issues';
 
 const issues = await getSortedIssues();
-const issuesByYear = Map.groupBy(issues, (issue) => issue.data.ano);
+const issuesByYear = Map.groupBy(issues, (issue) => issue.data.year);
 // The school year runs from September to August: May 2025 is 2024/25.
 const schoolYear = (date: Date) => {
   const start = date.getUTCFullYear() - (date.getUTCMonth() < 8 ? 1 : 0);
@@ -20,14 +20,14 @@ const firstIssue = issues.at(-1);
         <span class="highlight">Edições</span>
       </h1>
       <p>
-        {issues.length} edições{firstIssue && ` desde ${monthYear(firstIssue.data.data)}`}, três por ano letivo. As
+        {issues.length} edições{firstIssue && ` desde ${monthYear(firstIssue.data.date)}`}, três por ano letivo. As
         marcadas com <em>PDF</em> ainda estão a ser convertidas para a versão digital.
       </p>
     </div>
     {[...issuesByYear].map(([year, yearIssues]) => (
       <section aria-labelledby={`ano-${year}`}>
         <h2 id={`ano-${year}`}>
-          Ano {year} <span class="ui">{schoolYear(yearIssues[0].data.data)}</span>
+          Ano {year} <span class="ui">{schoolYear(yearIssues[0].data.date)}</span>
         </h2>
         <div class="issue-grid">
           {yearIssues.map((issue) => (

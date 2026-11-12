@@ -18,7 +18,7 @@ const issues = await getSortedIssues();
       {issues.map((issue) => (
         <li>
           <a href={`/edicoes/${issue.id}/`}>
-            {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+            {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.date)}</span>
           </a>
         </li>
       ))}

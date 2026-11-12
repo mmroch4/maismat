@@ -1,18 +1,19 @@
-// Configuração do painel de edição (Sveltia CMS), gerada no build para que as secções venham de seccoes.ts.
-// Os campos espelham os schemas de src/content.config.ts: se mudares um, muda o outro.
+// Configuration of the editing panel (Sveltia CMS), generated at build time so that the sections come from sections.ts.
+// The fields mirror the schemas in src/content.config.ts: if you change one, change the other.
+// Labels and hints are shown to the teachers, so they stay in Portuguese.
 import type { APIRoute } from 'astro';
 import { SECTIONS } from '../../lib/sections';
 
-const citacao = {
-  name: 'citacao',
+const quote = {
+  name: 'quote',
   label: 'Citação',
   widget: 'object',
   required: false,
   collapsed: true,
   hint: 'Opcional. Frase em destaque no início.',
   fields: [
-    { name: 'texto', label: 'Texto' },
-    { name: 'autor', label: 'Autor' },
+    { name: 'text', label: 'Texto' },
+    { name: 'author', label: 'Autor' },
   ],
 };
 
@@ -30,36 +31,36 @@ const config = {
       deleteMedia: 'Apagar “{{path}}”',
     },
   },
-  // Endereços e identificadores sem acentos, como os dos artigos já publicados (cicloide e não ciclóide).
+  // URLs and identifiers without accents, like those of the articles already published (cicloide, not ciclóide).
   slug: { encoding: 'ascii', clean_accents: true },
-  // Sem isto, um campo opcional deixado vazio fica gravado como `citacao: null` ou `pdf: ''`.
+  // Without this, an optional field left empty is saved as `quote: null` or `pdf: ''`.
   output: { omit_empty_optional_fields: true },
   media_folder: 'public/img',
   public_folder: '/img',
   collections: [
     {
-      name: 'edicoes',
+      name: 'issues',
       label: 'Edições',
       label_singular: 'Edição',
       description: 'Cada edição do jornal. Cria a edição primeiro e só depois os artigos.',
-      folder: 'src/content/edicoes',
+      folder: 'src/content/issues',
       extension: 'md',
       format: 'frontmatter',
       create: true,
-      slug: 'ano{{ano}}-edicao{{numero}}',
-      identifier_field: 'numero',
-      summary: "Ano {{ano}} · Edição {{numero}}{{rascunho | ternary(' · rascunho', '')}}",
-      sortable_fields: { fields: ['data', 'ano', 'numero'], default: { field: 'data', direction: 'descending' } },
+      slug: 'ano{{year}}-edicao{{number}}',
+      identifier_field: 'number',
+      summary: "Ano {{year}} · Edição {{number}}{{draft | ternary(' · rascunho', '')}}",
+      sortable_fields: { fields: ['date', 'year', 'number'], default: { field: 'date', direction: 'descending' } },
       fields: [
         {
-          name: 'rascunho',
+          name: 'draft',
           label: 'Rascunho (escondida do site)',
           widget: 'boolean',
           default: true,
           hint: 'Enquanto estiver ligado, nem a edição nem os seus artigos aparecem no site. Desliga quando estiver tudo pronto: a edição inteira fica visível de uma vez.',
         },
         {
-          name: 'ano',
+          name: 'year',
           label: 'Ano do jornal',
           widget: 'number',
           value_type: 'int',
@@ -67,28 +68,28 @@ const config = {
           hint: 'Ano de publicação do +MAT (1, 2, 3, …), não o ano civil.',
         },
         {
-          name: 'numero',
+          name: 'number',
           label: 'Número da edição',
           widget: 'number',
           value_type: 'int',
           min: 1,
           hint: 'Número da edição dentro desse ano (1, 2 ou 3).',
         },
-        { name: 'data', label: 'Data de publicação', widget: 'datetime', time_format: false, format: 'YYYY-MM-DD' },
+        { name: 'date', label: 'Data de publicação', widget: 'datetime', time_format: false, format: 'YYYY-MM-DD' },
         {
-          name: 'direcao',
+          name: 'editors',
           label: 'Direção e edição',
           widget: 'list',
           default: ['Rosa Bértolo', 'Carla Nunes'],
-          field: { name: 'nome', label: 'Nome', widget: 'string' },
+          field: { name: 'name', label: 'Nome', widget: 'string' },
         },
         {
-          name: 'capa',
+          name: 'cover',
           label: 'Capa',
           widget: 'image',
           required: false,
-          media_folder: '/src/assets/capas',
-          public_folder: '../../assets/capas',
+          media_folder: '/src/assets/covers',
+          public_folder: '../../assets/covers',
           hint: 'Imagem da primeira página (JPG).',
         },
         {
@@ -99,13 +100,13 @@ const config = {
           media_folder: '/public/pdf',
           public_folder: '/pdf',
           accept: 'application/pdf',
-          // O Cloudflare Pages não publica ficheiros com mais de 25 MiB (o build também o verifica).
+          // Cloudflare Pages does not publish files over 25 MiB (the build checks this too).
           media_library: { config: { max_file_size: 25 * 1024 * 1024 } },
           hint: 'Até 25 MB. Se o PDF for maior, reduz o tamanho do ficheiro antes de o carregar.',
         },
-        citacao,
+        quote,
         {
-          name: 'convertida',
+          name: 'converted',
           label: 'Versão digital pronta',
           widget: 'boolean',
           default: true,
@@ -114,49 +115,49 @@ const config = {
       ],
     },
     {
-      name: 'artigos',
+      name: 'articles',
       label: 'Artigos',
       label_singular: 'Artigo',
       description: 'Os artigos de cada edição. Escolhe a edição no primeiro campo.',
-      folder: 'src/content/artigos',
+      folder: 'src/content/articles',
       extension: 'mdx',
       format: 'frontmatter',
       create: true,
-      path: '{{edicao}}/{{slug}}',
-      slug: '{{titulo}}',
-      identifier_field: 'titulo',
-      summary: '{{ordem}}. {{titulo}}',
-      media_folder: '/src/content/artigos/{{dirname}}/img',
+      path: '{{issue}}/{{slug}}',
+      slug: '{{title}}',
+      identifier_field: 'title',
+      summary: '{{order}}. {{title}}',
+      media_folder: '/src/content/articles/{{dirname}}/img',
       public_folder: './img',
-      sortable_fields: { fields: ['edicao', 'ordem', 'titulo'], default: { field: 'ordem' } },
-      view_groups: { groups: [{ name: 'edicao', label: 'Edição', field: 'edicao' }], default: 'edicao' },
+      sortable_fields: { fields: ['issue', 'order', 'title'], default: { field: 'order' } },
+      view_groups: { groups: [{ name: 'issue', label: 'Edição', field: 'issue' }], default: 'issue' },
       view_filters: {
-        filters: Object.entries(SECTIONS).map(([id, nome]) => ({
+        filters: Object.entries(SECTIONS).map(([id, name]) => ({
           name: id,
-          label: nome,
-          field: 'seccao',
+          label: name,
+          field: 'section',
           pattern: `^${id}$`,
         })),
       },
       fields: [
-        { name: 'titulo', label: 'Título' },
+        { name: 'title', label: 'Título' },
         {
-          name: 'edicao',
+          name: 'issue',
           label: 'Edição',
           widget: 'relation',
-          collection: 'edicoes',
+          collection: 'issues',
           value_field: '{{slug}}',
-          search_fields: ['ano', 'numero'],
-          display_fields: ['Ano {{ano}} · Edição {{numero}}'],
+          search_fields: ['year', 'number'],
+          display_fields: ['Ano {{year}} · Edição {{number}}'],
         },
         {
-          name: 'seccao',
+          name: 'section',
           label: 'Secção',
           widget: 'select',
           options: Object.entries(SECTIONS).map(([value, label]) => ({ value, label })),
         },
         {
-          name: 'ordem',
+          name: 'order',
           label: 'Ordem na edição',
           widget: 'number',
           value_type: 'int',
@@ -164,22 +165,22 @@ const config = {
           hint: '1 para o primeiro artigo, 2 para o segundo, …',
         },
         {
-          name: 'autores',
+          name: 'authors',
           label: 'Autores',
           widget: 'list',
           required: false,
           hint: 'Opcional. Um nome por linha (por exemplo, alunos de uma turma).',
-          field: { name: 'nome', label: 'Nome', widget: 'string' },
+          field: { name: 'name', label: 'Nome', widget: 'string' },
         },
         {
-          name: 'resumo',
+          name: 'summary',
           label: 'Resumo',
           widget: 'text',
           required: false,
           hint: 'Uma ou duas frases que aparecem na lista de artigos.',
         },
-        { name: 'nivel', label: 'Nível', required: false, hint: 'Opcional, por exemplo “3.º ciclo”.' },
-        citacao,
+        { name: 'level', label: 'Nível', required: false, hint: 'Opcional, por exemplo “3.º ciclo”.' },
+        quote,
         {
           name: 'body',
           label: 'Texto do artigo',
@@ -187,13 +188,13 @@ const config = {
           editor_components: [
             'image',
             'formula',
-            'formula-destaque',
-            'desafio',
-            'galeria',
-            'nota',
-            'detalhes',
-            'interativo',
-            'demonstracao',
+            'display-formula',
+            'challenge',
+            'gallery',
+            'note',
+            'details',
+            'interactive',
+            'demo',
             'geogebra',
           ],
           hint: 'Usa o botão “Inserir” para fórmulas, desafios, imagens e caixas.',
@@ -201,32 +202,32 @@ const config = {
       ],
     },
     {
-      name: 'demonstracoes',
+      name: 'demos',
       label: 'Demonstrações',
       label_singular: 'Demonstração',
       description:
         'Animações e simulações num só ficheiro HTML. Depois de guardar, insere-a num artigo com Inserir → Demonstração.',
-      folder: 'src/content/demonstracoes',
+      folder: 'src/content/demos',
       extension: 'yml',
       format: 'yml',
       create: true,
-      slug: '{{titulo}}',
-      identifier_field: 'titulo',
-      summary: '{{titulo}}',
+      slug: '{{title}}',
+      identifier_field: 'title',
+      summary: '{{title}}',
       fields: [
         {
-          name: 'titulo',
+          name: 'title',
           label: 'Título',
           hint: 'É o que os leitores de ecrã anunciam, por exemplo «Ciclóide: a roda que desenha a curva».',
         },
         {
-          name: 'descricao',
+          name: 'description',
           label: 'Descrição',
           widget: 'text',
           hint: 'Uma ou duas frases sobre o que a demonstração mostra. Aparece por baixo dela e serve a quem não a consegue usar.',
         },
         {
-          name: 'altura',
+          name: 'height',
           label: 'Altura inicial (px)',
           widget: 'number',
           value_type: 'int',
@@ -236,7 +237,7 @@ const config = {
           hint: 'A altura ajusta-se sozinha; este valor só evita saltos enquanto carrega.',
         },
         {
-          name: 'codigo',
+          name: 'code',
           label: 'Código (um ficheiro HTML)',
           widget: 'code',
           default_language: 'html',
@@ -249,5 +250,5 @@ const config = {
   ],
 };
 
-// O endereço do site vem do `site` em astro.config.mjs.
+// The site URL comes from `site` in astro.config.ts.
 export const GET: APIRoute = ({ site }) => Response.json({ ...config, site_url: site!.origin });

@@ -1,56 +1,63 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { MAX_DEMO_HEIGHT, MIN_DEMO_HEIGHT } from './lib/demos.js';
 import { SECTION_IDS } from './lib/sections';
 
-const edicoes = defineCollection({
-  loader: glob({ pattern: '*.md', base: './src/content/edicoes' }),
+// Validation messages are shown to the teachers when the build fails, so they stay in Portuguese.
+
+const quote = z.object({ text: z.string(), author: z.string() });
+
+const issues = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/issues' }),
   schema: ({ image }) =>
     z.object({
-      ano: z.number().int(),
-      numero: z.number().int(),
-      data: z.coerce.date(),
-      direcao: z.array(z.string()),
-      capa: image().optional(),
-      // nullish: as edições gravadas antes de output.omit_empty_optional_fields têm `citacao: null`
-      citacao: z.object({ texto: z.string(), autor: z.string() }).nullish(),
-      // PDF original, em /public/pdf
+      /** Year of the newspaper (1, 2, 3, …), not the calendar year */
+      year: z.number().int(),
+      /** Number of the issue within that year */
+      number: z.number().int(),
+      date: z.coerce.date(),
+      editors: z.array(z.string()),
+      cover: image().optional(),
+      // nullish: issues saved before output.omit_empty_optional_fields have `quote: null`
+      quote: quote.nullish(),
+      /** Original PDF, in /public/pdf */
       pdf: z.string().optional(),
-      // Edições ainda só disponíveis em PDF (arquivo por converter)
-      convertida: z.boolean().default(true),
-      // Edição em preparação: ela e os seus artigos ficam fora do site
-      rascunho: z.boolean().default(false),
+      /** false for issues only available as a PDF (archive not yet converted) */
+      converted: z.boolean().default(true),
+      /** Issue being prepared: it and its articles stay off the site */
+      draft: z.boolean().default(false),
     }),
 });
 
-const artigos = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/artigos' }),
+const articles = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/articles' }),
   schema: z.object({
-    titulo: z.string(),
-    edicao: reference('edicoes'),
-    seccao: z.enum(SECTION_IDS),
-    ordem: z.number(),
-    autores: z.array(z.string()).optional(),
-    resumo: z.string().optional(),
-    nivel: z.string().optional(),
-    citacao: z.object({ texto: z.string(), autor: z.string() }).nullish(),
+    title: z.string(),
+    issue: reference('issues'),
+    section: z.enum(SECTION_IDS),
+    order: z.number(),
+    authors: z.array(z.string()).optional(),
+    summary: z.string().optional(),
+    level: z.string().optional(),
+    quote: quote.nullish(),
   }),
 });
 
-// Animações e simulações num só ficheiro HTML; cada uma vira a página /demonstracoes/<id>/.
-const obrigatorio = (campo: string) =>
+// Animations and simulations in a single HTML file; each one becomes the page /demonstracoes/<id>/.
+const required = (field: string) =>
   z
-    .string({ message: `Falta ${campo} da demonstração.` })
+    .string({ message: `Falta ${field} da demonstração.` })
     .trim()
-    .min(1, `Falta ${campo} da demonstração.`);
-const demonstracoes = defineCollection({
-  loader: glob({ pattern: '*.yml', base: './src/content/demonstracoes' }),
+    .min(1, `Falta ${field} da demonstração.`);
+const demos = defineCollection({
+  loader: glob({ pattern: '*.yml', base: './src/content/demos' }),
   schema: z.object({
-    titulo: obrigatorio('o título'),
-    descricao: obrigatorio('a descrição'),
-    altura: z.number().int().min(150).max(1200).default(400),
-    codigo: obrigatorio('o código'),
+    title: required('o título'),
+    description: required('a descrição'),
+    height: z.number().int().min(MIN_DEMO_HEIGHT).max(MAX_DEMO_HEIGHT).default(400),
+    code: required('o código'),
   }),
 });
 
-export const collections = { edicoes, artigos, demonstracoes };
+export const collections = { issues, articles, demos };

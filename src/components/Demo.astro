@@ -1,0 +1,87 @@
+---
+/** Demo made by the teachers (src/content/demos), isolated in an iframe with no access to the rest of the site. */
+import { getEntry } from 'astro:content';
+
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+const demo = await getEntry('demos', id);
+if (!demo)
+  throw new Error(
+    `The demo «${id}» does not exist in src/content/demos. Create it in the panel, under «Demonstrações», or pick another one in the article block.`,
+  );
+const { title, description, height } = demo.data;
+// Public URL: stays in Portuguese.
+const demoUrl = `/demonstracoes/${id}/`;
+---
+
+<figure class="demo">
+  <maismat-demo class="no-print">
+    <p class="ui toolbar" data-pagefind-ignore>
+      <strong>Demonstração · {title}</strong> <span>isolada</span>
+    </p>
+    <iframe
+      src={demoUrl}
+      title={title}
+      sandbox="allow-scripts"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+      height={height}
+    ></iframe>
+  </maismat-demo>
+  <figcaption>{description}</figcaption>
+  <p class="ui print-only" data-pagefind-ignore>
+    Demonstração interativa «{title}»: experimente-a em {new URL(demoUrl, Astro.site)}
+  </p>
+</figure>
+
+<script>
+  import { DEMO_HEIGHT_MESSAGE, MAX_DEMO_HEIGHT, MIN_DEMO_HEIGHT } from '../lib/demos.js';
+
+  // Without allow-same-origin the demo cannot reach this page: all it can do is ask for the height it needs.
+  class Demo extends HTMLElement {
+    connectedCallback() {
+      const iframe = this.querySelector('iframe')!;
+      addEventListener('message', (event) => {
+        if (event.source !== iframe.contentWindow || event.data?.maismat !== DEMO_HEIGHT_MESSAGE) return;
+        const height = Number(event.data.height);
+        if (Number.isFinite(height))
+          iframe.height = String(Math.min(Math.max(Math.ceil(height), MIN_DEMO_HEIGHT), MAX_DEMO_HEIGHT));
+      });
+    }
+  }
+  customElements.define('maismat-demo', Demo);
+</script>
+
+<style>
+  /* Only the frame: the iframe and its sandbox do not change */
+  maismat-demo {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    padding: 0.625rem 0.875rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+  .toolbar span {
+    color: var(--text-muted);
+  }
+  iframe {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: var(--surface);
+  }
+</style>

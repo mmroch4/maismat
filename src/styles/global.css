@@ -422,16 +422,16 @@ a.card:hover {
 }
 
 /* Grid of captioned images (e.g. Geometria na Arquitetura) */
-.galeria {
+.gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
   gap: 1.25rem;
   margin: 1.75em 0;
 }
-.galeria figure {
+.gallery figure {
   margin: 0;
 }
-.galeria img {
+.gallery img {
   aspect-ratio: 4 / 3;
   object-fit: cover;
   width: 100%;
@@ -442,7 +442,7 @@ a.card:hover {
   display: none;
 }
 
-.nota {
+.note {
   background: var(--pill);
   border-radius: var(--radius-sm);
   padding: 1rem 1.25rem;

@@ -10,14 +10,14 @@ export function getStaticPaths() {
 
 const section = Astro.params.section as SectionId;
 const entries = await Promise.all(
-  (await getPublishedArticles((article) => article.data.seccao === section)).map(async (article) => ({
+  (await getPublishedArticles((article) => article.data.section === section)).map(async (article) => ({
     article,
-    issue: (await getEntry(article.data.edicao))!,
+    issue: (await getEntry(article.data.issue))!,
   })),
 );
 // Newest issue first, then in reading order.
 entries.sort(
-  (a, b) => b.issue.data.data.getTime() - a.issue.data.data.getTime() || a.article.data.ordem - b.article.data.ordem,
+  (a, b) => b.issue.data.date.getTime() - a.issue.data.date.getTime() || a.article.data.order - b.article.data.order,
 );
 ---
 
@@ -35,10 +35,10 @@ entries.sort(
         <li>
           <a class="card" href={`/edicoes/${issue.id}/${articleSlug(article)}/`}>
             <span class="ui when">
-              {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+              {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.date)}</span>
             </span>
-            <strong class="ui">{article.data.titulo}</strong>
-            {article.data.resumo && <span class="summary">{article.data.resumo}</span>}
+            <strong class="ui">{article.data.title}</strong>
+            {article.data.summary && <span class="summary">{article.data.summary}</span>}
           </a>
         </li>
       ))}

@@ -1,0 +1,60 @@
+---
+title: Problemas vulgares com erros comuns
+issue: ano3-edicao2
+section: combinatoria
+order: 3
+level: 12.º ano
+summary: “Pelo menos uma rapariga” e lugares num carro — dois problemas de contagem onde é fácil contar a mais ou a menos.
+---
+
+És aluno do 12.º ano? Esta rubrica é para ti! Neste artigo abordamos problemas de contagens nos quais os alunos manifestam alguma dificuldade, apresentando frequentemente erros de contagens. Vamos apresentar dois exemplos e explicar as suas resoluções.
+
+Consideremos um grupo de 8 alunos, 5 raparigas e 3 rapazes.
+
+## Situação 1
+
+**Pretende-se formar um grupo de 3 alunos com uma rapariga, pelo menos.** Duas respostas corretas são
+
+$$
+{}^{5}C_1 \times {}^{3}C_2 + {}^{5}C_2 \times {}^{3}C_1 + {}^{5}C_3 = 55 \qquad\text{ou}\qquad {}^{8}C_3 - {}^{3}C_3 = 55
+$$
+
+Na primeira expressão, contam-se separadamente as três possibilidades existentes: o grupo tem 1 rapariga e 2 rapazes ou 2 raparigas e 1 rapaz ou 3 raparigas. Na segunda, considera-se a constituição do grupo que não é desejada: apenas rapazes, e ao total de grupos, sem restrições, retiram-se esses casos.
+
+**O ERRO TÍPICO** é começar por escolher uma rapariga, o que pode ser feito de ${}^{5}C_1$ maneiras, e a partir daí, tendo garantida a existência de uma rapariga, escolher os outros dois alunos de entre os sete restantes. Parece-te bem, não é? Mas não está bem!
+
+${}^{5}C_1 \times {}^{7}C_2$ dá um número muito mais elevado ($105$) do que o anterior. E porquê?
+
+Coloquemos nomes aos oito alunos para facilitar a exposição: Ana, Berta, Catarina, Diana, Elsa, Fausto, Gabriel e Hugo.
+
+- ${}^{5}C_1$ → pode ser escolhida a Ana, por exemplo;
+- ${}^{7}C_2$ → podem ser escolhidos a Berta e o Hugo.
+
+O grupo, neste caso, é constituído por A, B e H. Mas, do primeiro fator, poderia sair a escolha da Berta e, do segundo, a escolha da Ana e do Hugo, e o grupo seria o mesmo: A, B e H. Temos contagens repetidas, daí o número mais elevado.
+
+<p class="note">A restrição “pelo menos” deve ser resolvida considerando separadamente as várias situações. Nunca com uma só expressão.</p>
+
+## Situação 2
+
+**Quatro dos oito jovens anteriores, dois rapazes e duas raparigas, vão visitar uma exposição do Escher com o professor Gilberto num automóvel de 5 lugares.** Naturalmente, o professor será o condutor. De quantas maneiras poderão preencher os 4 lugares disponíveis?
+
+De entre as duas respostas seguintes, uma está certa e a outra errada. Vamos identificar o erro da que está errada e corrigi-lo:
+
+$$
+{}^{5}A_2 \times {}^{3}A_2 \qquad\text{e}\qquad {}^{5}C_2 \times {}^{3}C_2 \times 4!
+$$
+
+A **segunda expressão está correta**: após a escolha do grupo de 4 alunos que irão para o automóvel, dois de cada sexo, consideram-se as $4!$ maneiras de se colocarem nos quatro lugares disponíveis.
+
+A primeira expressão, ${}^{5}A_2 \times {}^{3}A_2$, está errada:
+
+- ${}^{5}A_2$ dá-nos o número de maneiras de escolher 2 alunas e sentá-las em 2 lugares específicos. Mas quais? Há 4 lugares livres!
+- ${}^{3}A_2$ dá-nos o número de maneiras de ocupar os dois lugares que restam com 2 rapazes, escolhidos de entre os 3 existentes.
+
+O que falta? Escolher o grupo de dois lugares para as duas raparigas. Repara que há ${}^{4}C_2 = 6$ maneiras de o fazer. Assim, a resposta certa é
+
+$$
+{}^{4}C_2 \times {}^{5}A_2 \times {}^{3}A_2 = 6 \times 20 \times 6 = 720 = {}^{5}C_2 \times {}^{3}C_2 \times 4!
+$$
+
+<p class="note"><strong>Sugestão:</strong> escolhe primeiro os grupos com os elementos e coloca-os depois!</p>

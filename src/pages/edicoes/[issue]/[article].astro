@@ -17,25 +17,18 @@ import { lastUpdated } from '../../../lib/git';
 export async function getStaticPaths() {
   const articles = await getPublishedArticles();
   return articles.map((article) => ({
-    params: { issue: article.data.edicao.id, article: articleSlug(article) },
+    params: { issue: article.data.issue.id, article: articleSlug(article) },
     props: { article },
   }));
 }
 
 const { article } = Astro.props as { article: Article };
-const issue = (await getEntry(article.data.edicao))!;
+const issue = (await getEntry(article.data.issue))!;
 const { Content } = await render(article);
 const issueArticles = await getIssueArticles(issue.id);
 const position = issueArticles.findIndex((other) => other.id === article.id);
 const [previous, next] = [issueArticles[position - 1], issueArticles[position + 1]];
-const {
-  titulo: title,
-  seccao: section,
-  autores: authors,
-  nivel: level,
-  citacao: quote,
-  resumo: summary,
-} = article.data;
+const { title, section, authors, level, quote, summary } = article.data;
 const articleUrl = (other: Article) => `/edicoes/${issue.id}/${articleSlug(other)}/`;
 const WORDS_PER_MINUTE = 200;
 const readingMinutes = Math.max(
@@ -50,7 +43,7 @@ const structuredData = {
   headline: title,
   description: summary,
   author: authorPersons.length ? authorPersons : undefined,
-  datePublished: isoDay(issue.data.data),
+  datePublished: isoDay(issue.data.date),
   dateModified: article.filePath && lastUpdated(article.filePath),
   inLanguage: 'pt-PT',
   isPartOf: publicationIssue(issue, Astro.site!),
@@ -62,9 +55,9 @@ const structuredData = {
   <article
     class="container"
     data-pagefind-body
-    data-pagefind-meta={`issue:${issueLabel(issue)} · ${monthYear(issue.data.data)}`}
+    data-pagefind-meta={`issue:${issueLabel(issue)} · ${monthYear(issue.data.date)}`}
     data-pagefind-filter={`issue:${issueLabel(issue)}`}
-    data-pagefind-sort={`date:${issue.data.data.toISOString().slice(0, 10)}`}
+    data-pagefind-sort={`date:${issue.data.date.toISOString().slice(0, 10)}`}
   >
     <header>
       <a
@@ -88,7 +81,7 @@ const structuredData = {
       </h1>
       <p class="ui meta" data-pagefind-ignore>
         <a href={`/edicoes/${issue.id}/`}>
-          {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+          {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.date)}</span>
         </a>
         <span>
           {position + 1} de {issueArticles.length}
@@ -103,7 +96,7 @@ const structuredData = {
       )}
       {quote && (
         <blockquote class="quote">
-          “{quote.texto}”<footer>— {quote.autor}</footer>
+          “{quote.text}”<footer>— {quote.author}</footer>
         </blockquote>
       )}
     </header>
@@ -116,7 +109,7 @@ const structuredData = {
       {previous ? (
         <a class="card" href={articleUrl(previous)}>
           <small>← Anterior</small>
-          {previous.data.titulo}
+          {previous.data.title}
         </a>
       ) : (
         <span></span>
@@ -124,7 +117,7 @@ const structuredData = {
       {next && (
         <a class="card next" href={articleUrl(next)}>
           <small>Seguinte →</small>
-          {next.data.titulo}
+          {next.data.title}
         </a>
       )}
     </nav>

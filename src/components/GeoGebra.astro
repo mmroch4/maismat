@@ -1,39 +1,39 @@
 ---
-/** Applet do GeoGebra atrás de um botão: o browser só contacta geogebra.org (e os cookies dele) quando o leitor pede. */
-import { geogebra } from '../../public/admin/componentes.js';
+/** GeoGebra applet behind a button: the browser only contacts geogebra.org (and its cookies) when the reader asks. */
+import { geogebraUrls } from '../../public/admin/components.js';
 
 interface Props {
-  ligacao: string;
-  titulo: string;
-  altura?: number;
+  url: string;
+  title: string;
+  height?: number;
 }
-const { ligacao, titulo, altura = 500 } = Astro.props;
-const enderecos = geogebra(ligacao, altura);
-if (!enderecos)
+const { url, title, height = 500 } = Astro.props;
+const urls = geogebraUrls(url, height);
+if (!urls)
   throw new Error(
-    `A ligação «${ligacao}» do bloco «Applet GeoGebra» não é a de um applet. No GeoGebra, carrega em «Partilhar» e copia a ligação (https://www.geogebra.org/m/…).`,
+    `The link «${url}» of the «Applet GeoGebra» block is not an applet link. In GeoGebra, press «Partilhar» (Share) and copy the link (https://www.geogebra.org/m/…).`,
   );
 ---
 
 <figure class="applet">
   <maismat-geogebra
     class="no-print"
-    data-src={enderecos.iframe}
-    data-titulo={titulo}
-    style={`aspect-ratio: 800 / ${altura}`}
+    data-src={urls.iframe}
+    data-title={title}
+    style={`aspect-ratio: 800 / ${height}`}
     data-pagefind-ignore
   >
-    <div class="fachada ui">
+    <div class="facade ui">
       <p>
-        <strong>Applet GeoGebra:</strong> {titulo}
+        <strong>Applet GeoGebra:</strong> {title}
       </p>
-      <p class="aviso">Ao abrir, o browser liga-se a geogebra.org, que pode guardar cookies.</p>
+      <p class="notice">Ao abrir, o browser liga-se a geogebra.org, que pode guardar cookies.</p>
       <button type="button">Abrir o applet</button>
-      <a href={enderecos.pagina}>ou abrir no site do GeoGebra</a>
+      <a href={urls.page}>ou abrir no site do GeoGebra</a>
     </div>
   </maismat-geogebra>
   <p class="ui print-only" data-pagefind-ignore>
-    Applet GeoGebra «{titulo}»: {enderecos.pagina}
+    Applet GeoGebra «{title}»: {urls.page}
   </p>
 </figure>
 
@@ -44,11 +44,11 @@ if (!enderecos)
         const iframe = document.createElement('iframe');
         Object.assign(iframe, {
           src: this.dataset.src!,
-          title: this.dataset.titulo!,
+          title: this.dataset.title!,
           allow: 'fullscreen',
           referrerPolicy: 'strict-origin-when-cross-origin',
         });
-        // allow-same-origin é seguro aqui: a origem é a do geogebra.org, não a do +MAT.
+        // allow-same-origin is safe here: the origin is geogebra.org's, not the site's.
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
         this.replaceChildren(iframe);
         iframe.focus();
@@ -71,7 +71,7 @@ if (!enderecos)
     border-style: solid;
     border-color: var(--border);
   }
-  .fachada {
+  .facade {
     display: grid;
     place-content: center;
     justify-items: center;
@@ -80,14 +80,14 @@ if (!enderecos)
     text-align: center;
     font-size: 0.9375rem;
   }
-  .fachada p {
+  .facade p {
     margin: 0;
   }
-  .aviso {
+  .notice {
     color: var(--text-muted);
     font-size: 0.8125rem;
   }
-  .fachada a {
+  .facade a {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -112,7 +112,7 @@ if (!enderecos)
   maismat-geogebra:not(:defined) button {
     display: none;
   }
-  /* O iframe é criado pelo script, por isso não tem o atributo dos estilos deste componente. */
+  /* The iframe is created by the script, so it lacks this component's scoping attribute. */
   maismat-geogebra :global(iframe) {
     position: absolute;
     inset: 0;

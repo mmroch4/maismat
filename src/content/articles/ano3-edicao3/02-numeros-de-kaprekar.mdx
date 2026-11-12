@@ -1,0 +1,41 @@
+---
+title: O que são Números de Kaprekar?
+issue: ano3-edicao3
+section: curiosidades
+order: 2
+summary: Números cujo quadrado, cortado em duas partes, volta a dar o número original.
+---
+
+Um **número de Kaprekar**, numa determinada base, é um inteiro não negativo tal que a representação do seu quadrado nessa base pode ser dividida em duas partes que, somadas, permitem obter o número original. Ao dividir o número cujas partes se vão adicionar, devemos deixar a parte mais longa à direita.
+
+Por exemplo, $297$ é um número de Kaprekar porque
+
+$$
+297^2 = 88\,209 \quad\text{e}\quad 88 + 209 = 297.
+$$
+
+$88\,209$ tem um número ímpar de algarismos. Nesta definição, devemos deixar a parte mais longa à direita: $88 + 209$ (e não $882 + 09$).
+
+Devido a esta regra, $10$ não é um número de Kaprekar: $100 \Rightarrow 10 + 0 = 10$ far-nos-ia concluir, erradamente, que estaríamos perante um número de Kaprekar.
+
+| $n$ | $n^2$ | Soma | $S = n$? |
+| ---: | ---: | :--- | :---: |
+| 1 | 1 | 0 + 1 = 1 | **sim** |
+| 2 | 4 | 0 + 4 = 4 | não |
+| 3 | 9 | 0 + 9 = 9 | não |
+| 4 | 16 | 1 + 6 = 7 | não |
+| 5 | 25 | 2 + 5 = 7 | não |
+| 6 | 36 | 3 + 6 = 9 | não |
+| 7 | 49 | 4 + 9 = 13 | não |
+| 8 | 64 | 6 + 4 = 10 | não |
+| 9 | 81 | 8 + 1 = 9 | **sim** |
+| 10 | 100 | 1 + 00 = 1 (\*) | não |
+| 11 | 121 | 1 + 21 = 22 | não |
+| 45 | 2025 | 20 + 25 = 45 | **sim** |
+| 55 | 3025 | 30 + 25 = 55 | **sim** |
+| 65 | 4225 | 42 + 25 = 67 | não |
+| 99 | 9801 | 98 + 01 = 99 | **sim** |
+| 297 | 88209 | 88 + 209 = 297 | **sim** |
+| 703 | 494209 | 494 + 209 = 703 | **sim** |
+
+Os primeiros números de Kaprekar são 1, 9, 45, 55, 99, 297, 703, 999, 2223, 2728, 4950, 5050, 7272, 9999, 17344, 22222, 77778, 82656, …

@@ -1,0 +1,370 @@
+---
+/**
+ * Challenge with answer checking in the browser.
+ *
+ * The author writes the answer in plain text (`answer="31"`); the build only publishes its SHA-256 hash,
+ * so the answer never appears in the HTML. Several accepted answers are separated by "|" (e.g. "31|trinta e um").
+ * With `options`, the challenge becomes multiple choice.
+ * With `decimals`, the answer is treated as a number and rounded to that many decimal places
+ * (e.g. `answer="56.54" decimals={1}` accepts 56,5 and 56,54).
+ * The `id` is the anchor and the key of the progress stored in the browser: the panel generates it when the
+ * challenge is created and it must not change afterwards, not even when the title is corrected.
+ */
+import { createHash } from 'node:crypto';
+import { normalizeAnswer } from '../lib/answers';
+
+interface Props {
+  id: string;
+  title: string;
+  number?: number | string;
+  answer?: string;
+  options?: string[];
+  unit?: string;
+  source?: string;
+  decimals?: number;
+}
+
+const { id, title, number, answer, options, unit, source, decimals } = Astro.props;
+if (!id)
+  throw new Error(
+    `The challenge “${title}” has no id. Open it in the panel and save it, or write id="desafio-…" in the article.`,
+  );
+
+const hashes = answer
+  ? answer.split('|').map((accepted) =>
+      createHash('sha256')
+        .update(id + normalizeAnswer(accepted, decimals))
+        .digest('hex'),
+    )
+  : [];
+const hasSolution = Astro.slots.has('solution');
+---
+
+<maismat-challenge class="challenge" id={id} data-hashes={hashes.join(',')} data-decimals={decimals}>
+  <header>
+    <span class="ui eyebrow">Desafio{number !== undefined && ` ${number}`}</span>
+    <h3>{title}</h3>
+  </header>
+
+  <div class="statement">
+    <slot />
+  </div>
+  {source && <p class="source ui">{source}</p>}
+
+  {hashes.length > 0 && (
+    <form class="ui answer-form no-print" data-pagefind-ignore>
+      {options ? (
+        <fieldset>
+          <legend>Escolhe a tua resposta</legend>
+          {options.map((option) => (
+            <label class="option">
+              <input type="radio" name={`${id}-r`} value={option} required />
+              <span>{option}</span>
+            </label>
+          ))}
+        </fieldset>
+      ) : (
+        <label>
+          <span>A tua resposta</span>
+          <span class="input-row">
+            <input type="text" name="r" inputmode="text" autocomplete="off" required />
+            {unit && <span class="unit">{unit}</span>}
+          </span>
+        </label>
+      )}
+      <button type="submit">Verificar</button>
+      <p class="feedback" role="status" aria-live="polite"></p>
+    </form>
+  )}
+
+  {hasSolution ? (
+    <details class="solution">
+      <summary class="ui">{hashes.length ? 'Ver resolução' : 'Resolução'}</summary>
+      <div>
+        <slot name="solution" />
+      </div>
+    </details>
+  ) : (
+    <p class="ui pending" data-pagefind-ignore>
+      A resolução será publicada na próxima edição. Envia a tua resposta à equipa do +MAT!
+    </p>
+  )}
+</maismat-challenge>
+
+<script>
+  import { normalizeAnswer } from '../lib/answers';
+  import { isSolved, markSolved } from '../lib/storage';
+
+  const HINT_AFTER_ATTEMPTS = 3;
+
+  async function sha256(text: string) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  class Challenge extends HTMLElement {
+    attempts = 0;
+
+    connectedCallback() {
+      const form = this.querySelector('form');
+      if (!form) return;
+      const hashes = (this.dataset.hashes ?? '').split(',');
+      const decimals = this.dataset.decimals ? Number(this.dataset.decimals) : undefined;
+      const feedback = form.querySelector<HTMLElement>('.feedback')!;
+
+      if (isSolved(this.id)) this.showSolved(feedback, true);
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const value = new FormData(form).values().next().value as string | undefined;
+        if (!value?.trim()) return;
+        const isCorrect = hashes.includes(await sha256(this.id + normalizeAnswer(value, decimals)));
+        this.attempts++;
+        if (isCorrect) {
+          this.showSolved(feedback, false);
+          markSolved(this.id);
+        } else {
+          this.dataset.state = 'wrong';
+          feedback.textContent =
+            this.attempts < HINT_AFTER_ATTEMPTS
+              ? 'Ainda não. Tenta outra vez!'
+              : 'Ainda não. Se quiseres, espreita a resolução.';
+        }
+      });
+    }
+
+    showSolved(feedback: HTMLElement, solvedBefore: boolean) {
+      this.dataset.state = 'correct';
+      feedback.textContent = solvedBefore ? 'Já resolveste este desafio. ✓' : 'Certo! Muito bem. ✓';
+      const solution = this.querySelector('details');
+      if (solution && !solvedBefore) solution.open = true;
+    }
+  }
+  customElements.define('maismat-challenge', Challenge);
+</script>
+
+<style>
+  /* The states come from data-state (wrong, correct), set by the script; the rest is CSS. */
+  .challenge {
+    display: block;
+    background: var(--bg);
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 0 1px var(--border);
+    padding: 1.25rem;
+    margin: 2rem 0;
+  }
+  [data-state='wrong'] {
+    background: var(--error-bg);
+    box-shadow: none;
+  }
+  [data-state='correct'] {
+    background: var(--ok-bg);
+    box-shadow: none;
+  }
+
+  header {
+    margin-bottom: 0.75rem;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+    padding: 0.2rem 0.625rem;
+    border-radius: var(--radius-lg);
+    background: var(--tag);
+    color: var(--on-tag);
+  }
+  [data-state='correct'] .eyebrow {
+    background: var(--ok);
+    color: var(--surface);
+  }
+  [data-state='correct'] .eyebrow::before {
+    content: '✓ ' / '';
+  }
+  h3 {
+    margin: 0.5rem 0 0;
+  }
+  .statement > :global(* + *) {
+    margin-top: 0.8em;
+  }
+  .statement :global(p) {
+    margin-bottom: 0;
+  }
+  .source {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    text-align: right;
+    font-style: italic;
+  }
+
+  .answer-form {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+  }
+  .answer-form > label {
+    display: grid;
+    gap: 0.25rem;
+    font-weight: 600;
+  }
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 400;
+  }
+  input[type='text'] {
+    min-height: 44px;
+    width: 12rem;
+    max-width: 100%;
+    padding: 0 0.625rem;
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font: 1rem var(--font-ui);
+  }
+  input[type='text']:focus-visible {
+    border-color: var(--primary);
+    outline-offset: 2px;
+  }
+  [data-state='wrong'] input[type='text'] {
+    border-color: var(--error);
+  }
+
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  legend {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .option {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    min-height: 52px;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .option:has(:checked) {
+    border-color: var(--primary);
+    background: var(--pill);
+    font-weight: 600;
+  }
+  .option:has(:focus-visible) {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
+  }
+  .option input {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+  }
+  .option input:focus-visible {
+    outline: none;
+  }
+  [data-state='correct'] .option:has(:checked) {
+    border-color: var(--ok);
+    background: var(--surface);
+  }
+  [data-state='wrong'] .option:has(:checked) {
+    border-color: var(--error);
+    background: var(--surface);
+  }
+
+  button {
+    min-height: 44px;
+    padding: 0 1.375rem;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: 700 0.9375rem var(--font-ui);
+    cursor: pointer;
+  }
+  button:hover {
+    background: var(--primary-strong);
+  }
+  button:focus-visible {
+    outline-color: var(--text);
+  }
+  .feedback {
+    margin: 0;
+    width: 100%;
+    min-height: 1.4em;
+    font-weight: 700;
+  }
+  .feedback:empty {
+    min-height: 0;
+  }
+  [data-state='correct'] .feedback {
+    color: var(--ok);
+  }
+  [data-state='wrong'] .feedback {
+    color: var(--error);
+  }
+  [data-state='wrong'] .feedback::before {
+    content: '✕ ' / '';
+  }
+
+  .solution {
+    margin-top: 1rem;
+  }
+  .solution summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.9375rem;
+  }
+  .solution > div {
+    margin-top: 0.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+  }
+  .solution[open] > div {
+    animation: reveal 200ms ease-out;
+  }
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  .solution :global(p) {
+    margin-bottom: 0;
+  }
+  .solution > div > :global(* + *) {
+    margin-top: 0.8em;
+  }
+  .pending {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin: 1rem 0 0;
+  }
+
+  @media print {
+    .solution:not([open]) {
+      display: none;
+    }
+  }
+</style>

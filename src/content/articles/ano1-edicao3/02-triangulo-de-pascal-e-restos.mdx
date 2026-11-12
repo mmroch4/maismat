@@ -1,0 +1,39 @@
+---
+title: Triângulo de Pascal e restos (módulo 4 e módulo 5)
+issue: ano1-edicao3
+section: combinatoria
+order: 2
+summary: Como pintar o triângulo de Pascal com 4 e 5 cores — e porque é que uma das cores é “neutra”.
+---
+Na edição anterior, lançámos o desafio de pintares o triângulo de Pascal de acordo com os restos da divisão dos seus elementos por 4 e também por 5. Diz-se que se trata de uma divisão módulo 4 ou módulo 5, respetivamente.
+
+Em cada um dos casos, o que te propusemos foi que escolhesses uma cor diferente para cada um dos restos. Mas poderíamos produzir alterações à regra. Por exemplo, poderias pintar o resto zero com uma cor e todos os outros com outra!
+
+Vamos analisar agora os dois casos que foram propostos.
+
+## Triângulo de Pascal pintado com 4 cores
+
+![Triângulo de Pascal pintado com 4 cores (restos 0 a 3)](./img/pascal-mod4.jpg "Verde: resto 0; azul: resto 1; laranja: resto 2; vermelho: resto 3.")
+
+Nota que:
+
+- a soma de dois números divisíveis por 4 é divisível por 4 (resto 0 + resto 0 = resto 0);
+- a soma de um número divisível por 4 com outro qualquer com resto $k$ é um número com resto $k$. Assim, a cor verde é “neutra”, isto é, o resultado terá a cor do outro número;
+- por exemplo, a soma de dois números que tenham resto 3 dá um número cujo resto será 2 ($3 + 3 = 6 \to 6 - 4 = 2$);
+- etc.
+
+## Triângulo de Pascal pintado com 5 cores
+
+![Triângulo de Pascal pintado com 5 cores (restos 0 a 4)](./img/pascal-mod5.jpg "Azul-turquesa: resto 0; azul-escuro: resto 1; cor-de-rosa: resto 2; verde: resto 3; laranja: resto 4.")
+
+Nota que:
+
+- a soma de dois números divisíveis por 5 é um número divisível por 5 (resto 0 + resto 0 = resto 0);
+- a soma de um número divisível por 5 com outro qualquer que dê resto $k$ é um número com resto $k$. Assim, a cor azul-turquesa é “neutra”, isto é, o resultado terá a cor do outro número;
+- a soma de dois números que tenham resto 3 dá um número cujo resto será 1 ($3 + 3 = 6 \to 6 - 5 = 1$): verde com verde dá azul-escuro;
+- verde com laranja dá cor-de-rosa porque $3 + 4 = 7$, logo o resto será 2 ($7 - 5 = 2$);
+- etc.
+
+Compara com o triângulo gerado no computador:
+
+<PascalTriangle divisors={[4, 5, 2, 3, 7]} />

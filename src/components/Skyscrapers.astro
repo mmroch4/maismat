@@ -1,0 +1,248 @@
+---
+/**
+ * Playable "Arranha-céus" (skyscrapers) puzzle.
+ * Clues are read from the outside in: `top` from left to right, `left` from top to bottom, and so on. 0 = no clue.
+ * `initial` gives cells that are already filled in (rows separated by "/", 0 = empty).
+ */
+interface Props {
+  top: number[];
+  bottom: number[];
+  left: number[];
+  right: number[];
+  initial?: string;
+  title?: string;
+}
+
+const { top, bottom, left, right, initial, title = 'Joga aqui' } = Astro.props;
+const size = top.length;
+const givenCells = initial ? initial.split('/').map((row) => [...row].map(Number)) : [];
+const clueText = (clue: number) => (clue ? String(clue) : '');
+---
+
+<maismat-skyscrapers class="skyscrapers" data-size={size} data-clues={JSON.stringify({ top, bottom, left, right })}>
+  <p class="ui title">{title}</p>
+  <div class="board" style={`--size:${size}`}>
+    <span></span>
+    {top.map((clue) => (
+      <span class="clue">{clueText(clue)}</span>
+    ))}
+    <span></span>
+    {Array.from({ length: size }, (_, row) => (
+      <>
+        <span class="clue">{clueText(left[row])}</span>
+        {Array.from({ length: size }, (_, column) => {
+          const given = givenCells[row]?.[column] ?? 0;
+          return (
+            <button
+              type="button"
+              class="cell"
+              data-given={given ? '' : undefined}
+              aria-label={`Linha ${row + 1}, coluna ${column + 1}`}
+            >
+              {given || ''}
+            </button>
+          );
+        })}
+        <span class="clue">{clueText(right[row])}</span>
+      </>
+    ))}
+    <span></span>
+    {bottom.map((clue) => (
+      <span class="clue">{clueText(clue)}</span>
+    ))}
+    <span></span>
+  </div>
+  <p class="ui help">Clica numa casa para mudar a altura (1 → {size} → vazio), ou escreve um número com o teclado.</p>
+  <p class="ui status" role="status" aria-live="polite"></p>
+  <button type="button" class="ui reset">
+    Recomeçar
+  </button>
+</maismat-skyscrapers>
+
+<script>
+  type Clues = { top: number[]; bottom: number[]; left: number[]; right: number[] };
+
+  /** How many buildings are seen from the start of the line (taller ones hide shorter ones behind them). */
+  const visibleCount = (line: number[]) => {
+    let tallest = 0;
+    let seen = 0;
+    for (const height of line)
+      if (height > tallest) {
+        tallest = height;
+        seen++;
+      }
+    return seen;
+  };
+
+  class Skyscrapers extends HTMLElement {
+    connectedCallback() {
+      const size = Number(this.dataset.size);
+      const clues: Clues = JSON.parse(this.dataset.clues!);
+      const cells = [...this.querySelectorAll<HTMLButtonElement>('.cell')];
+      const status = this.querySelector<HTMLElement>('.status')!;
+      const valueOf = (cell: HTMLButtonElement) => Number(cell.textContent) || 0;
+      const readGrid = () =>
+        Array.from({ length: size }, (_, row) => cells.slice(row * size, row * size + size).map(valueOf));
+
+      const check = () => {
+        const grid = readGrid();
+        cells.forEach((cell) => cell.classList.remove('conflict'));
+        // Repeated heights in the same row or column
+        for (let i = 0; i < size; i++) {
+          for (let j = 0; j < size; j++) {
+            const value = grid[i][j];
+            if (!value) continue;
+            for (let k = 0; k < size; k++) {
+              if ((k !== j && grid[i][k] === value) || (k !== i && grid[k][j] === value))
+                cells[i * size + j].classList.add('conflict');
+            }
+          }
+        }
+        const isFull = grid.every((row) => row.every(Boolean));
+        if (!isFull) {
+          status.textContent = '';
+          this.dataset.solved = 'false';
+          return;
+        }
+
+        const columns = Array.from({ length: size }, (_, column) => grid.map((row) => row[column]));
+        const isSolved =
+          !cells.some((cell) => cell.classList.contains('conflict')) &&
+          clues.left.every((clue, i) => !clue || visibleCount(grid[i]) === clue) &&
+          clues.right.every((clue, i) => !clue || visibleCount([...grid[i]].reverse()) === clue) &&
+          clues.top.every((clue, i) => !clue || visibleCount(columns[i]) === clue) &&
+          clues.bottom.every((clue, i) => !clue || visibleCount([...columns[i]].reverse()) === clue);
+        this.dataset.solved = String(isSolved);
+        status.textContent = isSolved
+          ? 'Parabéns, resolveste o puzzle! 🎉'
+          : 'A grelha está cheia, mas alguma pista não é cumprida.';
+      };
+
+      const setValue = (cell: HTMLButtonElement, value: number) => {
+        if (cell.hasAttribute('data-given')) return;
+        cell.textContent = value ? String(value) : '';
+        check();
+      };
+
+      cells.forEach((cell) => {
+        cell.addEventListener('click', () => setValue(cell, (valueOf(cell) + 1) % (size + 1)));
+        cell.addEventListener('keydown', (event) => {
+          const index = cells.indexOf(cell);
+          const moves: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -size, ArrowDown: size };
+          if (event.key in moves) {
+            cells[index + moves[event.key]]?.focus();
+            event.preventDefault();
+          } else if (/^[0-9]$/.test(event.key) && Number(event.key) <= size) {
+            setValue(cell, Number(event.key));
+          } else if (event.key === 'Backspace' || event.key === 'Delete') {
+            setValue(cell, 0);
+          }
+        });
+      });
+
+      this.querySelector('.reset')!.addEventListener('click', () => {
+        cells.forEach((cell) => !cell.hasAttribute('data-given') && (cell.textContent = ''));
+        check();
+      });
+    }
+  }
+
+  customElements.define('maismat-skyscrapers', Skyscrapers);
+</script>
+
+<style>
+  .skyscrapers {
+    display: block;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 0 1.25rem 1.25rem;
+    margin: 2rem 0;
+    text-align: center;
+    overflow: hidden;
+  }
+  /* The games are framed by the gold band with their name */
+  .title {
+    margin: 0 -1.25rem 1rem;
+    padding: 0.625rem 1rem;
+    background: var(--tag);
+    color: var(--on-tag);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: left;
+  }
+  .board {
+    display: inline-grid;
+    grid-template-columns: repeat(calc(var(--size) + 2), 2.75rem);
+    grid-auto-rows: 2.75rem;
+    gap: 4px;
+  }
+  .clue {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-ui);
+    font-weight: 700;
+    color: var(--eyebrow);
+  }
+  .cell {
+    font: 600 1.35rem var(--font-ui);
+    color: var(--primary);
+    background: var(--surface);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .cell:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 1px;
+  }
+  .cell[data-given] {
+    color: var(--text);
+    background: var(--pill);
+    border-color: var(--pill);
+    cursor: default;
+  }
+  .cell.conflict {
+    border-color: var(--error);
+    color: var(--error);
+  }
+  [data-solved='true'] .cell {
+    border-color: var(--ok);
+  }
+  .help {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 0.75rem 0 0;
+  }
+  .status {
+    min-height: 1.4em;
+    font-weight: 600;
+    margin: 0.5rem 0;
+  }
+  [data-solved='true'] .status {
+    color: var(--ok);
+  }
+  .reset {
+    min-height: 44px;
+    padding: 0 1rem;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--primary);
+    font: 700 0.875rem var(--font-ui);
+    cursor: pointer;
+  }
+  @media (max-width: 26rem) {
+    .board {
+      grid-template-columns: repeat(calc(var(--size) + 2), 2.3rem);
+      grid-auto-rows: 2.3rem;
+    }
+  }
+  @media print {
+    .help,
+    .status,
+    .reset {
+      display: none;
+    }
+  }
+</style>
