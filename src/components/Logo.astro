@@ -1,0 +1,16 @@
+---
+// «+MAT» as outlines (src/lib/logo.ts): it follows the text colour and does not need Playfair.
+import { viewBox, outline } from '../lib/logo';
+---
+
+<svg class="logo" viewBox={viewBox} aria-hidden="true" focusable="false">
+  <path d={outline} fill="currentColor" />
+</svg>
+
+<style>
+  .logo {
+    display: block;
+    height: 1em;
+    width: auto;
+  }
+</style>

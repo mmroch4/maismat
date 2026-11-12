@@ -1,11 +1,11 @@
 ---
-// Páginas por onde se chega a tudo sem pesquisa: alternativa da /pesquisa/ e página 404.
+// Pages that lead to everything without searching: the fallback of /pesquisa/ and of the 404 page.
 import { getSortedIssues, monthYear, issueLabel } from '../lib/issues';
 
-const edicoes = await getSortedIssues();
+const issues = await getSortedIssues();
 ---
 
-<ul class="ui paginas">
+<ul class="ui site-index">
   <li>
     <a href="/desafios/">Arquivo de desafios</a>
   </li>
@@ -15,10 +15,10 @@ const edicoes = await getSortedIssues();
   <li>
     <a href="/edicoes/">Edições</a>
     <ul>
-      {edicoes.map((e) => (
+      {issues.map((issue) => (
         <li>
-          <a href={`/edicoes/${e.id}/`}>
-            {issueLabel(e)} · <span class="cap">{monthYear(e.data.data)}</span>
+          <a href={`/edicoes/${issue.id}/`}>
+            {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
           </a>
         </li>
       ))}
@@ -27,14 +27,11 @@ const edicoes = await getSortedIssues();
 </ul>
 
 <style>
-  .paginas,
-  .paginas ul {
+  .site-index,
+  .site-index ul {
     padding-left: 1.25rem;
   }
   li {
     margin: 0.25rem 0;
-  }
-  .cap {
-    text-transform: capitalize;
   }
 </style>

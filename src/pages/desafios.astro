@@ -1,99 +1,99 @@
 ---
 import Base from '../layouts/Base.astro';
-import AnelProgresso from '../components/AnelProgresso.astro';
+import ProgressRing from '../components/ProgressRing.astro';
 import { getPublishedChallenges } from '../lib/challenges';
 import { monthYear, issueLabel } from '../lib/issues';
 
-const desafios = await getPublishedChallenges();
-const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
+const challenges = await getPublishedChallenges();
+const challengesByIssue = [...Map.groupBy(challenges, (challenge) => challenge.issue)];
 ---
 
 <Base
-  titulo="Arquivo de desafios"
-  descricao="Todos os desafios publicados no +MAT, para voltares a encontrá-los e resolvê-los."
+  title="Arquivo de desafios"
+  description="Todos os desafios publicados no +MAT, para voltares a encontrá-los e resolvê-los."
 >
-  <div class="contentor">
-    <div class="cabeca">
+  <div class="container">
+    <div class="page-header">
       <h1>
-        Arquivo de <span class="marcador">desafios</span>
+        Arquivo de <span class="highlight">desafios</span>
       </h1>
       <p>
-        Os {desafios.length} desafios publicados no +MAT, da edição mais recente para a mais antiga. Cada um leva-te ao
-        artigo onde podes responder e, quando existe, ver a resolução.
+        Os {challenges.length} desafios publicados no +MAT, da edição mais recente para a mais antiga. Cada um leva-te
+        ao artigo onde podes responder e, quando existe, ver a resolução.
       </p>
     </div>
 
-    <div class="cartao progresso nao-imprimir">
-      <AnelProgresso ids={desafios.map((d) => d.id)} />
-      <span class="ui neste">neste aparelho</span>
+    <div class="card progress no-print">
+      <ProgressRing ids={challenges.map((challenge) => challenge.id)} />
+      <span class="ui on-this-device">neste aparelho</span>
     </div>
 
-    <form class="ui filtros nao-imprimir" hidden>
-      <div class="pastilhas" role="group" aria-label="Estado">
-        <button type="button" data-estado="por-resolver" aria-pressed="false">
-          Por resolver · <span class="n"></span>
+    <form class="ui filters no-print" hidden>
+      <div class="pills" role="group" aria-label="Estado">
+        <button type="button" data-status="unsolved" aria-pressed="false">
+          Por resolver · <span class="count"></span>
         </button>
-        <button type="button" data-estado="resolvidos" aria-pressed="false">
-          Resolvidos · <span class="n"></span>
+        <button type="button" data-status="solved" aria-pressed="false">
+          Resolvidos · <span class="count"></span>
         </button>
-        <button type="button" data-estado="" aria-pressed="true">
-          Todos · <span class="n"></span>
+        <button type="button" data-status="" aria-pressed="true">
+          Todos · <span class="count"></span>
         </button>
       </div>
       <label>
         <span>Edição</span>
-        <select name="edicao" class="entrada">
+        <select name="issue" class="field">
           <option value="">Todas</option>
-          {porEdicao.map(([e]) => (
-            <option value={e.id}>{issueLabel(e)}</option>
+          {challengesByIssue.map(([issue]) => (
+            <option value={issue.id}>{issueLabel(issue)}</option>
           ))}
         </select>
       </label>
-      <p class="contagem" role="status" aria-live="polite"></p>
+      <p class="summary" role="status" aria-live="polite"></p>
     </form>
 
-    <details id="levar" class="ui transferir nao-imprimir" hidden>
+    <details id="levar" class="ui transfer no-print" hidden>
       <summary>Levar o teu progresso para outro computador</summary>
       <p>
         Os computadores da escola apagam muitas vezes o que fica guardado. Cria um código, envia-o a ti próprio (por
         email, no Teams ou num documento) e cola-o no outro computador. O código só diz que desafios resolveste: não tem
         o teu nome nem as tuas respostas.
       </p>
-      <div class="passos">
-        <form class="exportar">
-          <p class="passo">Neste computador</p>
+      <div class="steps">
+        <form class="export">
+          <p class="step">Neste computador</p>
           <button type="submit">Criar o meu código</button>
           <label hidden>
             <span>O teu código</span>
-            <textarea name="codigo" rows="3" readonly spellcheck="false"></textarea>
+            <textarea name="code" rows="3" readonly spellcheck="false"></textarea>
           </label>
-          <button type="button" class="copiar" hidden>
+          <button type="button" class="copy" hidden>
             Copiar
           </button>
-          <p class="mensagem" role="status" aria-live="polite"></p>
+          <p class="message" role="status" aria-live="polite"></p>
           <div class="qr" hidden>
-            <p class="passo">Para o telemóvel</p>
-            <div class="qr-imagem"></div>
+            <p class="step">Para o telemóvel</p>
+            <div class="qr-image"></div>
             <p>Lê com a câmara do telemóvel.</p>
-            <p class="ligacao">
+            <p class="qr-link">
               Ou abre esta ligação: <a href=""></a>
             </p>
           </div>
         </form>
-        <form class="importar">
-          <p class="passo">No outro computador</p>
+        <form class="import">
+          <p class="step">No outro computador</p>
           <label>
             <span>Cola aqui o teu código</span>
-            <textarea name="codigo" rows="3" spellcheck="false" autocomplete="off"></textarea>
+            <textarea name="code" rows="3" spellcheck="false" autocomplete="off"></textarea>
           </label>
           <button type="submit">Juntar ao meu progresso</button>
-          <p class="mensagem" role="status" aria-live="polite"></p>
-          <div class="confirmar" hidden>
-            <p class="pergunta" tabindex="-1"></p>
-            <button type="button" class="sim">
+          <p class="message" role="status" aria-live="polite"></p>
+          <div class="confirm" hidden>
+            <p class="question" tabindex="-1"></p>
+            <button type="button" class="confirm-yes">
               Juntar
             </button>
-            <button type="button" class="nao">
+            <button type="button" class="confirm-no">
               Agora não
             </button>
           </div>
@@ -101,32 +101,36 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
       </div>
     </details>
 
-    {porEdicao.map(([e, lista]) => (
-      <section class="edicao" data-edicao={e.id} aria-labelledby={`ed-${e.id}`}>
-        <h2 id={`ed-${e.id}`}>
-          <span class="cap">{monthYear(e.data.data)}</span> <span class="ui">· {issueLabel(e)}</span>
+    {challengesByIssue.map(([issue, issueChallenges]) => (
+      <section class="issue" data-issue={issue.id} aria-labelledby={`issue-${issue.id}`}>
+        <h2 id={`issue-${issue.id}`}>
+          <span class="capitalize">{monthYear(issue.data.data)}</span> <span class="ui">· {issueLabel(issue)}</span>
         </h2>
         <ul>
-          {lista.map((d) => (
-            <li class="desafio" data-id={d.id}>
-              <p class="ui rotulo">
+          {issueChallenges.map((challenge) => (
+            <li class="challenge" data-id={challenge.id}>
+              <p class="ui eyebrow">
                 <span>
-                  Desafio{d.number && ` ${d.number}`} · {d.article.data.titulo}
+                  Desafio{challenge.number && ` ${challenge.number}`} · {challenge.article.data.titulo}
                 </span>
-                <span class="resolvido" hidden>
+                <span class="solved-badge" hidden>
                   <span aria-hidden="true">✓</span> Resolvido
                 </span>
               </p>
               <h3>
-                <a href={d.url}>{d.title}</a>
+                <a href={challenge.url}>{challenge.title}</a>
               </h3>
-              {d.excerpt.length > 0 && (
-                <p class="excerto">{d.excerpt.map((s) => ('html' in s ? <Fragment set:html={s.html} /> : s.text))}</p>
+              {challenge.excerpt.length > 0 && (
+                <p class="excerpt">
+                  {challenge.excerpt.map((segment) =>
+                    'html' in segment ? <Fragment set:html={segment.html} /> : segment.text,
+                  )}
+                </p>
               )}
-              {(d.hasAnswer || d.hasSolution) && (
-                <p class="ui etiquetas">
-                  {d.hasAnswer && <span>Com verificação</span>}
-                  {d.hasSolution && <span>Com resolução</span>}
+              {(challenge.hasAnswer || challenge.hasSolution) && (
+                <p class="ui tags">
+                  {challenge.hasAnswer && <span>Com verificação</span>}
+                  {challenge.hasSolution && <span>Com resolução</span>}
                 </p>
               )}
             </li>
@@ -140,219 +144,220 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
 <script>
   import { encode } from 'uqr';
   import { CHALLENGE_ID, codeFromLink, decodeProgress, encodeProgress, progressLink } from '../lib/progress-code';
+  import { PROGRESS_EVENT, challengeIdFromKey, isSolved, markSolved, SOLVED } from '../lib/storage';
 
-  const form = document.querySelector<HTMLFormElement>('.filtros')!;
-  const contagem = form.querySelector<HTMLElement>('.contagem')!;
-  const seccoes = [...document.querySelectorAll<HTMLElement>('.edicao')];
-  const itens = [...document.querySelectorAll<HTMLElement>('.desafio')];
+  type StatusFilter = '' | 'solved' | 'unsolved';
 
-  // Mesma chave que o Desafio.astro grava quando um aluno acerta.
-  const resolvido = (id: string) => {
-    try {
-      return localStorage.getItem(`maismat:${id}`) === 'ok';
-    } catch {
-      return false;
-    }
-  };
+  const filterForm = document.querySelector<HTMLFormElement>('.filters')!;
+  const summary = filterForm.querySelector<HTMLElement>('.summary')!;
+  const issueSelect = filterForm.querySelector<HTMLSelectElement>('select')!;
+  const issueSections = [...document.querySelectorAll<HTMLElement>('.issue')];
+  const items = [...document.querySelectorAll<HTMLElement>('.challenge')];
 
-  // Por id: um desafio republicado (por exemplo, nas resoluções) conta uma vez só.
-  const resolvidos = new Set<string>();
-  function marcar() {
-    for (const li of itens) {
-      if (!resolvido(li.dataset.id!)) continue;
-      li.dataset.resolvido = '';
-      li.querySelector<HTMLElement>('.resolvido')!.hidden = false;
-      resolvidos.add(li.dataset.id!);
+  // By id: a republished challenge (for example, in the solutions) counts only once.
+  const solvedIds = new Set<string>();
+  function markSolvedItems() {
+    for (const item of items) {
+      if (!isSolved(item.dataset.id!)) continue;
+      item.dataset.solved = '';
+      item.querySelector<HTMLElement>('.solved-badge')!.hidden = false;
+      solvedIds.add(item.dataset.id!);
     }
   }
-  marcar();
+  markSolvedItems();
 
-  const botoes = [...form.querySelectorAll<HTMLButtonElement>('[data-estado]')];
-  let estado = '';
-  for (const b of botoes)
-    b.addEventListener('click', () => {
-      estado = b.dataset.estado!;
-      for (const o of botoes) o.setAttribute('aria-pressed', String(o === b));
-      filtrar();
+  const statusButtons = [...filterForm.querySelectorAll<HTMLButtonElement>('[data-status]')];
+  let statusFilter: StatusFilter = '';
+  for (const button of statusButtons)
+    button.addEventListener('click', () => {
+      statusFilter = button.dataset.status as StatusFilter;
+      for (const other of statusButtons) other.setAttribute('aria-pressed', String(other === button));
+      applyFilters();
     });
 
-  function filtrar() {
-    const edicao = form.edicao.value;
-    const contagens: Record<string, number> = { '': itens.length, resolvidos: 0, 'por-resolver': 0 };
-    for (const li of itens) contagens['resolvido' in li.dataset ? 'resolvidos' : 'por-resolver']++;
-    for (const b of botoes) b.querySelector('.n')!.textContent = String(contagens[b.dataset.estado!]);
-    let visiveis = 0;
-    for (const s of seccoes) {
-      let algum = false;
-      for (const li of s.querySelectorAll<HTMLElement>('.desafio')) {
-        const r = 'resolvido' in li.dataset;
-        li.hidden = (estado === 'resolvidos' && !r) || (estado === 'por-resolver' && r);
-        if (!li.hidden) algum = true;
-        if (!li.hidden && (!edicao || s.dataset.edicao === edicao)) visiveis++;
+  function applyFilters() {
+    const issueId = issueSelect.value;
+    const counts: Record<StatusFilter, number> = { '': items.length, solved: 0, unsolved: 0 };
+    for (const item of items) counts['solved' in item.dataset ? 'solved' : 'unsolved']++;
+    for (const button of statusButtons)
+      button.querySelector('.count')!.textContent = String(counts[button.dataset.status as StatusFilter]);
+    let visibleCount = 0;
+    for (const section of issueSections) {
+      let anyVisible = false;
+      for (const item of section.querySelectorAll<HTMLElement>('.challenge')) {
+        const solved = 'solved' in item.dataset;
+        item.hidden = (statusFilter === 'solved' && !solved) || (statusFilter === 'unsolved' && solved);
+        if (!item.hidden) anyVisible = true;
+        if (!item.hidden && (!issueId || section.dataset.issue === issueId)) visibleCount++;
       }
-      s.hidden = !algum || (edicao !== '' && s.dataset.edicao !== edicao);
+      section.hidden = !anyVisible || (issueId !== '' && section.dataset.issue !== issueId);
     }
-    contagem.textContent = `A mostrar ${visiveis} de ${itens.length} desafios · resolveste ${resolvidos.size}.`;
+    summary.textContent = `A mostrar ${visibleCount} de ${items.length} desafios · resolveste ${solvedIds.size}.`;
   }
 
-  form.addEventListener('change', filtrar);
-  form.addEventListener('submit', (e) => e.preventDefault());
-  // A contagem é preenchida antes de o formulário aparecer, para não ser anunciada ao abrir a página.
-  filtrar();
-  form.hidden = false;
+  filterForm.addEventListener('change', applyFilters);
+  filterForm.addEventListener('submit', (event) => event.preventDefault());
+  // The summary is filled in before the form shows up, so it is not announced when the page opens.
+  applyFilters();
+  filterForm.hidden = false;
 
-  const transferir = document.querySelector<HTMLDetailsElement>('.transferir')!;
-  const exportar = transferir.querySelector<HTMLFormElement>('.exportar')!;
-  const importar = transferir.querySelector<HTMLFormElement>('.importar')!;
-  const copiar = exportar.querySelector<HTMLButtonElement>('.copiar')!;
-  const qr = exportar.querySelector<HTMLElement>('.qr')!;
-  const confirmar = importar.querySelector<HTMLElement>('.confirmar')!;
-  const conhecidos = new Set(itens.map((li) => li.dataset.id!));
-  const plural = (n: number, um: string, varios: string) => (n === 1 ? `1 ${um}` : `${n} ${varios}`);
+  const transfer = document.querySelector<HTMLDetailsElement>('.transfer')!;
+  const exportForm = transfer.querySelector<HTMLFormElement>('.export')!;
+  const importForm = transfer.querySelector<HTMLFormElement>('.import')!;
+  const exportCode = exportForm.querySelector<HTMLTextAreaElement>('textarea')!;
+  const importCode = importForm.querySelector<HTMLTextAreaElement>('textarea')!;
+  const copyButton = exportForm.querySelector<HTMLButtonElement>('.copy')!;
+  const qr = exportForm.querySelector<HTMLElement>('.qr')!;
+  const confirmBox = importForm.querySelector<HTMLElement>('.confirm')!;
+  const knownIds = new Set(items.map((item) => item.dataset.id!));
+  const plural = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` : `${n} ${many}`);
 
-  function avisar(f: HTMLFormElement, texto: string, erro = false) {
-    const m = f.querySelector<HTMLElement>('.mensagem')!;
-    m.textContent = texto;
-    m.classList.toggle('erro', erro);
+  function showMessage(form: HTMLFormElement, text: string, isError = false) {
+    const message = form.querySelector<HTMLElement>('.message')!;
+    message.textContent = text;
+    message.classList.toggle('error', isError);
   }
 
-  exportar.addEventListener('submit', (e) => {
-    e.preventDefault();
+  function solvedIdsInStorage(): string[] {
     const ids: string[] = [];
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i) ?? '';
-        const id = k.slice('maismat:'.length);
-        if (k.startsWith('maismat:') && CHALLENGE_ID.test(id) && localStorage.getItem(k) === 'ok') ids.push(id);
-      }
-    } catch {
-      return avisar(exportar, 'Este browser não deixa ler o progresso guardado.', true);
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i) ?? '';
+      const id = challengeIdFromKey(key);
+      if (id && CHALLENGE_ID.test(id) && localStorage.getItem(key) === SOLVED) ids.push(id);
     }
-    if (!ids.length) return avisar(exportar, 'Ainda não resolveste nenhum desafio neste computador.', true);
-    exportar.codigo.value = encodeProgress(ids);
-    exportar.codigo.closest('label')!.hidden = false;
-    copiar.hidden = false;
-    desenharQr(progressLink(location.origin, ids));
-    exportar.codigo.select();
-    avisar(
-      exportar,
+    return ids;
+  }
+
+  exportForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    let ids: string[];
+    try {
+      ids = solvedIdsInStorage();
+    } catch {
+      return showMessage(exportForm, 'Este browser não deixa ler o progresso guardado.', true);
+    }
+    if (!ids.length) return showMessage(exportForm, 'Ainda não resolveste nenhum desafio neste computador.', true);
+    exportCode.value = encodeProgress(ids);
+    exportCode.closest('label')!.hidden = false;
+    copyButton.hidden = false;
+    drawQrCode(progressLink(location.origin, ids));
+    exportCode.select();
+    showMessage(
+      exportForm,
       `Código criado com ${plural(ids.length, 'desafio resolvido', 'desafios resolvidos')}. Copia-o e guarda-o.`,
     );
   });
 
-  copiar.addEventListener('click', async () => {
-    exportar.codigo.select();
+  copyButton.addEventListener('click', async () => {
+    exportCode.select();
     try {
-      await navigator.clipboard.writeText(exportar.codigo.value);
-      avisar(exportar, 'Código copiado. Cola-o num email, no Teams ou num documento.');
+      await navigator.clipboard.writeText(exportCode.value);
+      showMessage(exportForm, 'Código copiado. Cola-o num email, no Teams ou num documento.');
     } catch {
-      avisar(exportar, 'Não consegui copiar sozinho. O código está selecionado: copia-o com Ctrl+C.');
+      showMessage(exportForm, 'Não consegui copiar sozinho. O código está selecionado: copia-o com Ctrl+C.');
     }
   });
 
-  // Um caminho por linha de módulos pretos; o fundo branco (com a margem de 4 módulos) é fixo, também no modo escuro.
-  function desenharQr(url: string) {
+  // One path per row of black modules; the white background (with a 4-module quiet zone) stays white in dark mode too.
+  function drawQrCode(url: string) {
     const { data, size } = encode(url, { ecc: 'L', border: 4 });
-    let d = '';
-    data.forEach((linha, y) => {
+    let path = '';
+    data.forEach((row, y) => {
       for (let x = 0; x < size; x++) {
-        if (!linha[x]) continue;
-        const inicio = x;
-        while (linha[x + 1]) x++;
-        d += `M${inicio} ${y}h${x - inicio + 1}v1H${inicio}z`;
+        if (!row[x]) continue;
+        const start = x;
+        while (row[x + 1]) x++;
+        path += `M${start} ${y}h${x - start + 1}v1H${start}z`;
       }
     });
-    qr.querySelector('.qr-imagem')!.innerHTML =
+    qr.querySelector('.qr-image')!.innerHTML =
       `<svg role="img" aria-label="Código QR com a ligação para levar o teu progresso para o telemóvel" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">` +
-      `<rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
-    const a = qr.querySelector<HTMLAnchorElement>('.ligacao a')!;
-    a.href = url;
-    a.textContent = url;
+      `<rect width="${size}" height="${size}" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
+    const link = qr.querySelector<HTMLAnchorElement>('.qr-link a')!;
+    link.href = url;
+    link.textContent = url;
     qr.hidden = false;
   }
 
-  const novosDe = (ids: string[]) => ids.filter((id) => conhecidos.has(id) && !resolvido(id));
+  const newIdsIn = (ids: string[]) => ids.filter((id) => knownIds.has(id) && !isSolved(id));
 
-  function juntar(ids: string[]) {
-    confirmar.hidden = true;
-    const novos = novosDe(ids);
-    const ignorados = ids.filter((id) => !conhecidos.has(id)).length;
-    try {
-      for (const id of novos) if (CHALLENGE_ID.test(id)) localStorage.setItem(`maismat:${id}`, 'ok');
-    } catch {
-      return avisar(importar, 'Este browser não deixa guardar o progresso.', true);
-    }
-    marcar();
-    filtrar();
-    document.dispatchEvent(new Event('maismat:progresso'));
-    const partes = [
-      novos.length
-        ? `Juntámos ${plural(novos.length, 'desafio', 'desafios')} ao teu progresso.`
+  function mergeProgress(ids: string[]) {
+    confirmBox.hidden = true;
+    const newIds = newIdsIn(ids);
+    const unknownCount = ids.filter((id) => !knownIds.has(id)).length;
+    if (!newIds.filter((id) => CHALLENGE_ID.test(id)).every(markSolved))
+      return showMessage(importForm, 'Este browser não deixa guardar o progresso.', true);
+    markSolvedItems();
+    applyFilters();
+    document.dispatchEvent(new Event(PROGRESS_EVENT));
+    const parts = [
+      newIds.length
+        ? `Juntámos ${plural(newIds.length, 'desafio', 'desafios')} ao teu progresso.`
         : 'Já tinhas todos os desafios deste código.',
-      `Agora tens ${plural(resolvidos.size, 'resolvido', 'resolvidos')}.`,
+      `Agora tens ${plural(solvedIds.size, 'resolvido', 'resolvidos')}.`,
     ];
-    if (ignorados)
-      partes.push(
-        `${plural(ignorados, 'desafio do código não existe', 'desafios do código não existem')} neste site e ${ignorados === 1 ? 'foi ignorado' : 'foram ignorados'}.`,
+    if (unknownCount)
+      parts.push(
+        `${plural(unknownCount, 'desafio do código não existe', 'desafios do código não existem')} neste site e ${unknownCount === 1 ? 'foi ignorado' : 'foram ignorados'}.`,
       );
-    avisar(importar, partes.join(' '));
+    showMessage(importForm, parts.join(' '));
   }
 
-  importar.addEventListener('submit', (e) => {
-    e.preventDefault();
+  importForm.addEventListener('submit', (event) => {
+    event.preventDefault();
     try {
-      juntar(decodeProgress(importar.codigo.value));
-    } catch (erro) {
-      confirmar.hidden = true;
-      avisar(importar, (erro as Error).message, true);
+      mergeProgress(decodeProgress(importCode.value));
+    } catch (error) {
+      confirmBox.hidden = true;
+      showMessage(importForm, (error as Error).message, true);
     }
   });
 
-  transferir.hidden = false;
+  transfer.hidden = false;
 
-  // Ligação do QR (/desafios/#progresso=MAT1-…): preenche o campo e pergunta antes de escrever.
-  // Também com a página já aberta, porque aí o browser só muda o fragmento.
-  const pergunta = confirmar.querySelector<HTMLElement>('.pergunta')!;
-  let aConfirmar: string[] = [];
-  confirmar.querySelector('.sim')!.addEventListener('click', () => juntar(aConfirmar));
-  confirmar.querySelector('.nao')!.addEventListener('click', () => {
-    confirmar.hidden = true;
-    avisar(importar, 'Não juntámos nada. O código ficou no campo, se mudares de ideias.');
+  // QR code link (/desafios/#progresso=MAT1-…): fills in the field and asks before writing anything.
+  // Also when the page is already open, because then the browser only changes the fragment.
+  const question = confirmBox.querySelector<HTMLElement>('.question')!;
+  let idsToConfirm: string[] = [];
+  confirmBox.querySelector('.confirm-yes')!.addEventListener('click', () => mergeProgress(idsToConfirm));
+  confirmBox.querySelector('.confirm-no')!.addEventListener('click', () => {
+    confirmBox.hidden = true;
+    showMessage(importForm, 'Não juntámos nada. O código ficou no campo, se mudares de ideias.');
   });
 
-  function lerFragmento() {
-    // Da folha «Mais»: abre o painel para levar o progresso.
+  function handleFragment() {
+    // From the "More" sheet: open the transfer panel.
     if (location.hash === '#levar') {
-      transferir.open = true;
-      return transferir.scrollIntoView({ block: 'start' });
+      transfer.open = true;
+      return transfer.scrollIntoView({ block: 'start' });
     }
-    const codigo = codeFromLink(location.hash);
-    if (codigo === null) return;
+    const code = codeFromLink(location.hash);
+    if (code === null) return;
     history.replaceState(null, '', location.pathname + location.search);
-    transferir.open = true;
-    importar.codigo.value = codigo;
-    confirmar.hidden = true;
-    avisar(importar, '');
-    transferir.scrollIntoView({ block: 'start' });
+    transfer.open = true;
+    importCode.value = code;
+    confirmBox.hidden = true;
+    showMessage(importForm, '');
+    transfer.scrollIntoView({ block: 'start' });
     let ids: string[];
     try {
-      ids = decodeProgress(codigo);
-    } catch (erro) {
-      return avisar(importar, (erro as Error).message, true);
+      ids = decodeProgress(code);
+    } catch (error) {
+      return showMessage(importForm, (error as Error).message, true);
     }
-    const n = novosDe(ids).length;
-    if (!n) return juntar(ids);
-    aConfirmar = ids;
-    pergunta.textContent = `Juntar ${plural(n, 'desafio', 'desafios')} ao teu progresso?`;
-    confirmar.hidden = false;
-    pergunta.focus();
+    const newCount = newIdsIn(ids).length;
+    if (!newCount) return mergeProgress(ids);
+    idsToConfirm = ids;
+    question.textContent = `Juntar ${plural(newCount, 'desafio', 'desafios')} ao teu progresso?`;
+    confirmBox.hidden = false;
+    question.focus();
   }
-  lerFragmento();
-  addEventListener('hashchange', lerFragmento);
+  handleFragment();
+  addEventListener('hashchange', handleFragment);
 </script>
 
 <style>
-  .progresso {
+  .progress {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -360,12 +365,12 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
     padding: 1rem 1.25rem;
     max-width: 30rem;
   }
-  .neste {
+  .on-this-device {
     font-size: 0.8125rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
 
-  .filtros {
+  .filters {
     display: flex;
     flex-wrap: wrap;
     align-items: end;
@@ -373,29 +378,29 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
     margin: 1.5rem 0 0.5rem;
     font-size: 0.9375rem;
   }
-  .filtros label {
+  .filters label {
     display: grid;
     gap: 0.25rem;
   }
-  .filtros label > span {
+  .filters label > span {
     font-weight: 600;
   }
-  .contagem {
+  .summary {
     margin: 0;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     flex-basis: 100%;
   }
 
   h2 {
     margin: 2.5rem 0 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--linha);
+    border-bottom: 1px solid var(--border);
   }
   h2 .ui {
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
 
   ul {
@@ -406,26 +411,26 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
     gap: 1rem;
   }
-  .desafio {
+  .challenge {
     padding: 1rem 1.25rem;
     min-width: 0;
-    background: var(--superficie);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
   }
-  .desafio[data-resolvido] {
+  .challenge[data-solved] {
     box-shadow: 0 0 0 2px var(--ok);
   }
-  .rotulo {
+  .eyebrow {
     display: flex;
     justify-content: space-between;
     gap: 0.75rem;
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0;
   }
-  .rotulo .resolvido {
+  .eyebrow .solved-badge {
     color: var(--ok);
     white-space: nowrap;
   }
@@ -434,20 +439,20 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
     overflow-wrap: anywhere;
   }
   h3 a {
-    color: var(--texto);
+    color: var(--text);
     text-decoration: none;
   }
   h3 a:hover {
     text-decoration: underline;
   }
-  .excerto {
+  .excerpt {
     font-size: 0.9375rem;
     line-height: 1.5;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0.5rem 0 0;
     overflow-wrap: anywhere;
   }
-  .etiquetas {
+  .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;
@@ -455,44 +460,44 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
     font-size: 0.75rem;
     font-weight: 600;
   }
-  .etiquetas span {
+  .tags span {
     padding: 0.2rem 0.625rem;
-    border-radius: var(--raio-g);
-    background: var(--pastilha);
-    color: var(--texto-suave);
+    border-radius: var(--radius-lg);
+    background: var(--pill);
+    color: var(--text-muted);
   }
   [hidden] {
     display: none !important;
   }
 
-  .transferir {
+  .transfer {
     margin: 1rem 0 0.5rem;
-    border-radius: var(--raio);
-    background: var(--superficie);
-    box-shadow: var(--sombra);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
     padding: 0.75rem 1.25rem;
     font-size: 0.9rem;
     max-width: 48rem;
   }
-  .transferir summary {
+  .transfer summary {
     display: flex;
     align-items: center;
     min-height: 44px;
     cursor: pointer;
     font-weight: 600;
-    color: var(--primaria);
+    color: var(--primary);
   }
-  .transferir > p {
-    color: var(--texto-suave);
+  .transfer > p {
+    color: var(--text-muted);
     margin: 0.75rem 0 0;
   }
-  .passos {
+  .steps {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     gap: 1rem 1.5rem;
     margin-top: 1rem;
   }
-  .passos form {
+  .steps form {
     display: flex;
     flex-wrap: wrap;
     align-items: start;
@@ -500,101 +505,101 @@ const porEdicao = [...Map.groupBy(desafios, (d) => d.issue)];
     gap: 0.6rem;
     min-width: 0;
   }
-  .passo {
+  .step {
     font-weight: 600;
     margin: 0;
     width: 100%;
   }
-  .passos label {
+  .steps label {
     display: grid;
     gap: 0.25rem;
     width: 100%;
   }
-  .passos label span {
-    color: var(--texto-suave);
+  .steps label span {
+    color: var(--text-muted);
   }
   textarea {
     font:
       0.85rem/1.4 ui-monospace,
       monospace;
     padding: 0.45rem 0.6rem;
-    border: 2px solid var(--campo);
-    border-radius: var(--raio-p);
-    background: var(--fundo);
-    color: var(--texto);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
     width: 100%;
     resize: vertical;
     overflow-wrap: anywhere;
     word-break: break-all;
   }
-  .passos button {
+  .steps button {
     min-height: 44px;
     padding: 0 1.125rem;
     border: 0;
-    border-radius: var(--raio);
-    background: var(--primaria);
-    color: var(--primaria-texto);
-    font: 700 0.875rem var(--f-ui);
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: 700 0.875rem var(--font-ui);
     cursor: pointer;
   }
-  .passos button:hover {
-    background: var(--primaria-forte);
+  .steps button:hover {
+    background: var(--primary-strong);
   }
-  .passos button:focus-visible {
-    outline-color: var(--texto);
+  .steps button:focus-visible {
+    outline-color: var(--text);
   }
-  .mensagem {
+  .message {
     margin: 0;
     width: 100%;
     min-height: 1.4em;
     color: var(--ok);
     font-weight: 600;
   }
-  .mensagem.erro {
-    color: var(--erro);
+  .message.error {
+    color: var(--error);
   }
-  .mensagem:empty {
+  .message:empty {
     min-height: 0;
   }
 
   .qr,
-  .confirmar {
+  .confirm {
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
     width: 100%;
   }
   .qr p,
-  .confirmar p {
+  .confirm p {
     margin: 0;
     width: 100%;
   }
-  .qr-imagem {
+  .qr-image {
     width: 100%;
     max-width: 16rem;
   }
-  .qr-imagem :global(svg) {
+  .qr-image :global(svg) {
     display: block;
     width: 100%;
     height: auto;
     border-radius: 6px;
-    outline: 1px solid var(--linha);
+    outline: 1px solid var(--border);
   }
-  .ligacao {
-    color: var(--texto-suave);
+  .qr-link {
+    color: var(--text-muted);
     font-size: 0.8rem;
     overflow-wrap: anywhere;
     word-break: break-all;
   }
-  .pergunta {
+  .question {
     font-weight: 600;
   }
-  .passos .nao {
+  .steps .confirm-no {
     background: none;
-    color: var(--texto);
-    box-shadow: inset 0 0 0 2px var(--campo);
+    color: var(--text);
+    box-shadow: inset 0 0 0 2px var(--field-border);
   }
-  .passos .nao:hover {
-    background: var(--fundo);
+  .steps .confirm-no:hover {
+    background: var(--bg);
   }
 </style>

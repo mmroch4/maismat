@@ -1,0 +1,65 @@
+---
+import { Image } from 'astro:assets';
+import { getIssueArticles, monthYear, type Issue } from '../lib/issues';
+
+interface Props {
+  issue: Issue;
+}
+const { issue } = Astro.props;
+const { capa: cover, data: date, convertida: converted, numero: number } = issue.data;
+const articleCount = converted ? (await getIssueArticles(issue.id)).length : 0;
+---
+
+<a class="issue-card" href={`/edicoes/${issue.id}/`}>
+  {cover && <Image src={cover} alt={`Capa da edição de ${monthYear(date)}`} width={360} />}
+  <span class="month ui capitalize">{monthYear(date)}</span>
+  <span class="ui eyebrow">
+    Edição {String(number).padStart(2, '0')}
+    {articleCount > 0 && ` · ${articleCount} artigos`}
+  </span>
+  {!converted && <span class="ui pdf-only">PDF</span>}
+</a>
+
+<style>
+  .issue-card {
+    display: grid;
+    gap: 0.125rem;
+    align-content: start;
+    text-decoration: none;
+    color: var(--text);
+    position: relative;
+  }
+  img {
+    width: 100%;
+    aspect-ratio: 210 / 297;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+    transition: transform 150ms ease;
+    margin-bottom: 0.5rem;
+  }
+  .issue-card:hover img {
+    transform: translateY(-2px);
+  }
+  .month {
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+  .eyebrow {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+  .pdf-only {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+    background: var(--surface);
+    color: var(--text);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  }
+</style>

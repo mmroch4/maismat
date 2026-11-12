@@ -74,10 +74,10 @@ const { linhas = 32, divisores = [2, 3, 4, 5, 7] } = Astro.props;
   .pascal {
     display: block;
     margin: 2rem 0;
-    background: var(--superficie);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    border-top: 6px solid var(--etiqueta);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border-top: 6px solid var(--tag);
     padding: 1rem 1.25rem 1.25rem;
   }
   .controlos {
@@ -97,17 +97,17 @@ const { linhas = 32, divisores = [2, 3, 4, 5, 7] } = Astro.props;
     padding: 0 0.75rem;
     border: 0;
     border-radius: 20px;
-    background: var(--pastilha);
-    color: var(--texto);
-    font: 600 0.875rem var(--f-ui);
+    background: var(--pill);
+    color: var(--text);
+    font: 600 0.875rem var(--font-ui);
     cursor: pointer;
   }
   button[aria-pressed='true'] {
-    background: var(--primaria);
-    color: var(--primaria-texto);
+    background: var(--primary);
+    color: var(--on-primary);
   }
   button[aria-pressed='true']:focus-visible {
-    outline-color: var(--texto);
+    outline-color: var(--text);
   }
   svg {
     width: 100%;
@@ -116,7 +116,7 @@ const { linhas = 32, divisores = [2, 3, 4, 5, 7] } = Astro.props;
   }
   .legenda {
     font-size: 0.85rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0.75rem 0 0;
   }
 </style>

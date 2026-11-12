@@ -1,0 +1,216 @@
+---
+import { getEntry, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import {
+  getIssueArticles,
+  getPublishedArticles,
+  monthYear,
+  issueLabel,
+  articleSlug,
+  type Article,
+} from '../../../lib/issues';
+import { mdxComponents } from '../../../lib/mdx-components';
+import { SECTIONS } from '../../../lib/sections';
+import { isoDay, publisher, publicationIssue, persons } from '../../../lib/structured-data';
+import { lastUpdated } from '../../../lib/git';
+
+export async function getStaticPaths() {
+  const articles = await getPublishedArticles();
+  return articles.map((article) => ({
+    params: { issue: article.data.edicao.id, article: articleSlug(article) },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props as { article: Article };
+const issue = (await getEntry(article.data.edicao))!;
+const { Content } = await render(article);
+const issueArticles = await getIssueArticles(issue.id);
+const position = issueArticles.findIndex((other) => other.id === article.id);
+const [previous, next] = [issueArticles[position - 1], issueArticles[position + 1]];
+const {
+  titulo: title,
+  seccao: section,
+  autores: authors,
+  nivel: level,
+  citacao: quote,
+  resumo: summary,
+} = article.data;
+const articleUrl = (other: Article) => `/edicoes/${issue.id}/${articleSlug(other)}/`;
+const WORDS_PER_MINUTE = 200;
+const readingMinutes = Math.max(
+  1,
+  Math.round((article.body ?? '').split(/\s+/).filter(Boolean).length / WORDS_PER_MINUTE),
+);
+// The gold highlighter goes on the last word of the title, if it is long enough to be seen.
+const titleParts = title.match(/^(.*\s)(\p{L}{5,})([^\p{L}]*)$/u);
+const authorPersons = persons(authors);
+const structuredData = {
+  '@type': 'Article',
+  headline: title,
+  description: summary,
+  author: authorPersons.length ? authorPersons : undefined,
+  datePublished: isoDay(issue.data.data),
+  dateModified: article.filePath && lastUpdated(article.filePath),
+  inLanguage: 'pt-PT',
+  isPartOf: publicationIssue(issue, Astro.site!),
+  publisher: publisher(Astro.site!),
+};
+---
+
+<Base title={title} description={summary} issue={issue} isArticle structuredData={structuredData}>
+  <article
+    class="container"
+    data-pagefind-body
+    data-pagefind-meta={`issue:${issueLabel(issue)} · ${monthYear(issue.data.data)}`}
+    data-pagefind-filter={`issue:${issueLabel(issue)}`}
+    data-pagefind-sort={`date:${issue.data.data.toISOString().slice(0, 10)}`}
+  >
+    <header>
+      <a
+        class="tag"
+        href={`/seccoes/${section}/`}
+        data-pagefind-filter={`section:${SECTIONS[section]}`}
+        data-pagefind-ignore
+      >
+        {SECTIONS[section]}
+      </a>
+      <h1>
+        {titleParts ? (
+          <>
+            {titleParts[1]}
+            <span class="highlight">{titleParts[2]}</span>
+            {titleParts[3]}
+          </>
+        ) : (
+          title
+        )}
+      </h1>
+      <p class="ui meta" data-pagefind-ignore>
+        <a href={`/edicoes/${issue.id}/`}>
+          {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+        </a>
+        <span>
+          {position + 1} de {issueArticles.length}
+        </span>
+        <span>{readingMinutes} min de leitura</span>
+      </p>
+      {(authors || level) && (
+        <p class="ui byline">
+          {authors && <span>{authors.join(', ')}</span>}
+          {level && <span class="level">{level}</span>}
+        </p>
+      )}
+      {quote && (
+        <blockquote class="quote">
+          “{quote.texto}”<footer>— {quote.autor}</footer>
+        </blockquote>
+      )}
+    </header>
+
+    <div class="prose">
+      <Content components={mdxComponents} />
+    </div>
+
+    <nav class="ui article-nav no-print" aria-label="Artigos desta edição" data-pagefind-ignore>
+      {previous ? (
+        <a class="card" href={articleUrl(previous)}>
+          <small>← Anterior</small>
+          {previous.data.titulo}
+        </a>
+      ) : (
+        <span></span>
+      )}
+      {next && (
+        <a class="card next" href={articleUrl(next)}>
+          <small>Seguinte →</small>
+          {next.data.titulo}
+        </a>
+      )}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  article {
+    max-width: calc(var(--reading-width) + 2rem);
+  }
+  header {
+    padding-top: 2rem;
+    margin-bottom: 2rem;
+  }
+  h1 {
+    margin: 0.75rem 0 0.75rem;
+  }
+  .meta,
+  .byline {
+    display: flex;
+    gap: 0.25rem 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .meta > * + *::before {
+    content: '·';
+    margin-right: 0.75rem;
+  }
+  .meta a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .meta a:hover {
+    text-decoration: underline;
+  }
+  .byline {
+    margin-top: 0.5rem;
+    color: var(--text);
+  }
+  .level {
+    background: var(--pill);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.625rem;
+    border-radius: var(--radius-lg);
+  }
+  .quote {
+    font-style: italic;
+    font-size: 1.125rem;
+    margin: 1.5rem 0 0;
+    padding-left: 1rem;
+    border-left: 4px solid var(--highlight);
+  }
+  .quote footer {
+    font-family: var(--font-ui);
+    font-style: normal;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+  .article-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 3.5rem;
+  }
+  .article-nav a {
+    display: grid;
+    gap: 0.25rem;
+    align-content: start;
+    padding: 1rem 1.25rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+  }
+  .article-nav small {
+    font-weight: 500;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+  .next {
+    text-align: right;
+  }
+</style>

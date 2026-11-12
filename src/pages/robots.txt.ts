@@ -1,10 +1,8 @@
 import type { APIContext } from 'astro';
 
-// Tudo pode ser lido. O painel e a 404 não são bloqueados aqui: têm noindex, e um motor de busca
-// só o vê se puder abrir a página. O endereço do sitemap vem do `site` em astro.config.mjs.
+// Everything may be crawled. The panel and the 404 page are not blocked here: they have noindex, and a
+// search engine only sees it if it can open the page. The sitemap address comes from `site` in astro.config.ts.
 export function GET({ site }: APIContext) {
-  const texto = ['User-agent: *', 'Allow: /', '', `Sitemap: ${new URL('/sitemap-index.xml', site).href}`, ''].join(
-    '\n',
-  );
-  return new Response(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  const body = ['User-agent: *', 'Allow: /', '', `Sitemap: ${new URL('/sitemap-index.xml', site).href}`, ''].join('\n');
+  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }

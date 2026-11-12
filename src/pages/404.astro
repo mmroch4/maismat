@@ -1,58 +1,58 @@
 ---
-// O Cloudflare Pages serve dist/404.html a qualquer endereço que não exista.
+// Cloudflare Pages serves dist/404.html at any address that does not exist.
 import Base from '../layouts/Base.astro';
-import FormPesquisa from '../components/FormPesquisa.astro';
-import PaginasDoJornal from '../components/PaginasDoJornal.astro';
+import SearchForm from '../components/SearchForm.astro';
+import SiteIndex from '../components/SiteIndex.astro';
 ---
 
-<Base titulo="Página não encontrada" descricao="Esta página não existe no +MAT." naoEncontrada>
-  <div class="contentor">
-    <p class="numero ui" aria-hidden="true">
+<Base title="Página não encontrada" description="Esta página não existe no +MAT." isNotFound>
+  <div class="container">
+    <p class="error-code ui" aria-hidden="true">
       4<span>≠</span>04
     </p>
-    <p class="visualmente-oculto">Erro 404</p>
+    <p class="visually-hidden">Erro 404</p>
     <h1>
-      Esta conta não bate <span class="marcador">certo</span>
+      Esta conta não bate <span class="highlight">certo</span>
     </h1>
-    <p class="texto">
+    <p class="lead">
       Procurámos em todas as edições e não encontrámos esta página. Pode ter mudado de sítio, ou o endereço pode ter um
       engano.
     </p>
-    <FormPesquisa />
-    <p class="ui voltar">
+    <SearchForm />
+    <p class="ui back-home">
       <a href="/">Voltar ao início</a>
     </p>
-    <p class="ui aviso">Ou procura nestas páginas:</p>
-    <PaginasDoJornal />
+    <p class="ui hint">Ou procura nestas páginas:</p>
+    <SiteIndex />
   </div>
 </Base>
 
 <style>
-  .numero {
+  .error-code {
     margin: 2.5rem 0 0.75rem;
     font-size: 6rem;
     font-weight: 800;
     letter-spacing: -0.05em;
     line-height: 0.9;
-    color: var(--primaria);
+    color: var(--primary);
   }
-  .numero span {
-    color: var(--erro);
+  .error-code span {
+    color: var(--error);
   }
-  .voltar {
+  .back-home {
     font-weight: 700;
     margin: 1.25rem 0 0;
   }
   h1 {
     margin: 0.25rem 0 1rem;
   }
-  .texto {
-    max-width: var(--leitura);
+  .lead {
+    max-width: var(--reading-width);
     margin-bottom: 1.5rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
   }
-  .aviso {
-    color: var(--texto-suave);
+  .hint {
+    color: var(--text-muted);
     font-size: 0.95rem;
     margin-top: 2rem;
   }

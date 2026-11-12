@@ -55,10 +55,10 @@ const { inicial = 17 } = Astro.props;
 <style>
   .collatz {
     display: block;
-    background: var(--superficie);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    border-top: 6px solid var(--etiqueta);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border-top: 6px solid var(--tag);
     padding: 1.25rem;
     margin: 2rem 0;
   }
@@ -74,14 +74,14 @@ const { inicial = 17 } = Astro.props;
     width: 9rem;
     min-height: 44px;
     padding: 0 0.625rem;
-    border: 2px solid var(--campo);
-    border-radius: var(--raio-p);
-    background: var(--superficie);
-    color: var(--texto);
-    font: 1rem var(--f-ui);
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font: 1rem var(--font-ui);
   }
   input:focus-visible {
-    border-color: var(--primaria);
+    border-color: var(--primary);
     outline-offset: 2px;
   }
   .resumo {
@@ -91,15 +91,15 @@ const { inicial = 17 } = Astro.props;
   .grafico {
     width: 100%;
     height: 7rem;
-    color: var(--primaria);
-    background: var(--fundo);
-    border-radius: var(--raio-p);
+    color: var(--primary);
+    background: var(--bg);
+    border-radius: var(--radius-sm);
   }
   .sequencia {
     font-size: 0.85rem;
     line-height: 1.6;
     word-break: break-word;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0.75rem 0 0;
     max-height: 9rem;
     overflow-y: auto;

@@ -1,0 +1,121 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { getIssueArticles, getPublishedIssues, monthYear, issueLabel, type Issue } from '../../../lib/issues';
+import { mdxComponents } from '../../../lib/mdx-components';
+import { SECTIONS } from '../../../lib/sections';
+
+// Print version of a whole issue: a title page followed by every article, one per page.
+export async function getStaticPaths() {
+  const issues = (await getPublishedIssues()).filter((issue) => issue.data.convertida);
+  return issues.map((issue) => ({ params: { issue: issue.id }, props: { issue } }));
+}
+
+const { issue } = Astro.props as { issue: Issue };
+const articles = await Promise.all(
+  (await getIssueArticles(issue.id)).map(async (article) => ({ article, Content: (await render(article)).Content })),
+);
+---
+
+<Base title={`${issueLabel(issue)} — versão para imprimir`} issue={issue}>
+  <div class="container print-issue">
+    <p class="ui no-print print-tip">
+      Usa <kbd>Ctrl</kbd>+<kbd>P</kbd> (ou <kbd>⌘</kbd>+<kbd>P</kbd>) e escolhe “Guardar como PDF”.
+      <button type="button" class="button" onclick="window.print()">
+        Imprimir agora
+      </button>
+    </p>
+    <header class="title-page">
+      <p class="ui">Agrupamento de Escolas Domingos Sequeira</p>
+      <h1>+MAT</h1>
+      <p class="subtitle">
+        Jornal de Matemática · {issueLabel(issue)} · <span class="capitalize">{monthYear(issue.data.data)}</span>
+      </p>
+      <p class="ui">Direção e edição: {issue.data.direcao.join(' e ')}</p>
+      <ol class="ui">
+        {articles.map(({ article }) => (
+          <li>
+            {SECTIONS[article.data.seccao]} — {article.data.titulo}
+          </li>
+        ))}
+      </ol>
+    </header>
+    {articles.map(({ article, Content }) => (
+      <section class="article">
+        <span class="tag">+ {SECTIONS[article.data.seccao]}</span>
+        <h2>{article.data.titulo}</h2>
+        {article.data.autores && <p class="ui authors">{article.data.autores.join(', ')}</p>}
+        <div class="prose">
+          <Content components={mdxComponents} />
+        </div>
+      </section>
+    ))}
+    <p class="ui credits">+MAT · {Astro.site!.host} · Versão digital: Miguel Rocha</p>
+  </div>
+</Base>
+
+<style>
+  .print-issue {
+    max-width: calc(var(--reading-width) + 2rem);
+  }
+  .print-tip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    background: var(--pill);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    margin-top: 2rem;
+  }
+  .title-page {
+    text-align: center;
+    padding: 3rem 0;
+    border-bottom: 3px solid var(--tag);
+  }
+  .title-page h1 {
+    font-size: 5rem;
+    margin: 0.5rem 0;
+  }
+  .title-page ol {
+    text-align: left;
+    display: inline-block;
+    font-size: 0.9rem;
+  }
+  .subtitle {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+  }
+  .article {
+    padding-top: 2.5rem;
+  }
+  .article h2 {
+    font-size: 2rem;
+    margin: 0.5rem 0;
+  }
+  .authors {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .credits {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 4rem;
+  }
+  @media print {
+    .title-page {
+      break-after: page;
+    }
+    .article {
+      break-before: page;
+      padding-top: 0;
+    }
+    .article :global(figure),
+    .article :global(img),
+    .article :global(.desafio) {
+      break-inside: avoid;
+    }
+  }
+</style>

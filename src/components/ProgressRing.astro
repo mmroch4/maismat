@@ -1,0 +1,84 @@
+---
+// "N of T" ring with the challenges solved on this device (see src/lib/storage.ts).
+// Without JavaScript it shows 0; it recounts when the archive imports progress (PROGRESS_EVENT).
+interface Props {
+  ids: string[];
+}
+const ids = [...new Set(Astro.props.ids)];
+---
+
+<maismat-progress-ring class="ui" data-ids={ids.join(' ')}>
+  <svg viewBox="0 0 36 36" aria-hidden="true">
+    <circle class="track" cx="18" cy="18" r="15.5" pathLength="100" />
+    <circle class="fill" cx="18" cy="18" r="15.5" pathLength="100" />
+  </svg>
+  <span class="label">
+    <strong>
+      <span class="count">0</span> de {ids.length}
+    </strong>{' '}
+    resolvidos
+  </span>
+</maismat-progress-ring>
+
+<script>
+  import { PROGRESS_EVENT, isSolved } from '../lib/storage';
+
+  class ProgressRing extends HTMLElement {
+    connectedCallback() {
+      this.update();
+      document.addEventListener(PROGRESS_EVENT, () => this.update());
+    }
+
+    update() {
+      const ids = this.dataset.ids!.split(' ');
+      const solved = ids.filter(isSolved).length;
+      this.querySelector('.count')!.textContent = String(solved);
+      this.style.setProperty('--progress', String((100 * solved) / ids.length));
+    }
+  }
+  customElements.define('maismat-progress-ring', ProgressRing);
+</script>
+
+<style>
+  /* Registered as a number so the ring fills up from zero; without @property it shows up already full */
+  @property --progress {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0;
+  }
+  maismat-progress-ring {
+    --progress: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: --progress 400ms ease-out;
+  }
+  svg {
+    width: 5rem;
+    height: 5rem;
+    transform: rotate(-90deg);
+    flex-shrink: 0;
+  }
+  circle {
+    fill: none;
+    stroke-width: 4.5;
+  }
+  .track {
+    stroke: var(--pill);
+  }
+  .fill {
+    stroke: var(--ok);
+    /* The stroke is as long as the percentage: with 0 nothing is drawn (dashoffset left a mark) */
+    stroke-dasharray: var(--progress) 100;
+  }
+  .label {
+    display: grid;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+</style>

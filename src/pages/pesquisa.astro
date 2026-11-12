@@ -1,192 +1,199 @@
 ---
 import Base from '../layouts/Base.astro';
-import FormPesquisa from '../components/FormPesquisa.astro';
-import PaginasDoJornal from '../components/PaginasDoJornal.astro';
+import SearchForm from '../components/SearchForm.astro';
+import SiteIndex from '../components/SiteIndex.astro';
 import { getSortedIssues, issueLabel } from '../lib/issues';
 import { SECTIONS } from '../lib/sections';
 
-// No URL vão os ids (?edicao=ano3-edicao2&seccao=geometria); no Pagefind, o texto que está nas páginas.
-const edicoes = (await getSortedIssues()).map((e) => ({ id: e.id, valor: issueLabel(e) }));
-const seccoes = Object.entries(SECTIONS).map(([id, nome]) => ({ id, valor: nome }));
+// The URL carries the ids (?edicao=ano3-edicao2&seccao=geometria, public URLs that stay in Portuguese);
+// Pagefind filters by the text shown on the pages.
+const issueOptions = (await getSortedIssues()).map((issue) => ({ id: issue.id, label: issueLabel(issue) }));
+const sectionOptions = Object.entries(SECTIONS).map(([id, label]) => ({ id, label }));
 ---
 
-<Base titulo="Pesquisar" descricao="Pesquisa nos artigos e nas edições do +MAT.">
-  <div class="contentor">
-    <div class="cabeca">
+<Base title="Pesquisar" description="Pesquisa nos artigos e nas edições do +MAT.">
+  <div class="container">
+    <div class="page-header">
       <h1>
-        <span class="marcador">Pesquisar</span> no +MAT
+        <span class="highlight">Pesquisar</span> no +MAT
       </h1>
     </div>
 
-    <FormPesquisa escondido>
-      <div class="filtros">
+    <SearchForm hidden>
+      <div class="filters">
         <fieldset>
           <legend>Secção</legend>
-          <div class="caixas">
-            {seccoes.map((o) => (
+          <div class="checkboxes">
+            {sectionOptions.map((option) => (
               <label>
-                <input type="checkbox" name="seccao" value={o.id} data-valor={o.valor} /> {o.valor}{' '}
-                <span class="n"></span>
+                <input type="checkbox" name="seccao" value={option.id} data-label={option.label} /> {option.label}{' '}
+                <span class="count"></span>
               </label>
             ))}
           </div>
         </fieldset>
-        <div class="filtro">
-          <label for="edicao">Edição</label>
-          <select id="edicao" name="edicao" class="entrada">
+        <div class="filter">
+          <label for="issue-filter">Edição</label>
+          <select id="issue-filter" name="edicao" class="field">
             <option value="">Todas</option>
-            {edicoes.map((o) => (
-              <option value={o.id} data-valor={o.valor}>
-                {o.valor}
+            {issueOptions.map((option) => (
+              <option value={option.id} data-label={option.label}>
+                {option.label}
               </option>
             ))}
           </select>
         </div>
       </div>
-    </FormPesquisa>
-    <p class="ui estado" role="status" aria-live="polite"></p>
-    <ol class="resultados"></ol>
-    <button type="button" class="botao secundario mostrar-mais" hidden>
+    </SearchForm>
+    <p class="ui status" role="status" aria-live="polite"></p>
+    <ol class="results"></ol>
+    <button type="button" class="button secondary show-more" hidden>
       Mostrar mais resultados
     </button>
 
-    <section class="ui alternativa" aria-labelledby="alt-titulo">
-      <p id="alt-titulo" class="aviso">
+    <section class="ui fallback" aria-labelledby="fallback-heading">
+      <p id="fallback-heading" class="hint">
         A pesquisa precisa de JavaScript. Podes procurar nestas páginas:
       </p>
-      <PaginasDoJornal />
+      <SiteIndex />
     </section>
   </div>
 </Base>
 
 <script>
-  type Resultado = { url: string; excerpt: string; meta: { title?: string; edicao?: string } };
+  type SearchResult = { url: string; excerpt: string; meta: { title?: string; issue?: string } };
+  type PendingResult = { data(): Promise<SearchResult> };
+  type Filters = Record<string, string | { any: string[] }>;
   type Pagefind = {
-    options(o: object): Promise<void>;
+    options(options: object): Promise<void>;
     filters(): Promise<Record<string, Record<string, number>>>;
     search(
-      q: string | null,
-      o?: { filters: Record<string, string | { any: string[] }>; sort?: Record<string, 'asc' | 'desc'> },
-    ): Promise<{ results: { data(): Promise<Resultado> }[] } | null>;
+      query: string | null,
+      options?: { filters: Filters; sort?: Record<string, 'asc' | 'desc'> },
+    ): Promise<{ results: PendingResult[] } | null>;
   };
 
-  const POR_PAGINA = 10;
-  const form = document.querySelector<HTMLFormElement>('.pesquisa')!;
-  const campo = form.querySelector<HTMLInputElement>('input')!;
-  const edicao = form.querySelector<HTMLSelectElement>('select')!;
-  const caixas = [...form.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
-  const estado = document.querySelector<HTMLElement>('.estado')!;
-  const lista = document.querySelector<HTMLOListElement>('.resultados')!;
-  const mais = document.querySelector<HTMLButtonElement>('.mostrar-mais')!;
-  const alternativa = document.querySelector<HTMLElement>('.alternativa')!;
+  const PAGE_SIZE = 10;
+  const SEARCH_DELAY_MS = 300;
+  const form = document.querySelector<HTMLFormElement>('.search-form')!;
+  const queryInput = form.querySelector<HTMLInputElement>('input')!;
+  const issueSelect = form.querySelector<HTMLSelectElement>('select')!;
+  const sectionCheckboxes = [...form.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
+  const status = document.querySelector<HTMLElement>('.status')!;
+  const resultList = document.querySelector<HTMLOListElement>('.results')!;
+  const showMore = document.querySelector<HTMLButtonElement>('.show-more')!;
+  const fallback = document.querySelector<HTMLElement>('.fallback')!;
 
   let pagefind: Pagefind;
-  let pendentes: { data(): Promise<Resultado> }[] = [];
-  let pedido = 0;
+  let pending: PendingResult[] = [];
+  let latestSearch = 0;
 
-  async function mostrar(n: number) {
-    const lote = pendentes.splice(0, n);
-    for (const r of await Promise.all(lote.map((r) => r.data()))) {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = r.url;
-      a.textContent = r.meta.title ?? r.url;
-      li.append(a);
-      if (r.meta.edicao) {
-        const m = document.createElement('p');
-        m.className = 'ui meta';
-        m.textContent = r.meta.edicao;
-        li.append(m);
+  async function showResults(count: number) {
+    const batch = pending.splice(0, count);
+    for (const result of await Promise.all(batch.map((r) => r.data()))) {
+      const item = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = result.url;
+      link.textContent = result.meta.title ?? result.url;
+      item.append(link);
+      if (result.meta.issue) {
+        const meta = document.createElement('p');
+        meta.className = 'ui meta';
+        meta.textContent = result.meta.issue;
+        item.append(meta);
       }
-      const ex = document.createElement('p');
-      ex.className = 'excerto';
-      // O Pagefind devolve o excerto já escapado, só com <mark> à volta das palavras encontradas.
-      ex.innerHTML = r.excerpt;
-      li.append(ex);
-      lista.append(li);
+      const excerpt = document.createElement('p');
+      excerpt.className = 'excerpt';
+      // Pagefind returns the excerpt already escaped, with only <mark> around the matched words.
+      excerpt.innerHTML = result.excerpt;
+      item.append(excerpt);
+      resultList.append(item);
     }
-    mais.hidden = pendentes.length === 0;
+    showMore.hidden = pending.length === 0;
   }
 
-  async function pesquisar() {
-    const este = ++pedido;
-    const termo = campo.value.trim();
-    const marcadas = caixas.filter((c) => c.checked);
-    const parametros = new URLSearchParams();
-    if (termo) parametros.set('q', termo);
-    if (edicao.value) parametros.set('edicao', edicao.value);
-    for (const c of marcadas) parametros.append('seccao', c.value);
-    history.replaceState(null, '', parametros.size ? `?${parametros}` : location.pathname);
-    if (!termo && !edicao.value && !marcadas.length) {
-      lista.replaceChildren();
-      mais.hidden = true;
-      estado.textContent = '';
+  async function search() {
+    const searchId = ++latestSearch;
+    const query = queryInput.value.trim();
+    const checked = sectionCheckboxes.filter((checkbox) => checkbox.checked);
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (issueSelect.value) params.set('edicao', issueSelect.value);
+    for (const checkbox of checked) params.append('seccao', checkbox.value);
+    history.replaceState(null, '', params.size ? `?${params}` : location.pathname);
+    if (!query && !issueSelect.value && !checked.length) {
+      resultList.replaceChildren();
+      showMore.hidden = true;
+      status.textContent = '';
       return;
     }
-    // O Pagefind aceita várias secções de uma vez: basta uma delas.
-    const filtros: Record<string, string | { any: string[] }> = {};
-    if (edicao.value) filtros.edicao = edicao.selectedOptions[0].dataset.valor!;
-    if (marcadas.length) filtros.seccao = { any: marcadas.map((c) => c.dataset.valor!) };
-    // Sem termo não há relevância: as edições mais recentes primeiro.
-    const r = await pagefind.search(termo || null, { filters: filtros, sort: termo ? undefined : { data: 'desc' } });
-    if (!r || este !== pedido) return;
-    lista.replaceChildren();
-    pendentes = r.results;
-    const n = r.results.length;
-    const nomes = [
-      ...marcadas.map((c) => c.dataset.valor!),
-      edicao.value && edicao.selectedOptions[0].dataset.valor!,
-    ].filter(Boolean);
-    const onde = [termo && `para «${termo}»`, nomes.length && `em ${nomes.join(', ')}`].filter(Boolean).join(' ');
-    estado.textContent =
-      n === 0 ? `Não encontrei nada ${onde}.` : `${n === 1 ? '1 resultado' : `${n} resultados`} ${onde}.`;
-    await mostrar(POR_PAGINA);
+    const selectedIssue = issueSelect.value && issueSelect.selectedOptions[0].dataset.label!;
+    // Pagefind accepts several sections at once: any of them is enough.
+    const filters: Filters = {};
+    if (selectedIssue) filters.issue = selectedIssue;
+    if (checked.length) filters.section = { any: checked.map((checkbox) => checkbox.dataset.label!) };
+    // Without a query there is no relevance: newest issues first.
+    const response = await pagefind.search(query || null, { filters, sort: query ? undefined : { date: 'desc' } });
+    if (!response || searchId !== latestSearch) return;
+    resultList.replaceChildren();
+    pending = response.results;
+    const total = response.results.length;
+    const filterNames = [...checked.map((checkbox) => checkbox.dataset.label!), selectedIssue].filter(Boolean);
+    const scope = [query && `para «${query}»`, filterNames.length && `em ${filterNames.join(', ')}`]
+      .filter(Boolean)
+      .join(' ');
+    status.textContent =
+      total === 0 ? `Não encontrei nada ${scope}.` : `${total === 1 ? '1 resultado' : `${total} resultados`} ${scope}.`;
+    await showResults(PAGE_SIZE);
   }
 
-  let espera: number;
-  campo.addEventListener('input', () => {
-    clearTimeout(espera);
-    espera = window.setTimeout(pesquisar, 300);
+  let debounce: number;
+  queryInput.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = window.setTimeout(search, SEARCH_DELAY_MS);
   });
-  for (const c of [edicao, ...caixas]) c.addEventListener('change', pesquisar);
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    clearTimeout(espera);
-    pesquisar();
+  for (const control of [issueSelect, ...sectionCheckboxes]) control.addEventListener('change', search);
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    clearTimeout(debounce);
+    search();
   });
-  mais.addEventListener('click', () => mostrar(POR_PAGINA));
+  showMore.addEventListener('click', () => showResults(PAGE_SIZE));
 
   try {
-    // O índice só existe depois de `npm run build` (o Pagefind corre sobre dist).
+    // The index only exists after `npm run build` (Pagefind runs over dist).
     const url = '/pagefind/pagefind.js';
     pagefind = await import(/* @vite-ignore */ url);
     await pagefind.options({ excerptLength: 24 });
-    const contagens = await pagefind.filters();
-    for (const o of [...edicao.options].filter((o) => o.value)) {
-      const n = contagens.edicao?.[o.dataset.valor!] ?? 0;
-      if (n) o.textContent += ` (${n})`;
-      else o.remove();
+    const counts = await pagefind.filters();
+    for (const option of [...issueSelect.options].filter((option) => option.value)) {
+      const count = counts.issue?.[option.dataset.label!] ?? 0;
+      if (count) option.textContent += ` (${count})`;
+      else option.remove();
     }
-    for (const c of caixas) {
-      const n = contagens.seccao?.[c.dataset.valor!] ?? 0;
-      if (n) c.parentElement!.querySelector('.n')!.textContent = String(n);
-      else c.parentElement!.remove();
+    for (const checkbox of sectionCheckboxes) {
+      const count = counts.section?.[checkbox.dataset.label!] ?? 0;
+      if (count) checkbox.parentElement!.querySelector('.count')!.textContent = String(count);
+      else checkbox.parentElement!.remove();
     }
-    const parametros = new URLSearchParams(location.search);
-    campo.value = parametros.get('q') ?? '';
-    edicao.value = [...edicao.options].some((o) => o.value === parametros.get('edicao'))
-      ? parametros.get('edicao')!
+    const params = new URLSearchParams(location.search);
+    queryInput.value = params.get('q') ?? '';
+    const requestedIssue = params.get('edicao');
+    issueSelect.value = [...issueSelect.options].some((option) => option.value === requestedIssue)
+      ? requestedIssue!
       : '';
-    const pedidas = parametros.getAll('seccao');
-    for (const c of caixas) c.checked = pedidas.includes(c.value);
+    const requestedSections = params.getAll('seccao');
+    for (const checkbox of sectionCheckboxes) checkbox.checked = requestedSections.includes(checkbox.value);
     form.hidden = false;
-    // No telemóvel a linha das secções desliza: a primeira escolhida tem de se ver.
-    caixas.find((c) => c.checked)?.parentElement!.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    alternativa.hidden = true;
-    if (campo.value || edicao.value || pedidas.length) pesquisar();
-    else campo.focus();
+    // On phones the row of sections scrolls sideways: the first checked one must be visible.
+    sectionCheckboxes
+      .find((checkbox) => checkbox.checked)
+      ?.parentElement!.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    fallback.hidden = true;
+    if (queryInput.value || issueSelect.value || requestedSections.length) search();
+    else queryInput.focus();
   } catch {
-    alternativa.querySelector('.aviso')!.textContent =
+    fallback.querySelector('.hint')!.textContent =
       'A pesquisa não está disponível neste momento. Podes procurar nestas páginas:';
   }
 </script>
@@ -196,7 +203,7 @@ const seccoes = Object.entries(SECTIONS).map(([id, nome]) => ({ id, valor: nome 
     display: none !important;
   }
 
-  .filtros {
+  .filters {
     display: grid;
     gap: 1rem;
     margin-top: 1rem;
@@ -208,121 +215,121 @@ const seccoes = Object.entries(SECTIONS).map(([id, nome]) => ({ id, valor: nome 
     min-width: 0;
   }
   legend,
-  .filtro label {
+  .filter label {
     font-weight: 600;
     margin-bottom: 0.375rem;
     padding: 0;
   }
-  .caixas {
+  .checkboxes {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  /* No telemóvel as secções ficam numa só linha, que desliza para o lado */
+  /* On phones the sections stay on a single row that scrolls sideways */
   @media (max-width: 768px) {
-    .caixas {
+    .checkboxes {
       flex-wrap: nowrap;
       overflow-x: auto;
       margin-inline: -1rem;
       padding: 0.25rem 1rem;
       scrollbar-width: none;
     }
-    .caixas label {
+    .checkboxes label {
       flex-shrink: 0;
     }
   }
-  .caixas label {
+  .checkboxes label {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     min-height: 44px;
     padding: 0 0.875rem;
-    border-radius: var(--raio-g);
-    background: var(--superficie);
-    box-shadow: inset 0 0 0 2px var(--linha);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 2px var(--border);
     white-space: nowrap;
     cursor: pointer;
   }
-  .caixas label:has(:checked) {
-    background: var(--pastilha);
-    box-shadow: inset 0 0 0 2px var(--primaria);
+  .checkboxes label:has(:checked) {
+    background: var(--pill);
+    box-shadow: inset 0 0 0 2px var(--primary);
     font-weight: 600;
   }
-  .caixas input {
+  .checkboxes input {
     width: 1.125rem;
     height: 1.125rem;
     margin: 0;
-    accent-color: var(--primaria);
+    accent-color: var(--primary);
   }
-  .caixas .n {
+  .checkboxes .count {
     font-size: 0.8125rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     font-weight: 400;
   }
-  .filtro {
+  .filter {
     display: grid;
     max-width: 20rem;
   }
 
-  .estado {
-    color: var(--texto-suave);
-    font-family: var(--f-ui);
+  .status {
+    color: var(--text-muted);
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     margin: 1.5rem 0 0;
   }
-  .estado:empty {
+  .status:empty {
     margin: 0;
   }
 
-  .resultados {
+  .results {
     list-style: none;
     padding: 0;
     margin: 0.75rem 0 1.5rem;
-    max-width: var(--leitura);
+    max-width: var(--reading-width);
     display: grid;
     gap: 0.75rem;
   }
-  /* Os resultados são criados no browser e não têm o atributo de escopo do Astro: daí o :global. */
-  .resultados :global(li) {
+  /* Results are created in the browser and lack Astro's scoping attribute, hence :global. */
+  .results :global(li) {
     padding: 1rem 1.25rem;
-    background: var(--superficie);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     min-width: 0;
   }
-  .resultados :global(a) {
-    font-family: var(--f-ui);
+  .results :global(a) {
+    font-family: var(--font-ui);
     font-size: 1.125rem;
     font-weight: 700;
-    color: var(--texto);
+    color: var(--text);
     text-decoration: none;
     overflow-wrap: anywhere;
   }
-  .resultados :global(a:hover) {
+  .results :global(a:hover) {
     text-decoration: underline;
   }
-  .resultados :global(.meta) {
+  .results :global(.meta) {
     font-size: 0.8125rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0.15rem 0 0;
     text-transform: capitalize;
   }
-  .resultados :global(.excerto) {
+  .results :global(.excerpt) {
     font-size: 0.9375rem;
-    color: var(--texto-suave);
+    color: var(--text-muted);
     margin: 0.4rem 0 0;
     overflow-wrap: anywhere;
   }
-  .resultados :global(mark) {
-    background: linear-gradient(transparent 55%, var(--marcador) 55%);
-    color: var(--texto);
+  .results :global(mark) {
+    background: linear-gradient(transparent 55%, var(--highlight) 55%);
+    color: var(--text);
     padding: 0 0.05em;
   }
 
-  .alternativa {
+  .fallback {
     font-size: 0.95rem;
   }
-  .aviso {
-    color: var(--texto-suave);
+  .hint {
+    color: var(--text-muted);
   }
 </style>
